@@ -142,12 +142,12 @@ public:
       : _add_place{&add}
       , _can_rem{can_rem} {}
 
-    auto can_add() const noexcept -> bool {
+    auto can_add_component() const noexcept -> bool {
         return _add_place != nullptr;
     }
 
-    void add(std::remove_const_t<Component>&& cmp) {
-        EAGINE_ASSERT(can_add());
+    void add_component(std::remove_const_t<Component>&& cmp) {
+        EAGINE_ASSERT(can_add_component());
         EAGINE_ASSERT(_add_place);
         *_add_place = std::move(cmp);
         this->_reset_cmp(*_add_place);

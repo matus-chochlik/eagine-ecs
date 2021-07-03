@@ -60,8 +60,11 @@ print_names_of_actinides(ecs::basic_manager<element_symbol>& elements) {
                              ecs::manipulator<const element_name>& name,
                              ecs::manipulator<const element_period>& period,
                              ecs::manipulator<const element_group>& group) {
-        if(period.has_number(7) && group.has_number(3)) {
-            std::cout << name.get_latin_name() << std::endl;
+        if(period.has_number(7)) {
+            auto opt_grp{group.read(&element_group::number)};
+            if(opt_grp.value_or(3) == 3) {
+                std::cout << name.get_latin_name() << std::endl;
+            }
         }
     });
     std::cout << std::endl;

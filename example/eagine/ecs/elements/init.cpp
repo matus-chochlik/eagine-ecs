@@ -11,6 +11,7 @@
 #include "relations.hpp"
 #include <eagine/ecs/storage/std_map.hpp>
 #include <eagine/embed.hpp>
+#include <eagine/integer_range.hpp>
 #include <eagine/value_tree/json.hpp>
 #include <eagine/value_tree/wrappers.hpp>
 
@@ -59,7 +60,8 @@ static void populate(
         if(auto atomic_weight_a{source.nested(elem_attr, "atomic_weight")}) {
             if(auto number{
                  source.get(atomic_weight_a, type_identity<float>())}) {
-                elements.add(elem, atomic_weight(extract(number)));
+                elements.add_component<atomic_weight>(elem).set(
+                  extract(number));
             }
         }
 
@@ -100,14 +102,15 @@ static void populate(
                     using hl_t = std::chrono::duration<float>;
                     if(auto hl{
                          source.get(half_life_a, type_identity<hl_t>())}) {
-                        elements.add(isot, half_life(extract(hl)));
+                        elements.add_component<half_life>(isot).set(
+                          extract(hl));
                     }
                 }
 
                 if(auto decays_a{source.nested(isot_attr, "decay")}) {
+                    auto isot_decay = elements.add_component<decay_modes>(isot);
                     const auto n = source.nested_count(decays_a);
-                    decay_modes isot_decay;
-                    for(span_size_t d = 0; d < n; ++d) {
+                    for(span_size_t d : integer_range(n)) {
                         if(auto decay_a{source.nested(decays_a, d)}) {
                             if(auto mode_a{source.nested(decay_a, "mode")}) {
                                 std::string mode_sym;
@@ -126,7 +129,6 @@ static void populate(
                             }
                         }
                     }
-                    elements.add(isot, std::move(isot_decay));
                 }
 
                 elements.add_relation<isotope>(elem, isot);
@@ -137,7 +139,7 @@ static void populate(
 //------------------------------------------------------------------------------
 static void cache_decay_products(ecs::basic_manager<element_symbol>& elements) {
 
-    // for each original isotope with neutron cound and some decay modes
+    // for each original isotope with neutron count and some decay modes
     elements.for_each_with<const isotope_neutrons, decay_modes>(
       [&](auto& orig_is, auto& orig_nc, auto& modes) {
           // for each product isotope

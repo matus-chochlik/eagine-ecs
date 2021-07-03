@@ -48,7 +48,7 @@ struct get_manipulator<element_name, Const> {
         }
 
         auto has_english_name() const -> bool {
-            return !this->read().english.empty();
+            return this->is_valid() ? !this->read().english.empty() : false;
         }
     };
 };
@@ -70,7 +70,7 @@ struct get_manipulator<element_protons, Const> {
         }
 
         auto has_number(short number) const -> bool {
-            return this->read().number == number;
+            return this->is_valid() ? this->read().number == number : false;
         }
     };
 };
@@ -93,7 +93,7 @@ struct get_manipulator<isotope_neutrons, Const> {
         }
 
         auto has_number(short number) const -> bool {
-            return this->read().number == number;
+            return this->is_valid() ? this->read().number == number : false;
         }
     };
 };
@@ -115,7 +115,7 @@ struct get_manipulator<element_period, Const> {
         }
 
         auto has_number(short number) const -> bool {
-            return this->read().number == number;
+            return this->is_valid() ? this->read().number == number : false;
         }
     };
 };
@@ -123,11 +123,6 @@ struct get_manipulator<element_period, Const> {
 //------------------------------------------------------------------------------
 struct element_group : ecs::component<element_group, EAGINE_ID_V(Group)> {
     short number{0};
-
-    element_group() noexcept = default;
-
-    element_group(short n)
-      : number{n} {}
 };
 //------------------------------------------------------------------------------
 namespace ecs {
@@ -142,7 +137,7 @@ struct get_manipulator<element_group, Const> {
         }
 
         auto has_number(short number) const -> bool {
-            return this->read().number == number;
+            return this->is_valid() ? this->read().number == number : false;
         }
     };
 };
@@ -150,46 +145,44 @@ struct get_manipulator<element_group, Const> {
 //------------------------------------------------------------------------------
 struct atomic_weight : ecs::component<atomic_weight, EAGINE_ID_V(AtomWeight)> {
     float value{0.F};
-
-    atomic_weight() noexcept = default;
-
-    atomic_weight(float w)
-      : value{w} {}
 };
+//------------------------------------------------------------------------------
+namespace ecs {
+template <bool Const>
+struct get_manipulator<atomic_weight, Const> {
+    struct type : basic_manipulator<atomic_weight, Const> {
+        using basic_manipulator<atomic_weight, Const>::basic_manipulator;
+
+        auto set(float value) -> auto& {
+            this->write().value = value;
+            return *this;
+        }
+
+        auto get() const -> float {
+            return this->read().value;
+        }
+    };
+};
+} // namespace ecs
 //------------------------------------------------------------------------------
 struct half_life : ecs::component<half_life, EAGINE_ID_V(HalfLife)> {
     std::chrono::duration<float> time_seconds;
-
-    half_life() noexcept = default;
-
-    template <typename R, typename P>
-    half_life(std::chrono::duration<R, P> hl)
-      : time_seconds{hl} {}
-
-    static auto milliseconds(float ms) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<1LL, 1000LL>>{ms}};
-    }
-
-    static auto seconds(float s) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<1LL, 1LL>>{s}};
-    }
-
-    static auto minutes(float m) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<60LL, 1LL>>{m}};
-    }
-
-    static auto hours(float h) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<3600LL, 1LL>>{h}};
-    }
-
-    static auto days(float d) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<86400LL, 1LL>>{d}};
-    }
-
-    static auto years(float y) noexcept -> half_life {
-        return {std::chrono::duration<float, std::ratio<31556952LL, 1LL>>{y}};
-    }
 };
+//------------------------------------------------------------------------------
+namespace ecs {
+template <bool Const>
+struct get_manipulator<half_life, Const> {
+    struct type : basic_manipulator<half_life, Const> {
+        using basic_manipulator<half_life, Const>::basic_manipulator;
+
+        template <typename R, typename P>
+        auto set(std::chrono::duration<R, P> value) -> auto& {
+            this->write().time_seconds = value;
+            return *this;
+        }
+    };
+};
+} // namespace ecs
 //------------------------------------------------------------------------------
 struct decay {
     std::vector<element_symbol> products;
@@ -235,6 +228,19 @@ public:
 private:
     std::vector<std::tuple<identifier_t, int, decay>> _modes;
 };
+//------------------------------------------------------------------------------
+namespace ecs {
+template <bool Const>
+struct get_manipulator<decay_modes, Const> {
+    struct type : basic_manipulator<decay_modes, Const> {
+        using basic_manipulator<decay_modes, Const>::basic_manipulator;
+
+        auto add(string_view symbol) -> decay* {
+            return this->write().add(symbol);
+        }
+    };
+};
+} // namespace ecs
 //------------------------------------------------------------------------------
 } // namespace eagine
 
