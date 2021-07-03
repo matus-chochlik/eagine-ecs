@@ -20,19 +20,11 @@ class basic_manipulator;
 
 template <typename Component>
 class basic_manipulator<Component, false> {
-private:
-    Component* _ptr{nullptr};
-
-protected:
-    void _reset_cmp(Component& cmp) noexcept {
-        _ptr = &cmp;
-    }
-
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(Component& cmp) noexcept
-      : _ptr{&cmp} {}
+    basic_manipulator(Component* pcmp) noexcept
+      : _ptr{pcmp} {}
 
     auto is_valid() const noexcept -> bool {
         return _ptr != nullptr;
@@ -61,23 +53,23 @@ public:
         EAGINE_ASSERT(is_valid());
         return _ptr;
     }
+
+protected:
+    void _reset_cmp(Component& cmp) noexcept {
+        _ptr = &cmp;
+    }
+
+private:
+    Component* _ptr{nullptr};
 };
 
 template <typename Component>
 class basic_manipulator<Component, true> {
-private:
-    const Component* _ptr{nullptr};
-
-protected:
-    void _reset_cmp(const Component& cmp) noexcept {
-        _ptr = &cmp;
-    }
-
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(const Component& cmp) noexcept
-      : _ptr{&cmp} {}
+    basic_manipulator(const Component* pcmp) noexcept
+      : _ptr{pcmp} {}
 
     auto is_valid() const noexcept -> bool {
         return _ptr != nullptr;
@@ -101,6 +93,14 @@ public:
         EAGINE_ASSERT(is_valid());
         return _ptr;
     }
+
+protected:
+    void _reset_cmp(const Component& cmp) noexcept {
+        _ptr = &cmp;
+    }
+
+private:
+    const Component* _ptr{nullptr};
 };
 
 template <typename Component, bool Const>
@@ -116,18 +116,8 @@ class manipulator
   : public get_manipulator_t<
       std::remove_const_t<Component>,
       std::is_const_v<Component>> {
-private:
-    using _base = get_manipulator_t<
-      std::remove_const_t<Component>,
-      std::is_const_v<Component>>;
-
     using _nonconstC = std::remove_const_t<Component>;
     _nonconstC* _add_place{nullptr};
-
-protected:
-    const bool _can_rem{false};
-    bool _removed{false};
-    bool _added{false};
 
 public:
     manipulator() = default;
@@ -135,12 +125,16 @@ public:
     manipulator(bool can_rem)
       : _can_rem{can_rem} {}
 
+    manipulator(Component* pcmp, bool can_rem)
+      : _base{pcmp}
+      , _can_rem{can_rem} {}
+
     manipulator(Component& cmp, bool can_rem)
-      : _base{cmp}
+      : _base{&cmp}
       , _can_rem{can_rem} {}
 
     manipulator(Component& cmp, _nonconstC& add, bool can_rem)
-      : _base(cmp)
+      : _base(&cmp)
       , _add_place{&add}
       , _can_rem(can_rem) {}
 
@@ -167,6 +161,16 @@ public:
     void remove() {
         _removed = true;
     }
+
+protected:
+    const bool _can_rem{false};
+    bool _removed{false};
+    bool _added{false};
+
+private:
+    using _base = get_manipulator_t<
+      std::remove_const_t<Component>,
+      std::is_const_v<Component>>;
 };
 
 template <typename Component>

@@ -208,11 +208,10 @@ template <typename Entity>
 template <typename Component>
 inline auto basic_manager<Entity>::_do_add_c(
   entity_param_t<Entity> ent,
-  Component&& component) -> bool {
+  Component&& component) -> Component* {
     return _apply_on_stg<Component, false>(
-      false, [&ent, &component](auto& c_storage) -> bool {
-          c_storage->store(ent, std::forward<Component>(component));
-          return true;
+      static_cast<Component*>(nullptr), [&ent, &component](auto& c_storage) {
+          return c_storage->store(ent, std::forward<Component>(component));
       });
 }
 //------------------------------------------------------------------------------
@@ -221,11 +220,11 @@ template <typename Relation>
 inline auto basic_manager<Entity>::_do_add_r(
   entity_param subj,
   entity_param obj,
-  Relation&& relation) -> bool {
+  Relation&& relation) -> Relation* {
     return _apply_on_stg<Relation, true>(
-      false, [&subj, &obj, &relation](auto& c_storage) -> bool {
-          c_storage->store(subj, obj, std::forward<Relation>(relation));
-          return true;
+      static_cast<Relation*>(nullptr),
+      [&subj, &obj, &relation](auto& r_storage) {
+          return r_storage->store(subj, obj, std::forward<Relation>(relation));
       });
 }
 //------------------------------------------------------------------------------

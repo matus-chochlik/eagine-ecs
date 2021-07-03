@@ -160,7 +160,7 @@ public:
         if(pf == _components.end()) {
             return false;
         }
-        return store(et, Component(pf->second));
+        return store(et, Component(pf->second)) != nullptr;
     }
 
     auto swap(entity_param ea, entity_param eb) -> bool override {
@@ -205,17 +205,18 @@ public:
         _iter_cast(i)._i = _components.erase(_iter_cast(i)._i);
     }
 
-    auto store(entity_param e, Component&& c) -> bool override {
+    auto store(entity_param e, Component&& c) -> Component* override {
         _hidden.erase(e);
-        _components.emplace(e, std::move(c));
-        return true;
+        const auto pos = _components.emplace(e, std::move(c)).first;
+        return &pos->second;
     }
 
-    auto store(iterator_t& i, entity_param e, Component&& c) -> bool override {
+    auto store(iterator_t& i, entity_param e, Component&& c)
+      -> Component* override {
         _hidden.erase(e);
-        auto& p = _iter_cast(i)._i;
-        p = _components.emplace_hint(p, e, std::move(c));
-        return true;
+        auto& pos = _iter_cast(i)._i;
+        pos = _components.emplace_hint(pos, e, std::move(c));
+        return &pos->second;
     }
 
     void for_single(
@@ -420,9 +421,10 @@ public:
         return true;
     }
 
-    auto store(entity_param s, entity_param o, Relation&& r) -> bool override {
-        _relations.emplace(_pair_t(s, o), std::move(r));
-        return true;
+    auto store(entity_param s, entity_param o, Relation&& r)
+      -> Relation* override {
+        const auto pos = _relations.emplace(_pair_t(s, o), std::move(r)).first;
+        return &pos->second;
     }
 
     auto remove(entity_param s, entity_param o) -> bool override {

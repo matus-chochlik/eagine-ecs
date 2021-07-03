@@ -124,7 +124,7 @@ struct storage<Entity, Relation, true> : base_storage<Entity, true> {
     using base_storage<Entity, true>::store;
 
     virtual auto store(entity_param subject, entity_param object, Relation&&)
-      -> bool = 0;
+      -> Relation* = 0;
 
     virtual void for_single(
       callable_ref<

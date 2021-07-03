@@ -187,10 +187,11 @@ private:
     auto _do_hide(entity_param, component_uid_t, std::string (*)()) -> bool;
 
     template <typename Component>
-    auto _do_add_c(entity_param, Component&& component) -> bool;
+    auto _do_add_c(entity_param, Component&& component) -> Component*;
 
     template <typename Relation>
-    auto _do_add_r(entity_param, entity_param, Relation&& relation) -> bool;
+    auto _do_add_r(entity_param, entity_param, Relation&& relation)
+      -> Relation*;
 
     auto
       _do_add_r(entity_param, entity_param, component_uid_t, std::string (*)())
@@ -378,6 +379,12 @@ public:
     auto add(entity_param ent, Components&&... components) -> auto& {
         (..., _do_add_c(ent, std::move(components)));
         return *this;
+    }
+
+    template <typename Component>
+    auto add_component(entity_param ent, type_identity<Component> = {})
+      -> manipulator<Component> {
+        return {_do_add_c(ent, Component{}), false};
     }
 
     template <typename Relation>
