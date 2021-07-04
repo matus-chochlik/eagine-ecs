@@ -18,7 +18,7 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-struct element_name : ecs::component<element_name, EAGINE_ID_V(Name)> {
+struct element_name : ecs::component<EAGINE_ID_V(Name)> {
     std::string latin;
     std::string english;
 };
@@ -54,7 +54,7 @@ struct get_manipulator<element_name, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct element_protons : ecs::component<element_protons, EAGINE_ID_V(Protons)> {
+struct element_protons : ecs::component<EAGINE_ID_V(Protons)> {
     short number{0};
 };
 //------------------------------------------------------------------------------
@@ -76,8 +76,7 @@ struct get_manipulator<element_protons, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct isotope_neutrons
-  : ecs::component<isotope_neutrons, EAGINE_ID_V(Neutrons)> {
+struct isotope_neutrons : ecs::component<EAGINE_ID_V(Neutrons)> {
     short number{0};
 };
 //------------------------------------------------------------------------------
@@ -99,7 +98,7 @@ struct get_manipulator<isotope_neutrons, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct element_period : ecs::component<element_period, EAGINE_ID_V(Period)> {
+struct element_period : ecs::component<EAGINE_ID_V(Period)> {
     short number{0};
 };
 //------------------------------------------------------------------------------
@@ -121,7 +120,7 @@ struct get_manipulator<element_period, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct element_group : ecs::component<element_group, EAGINE_ID_V(Group)> {
+struct element_group : ecs::component<EAGINE_ID_V(Group)> {
     short number{0};
 };
 //------------------------------------------------------------------------------
@@ -143,7 +142,7 @@ struct get_manipulator<element_group, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct atomic_weight : ecs::component<atomic_weight, EAGINE_ID_V(AtomWeight)> {
+struct atomic_weight : ecs::component<EAGINE_ID_V(AtomWeight)> {
     float value{0.F};
 };
 //------------------------------------------------------------------------------
@@ -165,7 +164,7 @@ struct get_manipulator<atomic_weight, Const> {
 };
 } // namespace ecs
 //------------------------------------------------------------------------------
-struct half_life : ecs::component<half_life, EAGINE_ID_V(HalfLife)> {
+struct half_life : ecs::component<EAGINE_ID_V(HalfLife)> {
     std::chrono::duration<float> time_seconds;
 };
 //------------------------------------------------------------------------------
@@ -188,8 +187,7 @@ struct decay {
     std::vector<element_symbol> products;
 };
 //------------------------------------------------------------------------------
-class decay_modes
-  : public ecs::component<decay_modes, EAGINE_ID_V(DecayModes)> {
+class decay_modes : public ecs::component<EAGINE_ID_V(DecayModes)> {
 public:
     auto add(string_view symbol) -> decay* {
         int nv = 0;

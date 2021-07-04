@@ -15,7 +15,7 @@
 
 namespace eagine {
 //------------------------------------------------------------------------------
-struct isotope : ecs::relation<isotope, EAGINE_ID_V(Isotope)> {};
+struct isotope : ecs::relation<EAGINE_ID_V(Isotope)> {};
 //------------------------------------------------------------------------------
 } // namespace eagine
 

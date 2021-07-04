@@ -19,25 +19,35 @@ namespace eagine::ecs {
 // component unique identifier
 using component_uid_t = identifier_t;
 
+enum class data_kind : bool { component = false, relation = true };
+
 // entity_data
-template <typename Derived, component_uid_t Uid, bool IsRelation>
+template <component_uid_t Uid, data_kind Kind>
 struct entity_data {
     static constexpr auto uid() noexcept {
         return Uid;
     }
 
+    static constexpr auto kind() noexcept {
+        return Kind;
+    }
+
+    static constexpr auto is_component() noexcept {
+        return Kind == data_kind::component;
+    }
+
     static constexpr auto is_relation() noexcept {
-        return IsRelation;
+        return Kind == data_kind::relation;
     }
 };
 
 // component - base class
-template <typename Derived, component_uid_t Uid>
-using component = entity_data<Derived, Uid, false>;
+template <component_uid_t Uid>
+using component = entity_data<Uid, data_kind::component>;
 
 // relation - base class
-template <typename Derived, component_uid_t Uid>
-using relation = entity_data<Derived, Uid, true>;
+template <component_uid_t Uid>
+using relation = entity_data<Uid, data_kind::relation>;
 
 // component_uid_map
 template <typename T>
