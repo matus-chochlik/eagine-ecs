@@ -117,7 +117,7 @@ struct base_storage<Entity, false> : interface<base_storage<Entity, false>> {
 
     virtual auto show(iterator_t&) -> bool = 0;
 
-    virtual auto copy(entity_param from, entity_param to) -> bool = 0;
+    virtual auto copy(entity_param from, entity_param to) -> void* = 0;
 
     virtual auto swap(entity_param a, entity_param b) -> bool = 0;
 

@@ -248,11 +248,11 @@ inline auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
   component_uid_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)()) -> void* {
     return _apply_on_base_stg<false>(
-      false,
-      [&from, &to](auto& b_storage) -> bool {
-          return b_storage->copy(to, from);
+      static_cast<void*>(nullptr),
+      [&from, &to](auto& b_storage) -> void* {
+          return b_storage->copy(from, to);
       },
       cid,
       get_name);

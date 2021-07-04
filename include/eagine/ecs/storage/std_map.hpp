@@ -152,15 +152,15 @@ public:
         return _hidden.erase(_iter_entity(i)) > 0;
     }
 
-    auto copy(entity_param ef, entity_param et) -> bool override {
+    auto copy(entity_param ef, entity_param et) -> void* override {
         if(is_hidden(ef)) {
-            return false;
+            return nullptr;
         }
         auto pf = _components.find(ef);
         if(pf == _components.end()) {
-            return false;
+            return nullptr;
         }
-        return store(et, Component(pf->second)) != nullptr;
+        return static_cast<void*>(store(et, Component(pf->second)));
     }
 
     auto swap(entity_param ea, entity_param eb) -> bool override {

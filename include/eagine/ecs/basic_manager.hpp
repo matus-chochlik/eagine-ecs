@@ -199,7 +199,7 @@ private:
 
     auto
     _do_cpy(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> bool;
+      -> void*;
 
     auto
     _do_swp(entity_param f, entity_param t, component_uid_t, std::string (*)())
@@ -400,8 +400,18 @@ public:
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
+    template <typename Component>
+    auto copy(entity_param from, entity_param to)
+      -> std::enable_if_t<(Component::is_component()), manipulator<Component>> {
+        return {
+          static_cast<Component*>(
+            _do_cpy(from, to, Component::uid(), _cmp_name_getter<Component>())),
+          false};
+    }
+
     template <typename... Components>
-    auto copy(entity_param from, entity_param to) -> auto& {
+    auto copy(entity_param from, entity_param to)
+      -> std::enable_if_t<(sizeof...(Components) > 1), basic_manager&> {
         (...,
          _do_cpy(from, to, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
