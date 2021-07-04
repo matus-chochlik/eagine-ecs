@@ -1,4 +1,4 @@
-/// @example eagine/ecs/elements/components.cpp
+/// @example eagine/ecs/elements/components.hpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.

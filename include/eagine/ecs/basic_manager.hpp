@@ -382,23 +382,22 @@ public:
     }
 
     template <typename Component>
-    auto add_component(entity_param ent, type_identity<Component> = {})
-      -> manipulator<Component> {
+    auto add(entity_param ent, type_identity<Component> = {})
+      -> std::enable_if_t<(Component::is_component()), manipulator<Component>> {
         return {_do_add_c(ent, Component{}), false};
     }
 
     template <typename Relation>
-    auto add_relation(entity_param subject, entity_param object, Relation&& rel)
-      -> auto& {
-        _do_add_r(subject, object, std::forward<Relation>(rel));
-        return *this;
+    auto add(entity_param subject, entity_param object, Relation&& rel)
+      -> std::enable_if_t<(Relation::is_relation()), manipulator<Relation>> {
+        return {_do_add_r(subject, object, std::forward<Relation>(rel)), false};
     }
 
     template <typename Relation>
-    auto add_relation(entity_param subject, entity_param object) -> auto& {
-        _do_add_r(
+    auto add(entity_param subject, entity_param object)
+      -> std::enable_if_t<(Relation::is_relation()), bool> {
+        return _do_add_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
-        return *this;
     }
 
     template <typename... Components>

@@ -36,32 +36,27 @@ static void populate(
             if(auto english_a{source.nested(name_a, "english")}) {
                 source.fetch_value(english_a, english);
             }
-            elements.add_component<element_name>(elem).set_names(
-              latin, english);
+            elements.add<element_name>(elem).set_names(latin, english);
         }
         if(auto protons_a{source.nested(elem_attr, "protons")}) {
             if(auto number{source.get(protons_a, type_identity<short>())}) {
-                elements.add_component<element_protons>(elem).set(
-                  extract(number));
+                elements.add<element_protons>(elem).set(extract(number));
             }
         }
         if(auto period_a{source.nested(elem_attr, "period")}) {
             if(auto number{source.get(period_a, type_identity<short>())}) {
-                elements.add_component<element_period>(elem).set(
-                  extract(number));
+                elements.add<element_period>(elem).set(extract(number));
             }
         }
         if(auto group_a{source.nested(elem_attr, "group")}) {
             if(auto number{source.get(group_a, type_identity<short>())}) {
-                elements.add_component<element_group>(elem).set(
-                  extract(number));
+                elements.add<element_group>(elem).set(extract(number));
             }
         }
         if(auto atomic_weight_a{source.nested(elem_attr, "atomic_weight")}) {
             if(auto number{
                  source.get(atomic_weight_a, type_identity<float>())}) {
-                elements.add_component<atomic_weight>(elem).set(
-                  extract(number));
+                elements.add<atomic_weight>(elem).set(extract(number));
             }
         }
 
@@ -87,13 +82,12 @@ static void populate(
                     if(auto english_a{source.nested(name_a, "english")}) {
                         source.fetch_value(english_a, english);
                     }
-                    elements.add_component<element_name>(isot).set_names(
-                      latin, english);
+                    elements.add<element_name>(isot).set_names(latin, english);
                 }
                 if(auto neutrons_a{source.nested(isot_attr, "neutrons")}) {
                     if(auto number{
                          source.get(neutrons_a, type_identity<short>())}) {
-                        elements.add_component<isotope_neutrons>(isot).set(
+                        elements.add<isotope_neutrons>(isot).set(
                           extract(number));
                     }
                 }
@@ -102,13 +96,12 @@ static void populate(
                     using hl_t = std::chrono::duration<float>;
                     if(auto hl{
                          source.get(half_life_a, type_identity<hl_t>())}) {
-                        elements.add_component<half_life>(isot).set(
-                          extract(hl));
+                        elements.add<half_life>(isot).set(extract(hl));
                     }
                 }
 
                 if(auto decays_a{source.nested(isot_attr, "decay")}) {
-                    auto isot_decay = elements.add_component<decay_modes>(isot);
+                    auto isot_decay = elements.add<decay_modes>(isot);
                     const auto n = source.nested_count(decays_a);
                     for(span_size_t d : integer_range(n)) {
                         if(auto decay_a{source.nested(decays_a, d)}) {
@@ -131,7 +124,7 @@ static void populate(
                     }
                 }
 
-                elements.add_relation<isotope>(elem, isot);
+                elements.add<isotope>(elem, isot);
             }
         }
     }
