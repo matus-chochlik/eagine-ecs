@@ -4,5 +4,6 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 eagine_example_common(001_hello)
+eagine_example_common(002_space_opera)
 
 add_subdirectory(elements)
