@@ -35,9 +35,6 @@ struct storage_iterator_intf<Entity, true>
 
 template <typename Entity>
 class storage_iterator<Entity, true> {
-private:
-    storage_iterator_intf<Entity, true>* _i{nullptr};
-
 public:
     storage_iterator(storage_iterator_intf<Entity, true>* i) noexcept
       : _i(i) {
@@ -88,6 +85,9 @@ public:
     auto object() -> Entity {
         return get().object();
     }
+
+private:
+    storage_iterator_intf<Entity, true>* _i{nullptr};
 };
 
 template <typename Entity>

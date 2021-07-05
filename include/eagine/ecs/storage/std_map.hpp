@@ -23,13 +23,7 @@ class std_map_cmp_storage;
 template <typename Entity, typename Component>
 class std_map_cmp_storage_iterator
   : public component_storage_iterator_intf<Entity> {
-private:
-    using _map_t = typename std::map<Entity, Component>;
-    using _iter_t = typename _map_t::iterator;
-    _map_t* _map{nullptr};
-    _iter_t _i;
-
-    friend class std_map_cmp_storage<Entity, Component>;
+    using _map_t = std::map<Entity, Component>;
 
 public:
     std_map_cmp_storage_iterator(_map_t& m) noexcept
@@ -75,31 +69,17 @@ public:
     auto current() -> Entity override {
         return _i->first;
     }
+
+private:
+    using _iter_t = typename _map_t::iterator;
+    _map_t* _map{nullptr};
+    _iter_t _i;
+
+    friend class std_map_cmp_storage<Entity, Component>;
 };
 
 template <typename Entity, typename Component>
 class std_map_cmp_storage : public component_storage<Entity, Component> {
-private:
-    std::map<Entity, Component> _components{};
-    std::set<Entity> _hidden{};
-
-    using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
-
-    auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
-        EAGINE_ASSERT(dynamic_cast<_map_iter_t*>(i.ptr()));
-        return *static_cast<_map_iter_t*>(i.ptr());
-    }
-
-    auto _iter_entity(component_storage_iterator<Entity>& i) noexcept {
-        return _iter_cast(i)._i->first;
-    }
-
-    auto _remove(typename std::map<Entity, Component>::iterator p) {
-        EAGINE_ASSERT(p != _components.end());
-        _hidden.erase(p->first);
-        return _components.erase(p);
-    }
-
 public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = component_storage_iterator<Entity>;
@@ -328,6 +308,27 @@ public:
             }
         }
     }
+
+private:
+    std::map<Entity, Component> _components{};
+    std::set<Entity> _hidden{};
+
+    using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
+
+    auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
+        EAGINE_ASSERT(dynamic_cast<_map_iter_t*>(i.ptr()));
+        return *static_cast<_map_iter_t*>(i.ptr());
+    }
+
+    auto _iter_entity(component_storage_iterator<Entity>& i) noexcept {
+        return _iter_cast(i)._i->first;
+    }
+
+    auto _remove(typename std::map<Entity, Component>::iterator p) {
+        EAGINE_ASSERT(p != _components.end());
+        _hidden.erase(p->first);
+        return _components.erase(p);
+    }
 };
 
 template <typename Entity, typename Relation>
@@ -336,14 +337,8 @@ class std_map_rel_storage;
 template <typename Entity, typename Relation>
 class std_map_rel_storage_iterator
   : public relation_storage_iterator_intf<Entity> {
-private:
     using _pair_t = std::pair<Entity, Entity>;
-    using _map_t = typename std::map<_pair_t, Relation>;
-    using _iter_t = typename _map_t::iterator;
-    _map_t* _map{nullptr};
-    _iter_t _i;
-
-    friend class std_map_rel_storage<Entity, Relation>;
+    using _map_t = std::map<_pair_t, Relation>;
 
 public:
     std_map_rel_storage_iterator(_map_t& m) noexcept
@@ -374,26 +369,17 @@ public:
     auto object() -> Entity override {
         return _i->first.second;
     }
+
+private:
+    using _iter_t = typename _map_t::iterator;
+    _map_t* _map{nullptr};
+    _iter_t _i;
+
+    friend class std_map_rel_storage<Entity, Relation>;
 };
 
 template <typename Entity, typename Relation>
 class std_map_rel_storage : public relation_storage<Entity, Relation> {
-private:
-    using _pair_t = std::pair<Entity, Entity>;
-    std::map<_pair_t, Relation> _relations;
-
-    using _map_iter_t = std_map_rel_storage_iterator<Entity, Relation>;
-
-    auto _iter_cast(relation_storage_iterator<Entity>& i) noexcept -> auto& {
-        EAGINE_ASSERT(dynamic_cast<_map_iter_t*>(i.ptr()) != nullptr);
-        return *static_cast<_map_iter_t*>(i.ptr());
-    }
-
-    auto _remove(typename std::map<_pair_t, Relation>::iterator p) {
-        EAGINE_ASSERT(p != _relations.end());
-        return _relations.erase(p);
-    }
-
 public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = relation_storage_iterator<Entity>;
@@ -591,6 +577,22 @@ public:
                 ++po;
             }
         }
+    }
+
+private:
+    using _pair_t = std::pair<Entity, Entity>;
+    std::map<_pair_t, Relation> _relations;
+
+    using _map_iter_t = std_map_rel_storage_iterator<Entity, Relation>;
+
+    auto _iter_cast(relation_storage_iterator<Entity>& i) noexcept -> auto& {
+        EAGINE_ASSERT(dynamic_cast<_map_iter_t*>(i.ptr()) != nullptr);
+        return *static_cast<_map_iter_t*>(i.ptr());
+    }
+
+    auto _remove(typename std::map<_pair_t, Relation>::iterator p) {
+        EAGINE_ASSERT(p != _relations.end());
+        return _relations.erase(p);
     }
 };
 

@@ -26,6 +26,21 @@ class component_relation;
 
 template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
+
+public:
+    component_relation(basic_manager<Entity>& m)
+      : _m(m) {}
+
+    template <typename... C>
+    auto cross() -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
+        return {_m};
+    }
+
+    template <typename Func>
+    void for_each(const Func& func) {
+        _apply(_m, func, mp_list<PL...>());
+    }
+
 private:
     basic_manager<Entity>& _m;
 
@@ -60,20 +75,6 @@ private:
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
             wrap});
     }
-
-public:
-    component_relation(basic_manager<Entity>& m)
-      : _m(m) {}
-
-    template <typename... C>
-    auto cross() -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
-        return {_m};
-    }
-
-    template <typename Func>
-    void for_each(const Func& func) {
-        _apply(_m, func, mp_list<PL...>());
-    }
 };
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -81,155 +82,6 @@ class basic_manager {
 public:
     using entity_param = entity_param_t<Entity>;
 
-private:
-    using _base_cmp_storage_t = base_component_storage<Entity>;
-    using _base_cmp_storage_ptr_t = std::unique_ptr<_base_cmp_storage_t>;
-
-    component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
-
-    auto _get_storages(std::false_type) noexcept -> auto& {
-        return _cmp_storages;
-    }
-
-    auto _get_storages(std::false_type) const noexcept -> auto& {
-        return _cmp_storages;
-    }
-
-    using _base_rel_storage_t = base_relation_storage<Entity>;
-    using _base_rel_storage_ptr_t = std::unique_ptr<_base_rel_storage_t>;
-
-    component_uid_map<_base_rel_storage_ptr_t> _rel_storages{};
-
-    auto _get_storages(std::true_type) noexcept -> auto& {
-        return _rel_storages;
-    }
-
-    auto _get_storages(std::true_type) const noexcept -> auto& {
-        return _rel_storages;
-    }
-
-    template <bool IsR>
-    auto _get_storages() noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsR>());
-    }
-
-    template <bool IsR>
-    auto _get_storages() const noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsR>());
-    }
-
-    template <typename C>
-    using _bare_t = std::remove_const_t<std::remove_reference_t<C>>;
-
-    static constexpr auto _count_true() -> unsigned {
-        return 0U;
-    }
-
-    template <typename T, typename... P>
-    static constexpr auto _count_true(T v, P... p) -> unsigned {
-        return (bool(v) ? 1U : 0U) + _count_true(p...);
-    }
-
-    template <typename C>
-    static auto _cmp_name_getter() -> std::string (*)() {
-        return &type_name<C>;
-    }
-
-    template <typename Data, bool IsR>
-    auto _find_storage() -> storage<Entity, Data, IsR>&;
-
-    template <typename C>
-    auto _find_cmp_storage() -> auto& {
-        return _find_storage<C, false>();
-    }
-
-    template <typename R>
-    auto _find_rel_storage() -> auto& {
-        return _find_storage<R, true>();
-    }
-
-    template <bool IsR>
-    void _do_reg_stg_type(
-      std::unique_ptr<base_storage<Entity, IsR>>&&,
-      component_uid_t,
-      std::string (*)());
-
-    template <bool IsR>
-    void _do_unr_stg_type(component_uid_t, std::string (*)());
-
-    template <bool IsR>
-    auto _does_know_stg_type(component_uid_t) const -> bool;
-
-    template <bool IsR, typename Result, typename Func>
-    auto
-    _apply_on_base_stg(Result, const Func&, component_uid_t, std::string (*)())
-      const -> Result;
-
-    template <typename D, bool IsR, typename Result, typename Func>
-    auto _apply_on_stg(Result, const Func&) const -> Result;
-
-    template <bool IsR>
-    auto _get_stg_type_caps(component_uid_t, std::string (*)()) const
-      -> storage_caps;
-
-    auto _does_have_c(entity_param, component_uid_t, std::string (*)()) -> bool;
-
-    auto _does_have_r(
-      entity_param,
-      entity_param,
-      component_uid_t,
-      std::string (*)()) -> bool;
-
-    auto _is_hidn(entity_param, component_uid_t, std::string (*)()) -> bool;
-
-    auto _do_show(entity_param, component_uid_t, std::string (*)()) -> bool;
-
-    auto _do_hide(entity_param, component_uid_t, std::string (*)()) -> bool;
-
-    template <typename Component>
-    auto _do_add_c(entity_param, Component&& component) -> Component*;
-
-    template <typename Relation>
-    auto _do_add_r(entity_param, entity_param, Relation&& relation)
-      -> Relation*;
-
-    auto
-      _do_add_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
-
-    auto
-    _do_cpy(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> void*;
-
-    auto
-    _do_swp(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> bool;
-
-    auto _do_rem_c(entity_param, component_uid_t, std::string (*)()) -> bool;
-
-    auto
-      _do_rem_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
-
-    template <typename C, typename Func>
-    auto _call_for_single_c(entity_param, const Func&) -> bool;
-
-    template <typename C, typename Func>
-    void _call_for_each_c(const Func&);
-
-    template <typename R, typename Func>
-    void _call_for_each_r(const Func&);
-
-    template <typename... C, typename Func>
-    void _call_for_each_c_m_p(const Func&);
-
-    template <typename... C, typename Func>
-    void _call_for_each_c_m_r(const Func&);
-
-    template <typename T, typename C>
-    auto _do_get_c(T C::*, entity_param, T) -> T;
-
-public:
     basic_manager() = default;
 
     template <typename Component>
@@ -536,6 +388,154 @@ public:
       -> component_relation<Entity, mp_list<mp_list<Components...>>> {
         return {*this};
     }
+
+private:
+    using _base_cmp_storage_t = base_component_storage<Entity>;
+    using _base_cmp_storage_ptr_t = std::unique_ptr<_base_cmp_storage_t>;
+
+    component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
+
+    auto _get_storages(std::false_type) noexcept -> auto& {
+        return _cmp_storages;
+    }
+
+    auto _get_storages(std::false_type) const noexcept -> auto& {
+        return _cmp_storages;
+    }
+
+    using _base_rel_storage_t = base_relation_storage<Entity>;
+    using _base_rel_storage_ptr_t = std::unique_ptr<_base_rel_storage_t>;
+
+    component_uid_map<_base_rel_storage_ptr_t> _rel_storages{};
+
+    auto _get_storages(std::true_type) noexcept -> auto& {
+        return _rel_storages;
+    }
+
+    auto _get_storages(std::true_type) const noexcept -> auto& {
+        return _rel_storages;
+    }
+
+    template <bool IsR>
+    auto _get_storages() noexcept -> auto& {
+        return _get_storages(std::integral_constant<bool, IsR>());
+    }
+
+    template <bool IsR>
+    auto _get_storages() const noexcept -> auto& {
+        return _get_storages(std::integral_constant<bool, IsR>());
+    }
+
+    template <typename C>
+    using _bare_t = std::remove_const_t<std::remove_reference_t<C>>;
+
+    static constexpr auto _count_true() -> unsigned {
+        return 0U;
+    }
+
+    template <typename T, typename... P>
+    static constexpr auto _count_true(T v, P... p) -> unsigned {
+        return (bool(v) ? 1U : 0U) + _count_true(p...);
+    }
+
+    template <typename C>
+    static auto _cmp_name_getter() -> std::string (*)() {
+        return &type_name<C>;
+    }
+
+    template <typename Data, bool IsR>
+    auto _find_storage() -> storage<Entity, Data, IsR>&;
+
+    template <typename C>
+    auto _find_cmp_storage() -> auto& {
+        return _find_storage<C, false>();
+    }
+
+    template <typename R>
+    auto _find_rel_storage() -> auto& {
+        return _find_storage<R, true>();
+    }
+
+    template <bool IsR>
+    void _do_reg_stg_type(
+      std::unique_ptr<base_storage<Entity, IsR>>&&,
+      component_uid_t,
+      std::string (*)());
+
+    template <bool IsR>
+    void _do_unr_stg_type(component_uid_t, std::string (*)());
+
+    template <bool IsR>
+    auto _does_know_stg_type(component_uid_t) const -> bool;
+
+    template <bool IsR, typename Result, typename Func>
+    auto
+    _apply_on_base_stg(Result, const Func&, component_uid_t, std::string (*)())
+      const -> Result;
+
+    template <typename D, bool IsR, typename Result, typename Func>
+    auto _apply_on_stg(Result, const Func&) const -> Result;
+
+    template <bool IsR>
+    auto _get_stg_type_caps(component_uid_t, std::string (*)()) const
+      -> storage_caps;
+
+    auto _does_have_c(entity_param, component_uid_t, std::string (*)()) -> bool;
+
+    auto _does_have_r(
+      entity_param,
+      entity_param,
+      component_uid_t,
+      std::string (*)()) -> bool;
+
+    auto _is_hidn(entity_param, component_uid_t, std::string (*)()) -> bool;
+
+    auto _do_show(entity_param, component_uid_t, std::string (*)()) -> bool;
+
+    auto _do_hide(entity_param, component_uid_t, std::string (*)()) -> bool;
+
+    template <typename Component>
+    auto _do_add_c(entity_param, Component&& component) -> Component*;
+
+    template <typename Relation>
+    auto _do_add_r(entity_param, entity_param, Relation&& relation)
+      -> Relation*;
+
+    auto
+      _do_add_r(entity_param, entity_param, component_uid_t, std::string (*)())
+        -> bool;
+
+    auto
+    _do_cpy(entity_param f, entity_param t, component_uid_t, std::string (*)())
+      -> void*;
+
+    auto
+    _do_swp(entity_param f, entity_param t, component_uid_t, std::string (*)())
+      -> bool;
+
+    auto _do_rem_c(entity_param, component_uid_t, std::string (*)()) -> bool;
+
+    auto
+      _do_rem_r(entity_param, entity_param, component_uid_t, std::string (*)())
+        -> bool;
+
+    template <typename C, typename Func>
+    auto _call_for_single_c(entity_param, const Func&) -> bool;
+
+    template <typename C, typename Func>
+    void _call_for_each_c(const Func&);
+
+    template <typename R, typename Func>
+    void _call_for_each_r(const Func&);
+
+    template <typename... C, typename Func>
+    void _call_for_each_c_m_p(const Func&);
+
+    template <typename... C, typename Func>
+    void _call_for_each_c_m_r(const Func&);
+
+    template <typename T, typename C>
+    auto _do_get_c(T C::*, entity_param, T) -> T;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs

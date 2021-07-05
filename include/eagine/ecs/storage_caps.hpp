@@ -40,7 +40,6 @@ static inline auto operator|(storage_cap_bit a, storage_cap_bit b) noexcept
 }
 //------------------------------------------------------------------------------
 class storage_caps : public bitfield<storage_cap_bit> {
-private:
     using _base = bitfield<storage_cap_bit>;
 
 public:
