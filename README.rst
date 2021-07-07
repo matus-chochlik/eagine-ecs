@@ -1,6 +1,6 @@
-=============
-EAGine Shapes
-=============
+==========
+EAGine ECS
+==========
 
 :Author: Matúš Chochlík <chochlik@gmail.com>
 
@@ -8,7 +8,7 @@ Cloning the repo
 ================
 ::
 
- git clone https://github.com/matus-chochlik/eagine-shapes.git
+ git clone https://github.com/matus-chochlik/eagine-ecs.git
 
 Building the code
 =================
@@ -22,7 +22,7 @@ to build and install the code:
   cd /path/to/build/dir
   cmake -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/path/to/install/dir \
-        /path/to/eagine-shapes/
+        /path/to/eagine-ecs/
   cmake --build . --target install --parallel 16
 
 License
