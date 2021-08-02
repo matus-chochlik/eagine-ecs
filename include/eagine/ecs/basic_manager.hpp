@@ -345,9 +345,9 @@ public:
     }
 
     template <typename Relation>
-    auto
-    for_each(const callable_ref<
-             void(entity_param, entity_param, manipulator<Relation>&)>& func)
+    auto for_each(
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>& func)
       -> auto& {
         _call_for_each_r<Relation>(func);
         return *this;
@@ -469,9 +469,11 @@ private:
     auto _does_know_stg_type(component_uid_t) const -> bool;
 
     template <bool IsR, typename Result, typename Func>
-    auto
-    _apply_on_base_stg(Result, const Func&, component_uid_t, std::string (*)())
-      const -> Result;
+    auto _apply_on_base_stg(
+      Result,
+      const Func&,
+      component_uid_t,
+      std::string (*)()) const -> Result;
 
     template <typename D, bool IsR, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
@@ -501,23 +503,31 @@ private:
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
       -> Relation*;
 
-    auto
-      _do_add_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
+    auto _do_add_r(
+      entity_param,
+      entity_param,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
-    auto
-    _do_cpy(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> void*;
+    auto _do_cpy(
+      entity_param f,
+      entity_param t,
+      component_uid_t,
+      std::string (*)()) -> void*;
 
-    auto
-    _do_swp(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> bool;
+    auto _do_swp(
+      entity_param f,
+      entity_param t,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
     auto _do_rem_c(entity_param, component_uid_t, std::string (*)()) -> bool;
 
-    auto
-      _do_rem_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
+    auto _do_rem_r(
+      entity_param,
+      entity_param,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
