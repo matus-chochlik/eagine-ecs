@@ -12,7 +12,7 @@ namespace eagine::ecs {
 
 template <typename Entity>
 struct entity_traits {
-    using parameter_type = Entity;
+    using parameter_type = const Entity;
 
     static auto minimum() noexcept -> Entity {
         return Entity();

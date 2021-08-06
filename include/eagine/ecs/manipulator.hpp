@@ -36,7 +36,7 @@ public:
     }
 
     template <typename T>
-    auto read(T Component::*member) const
+    auto read(T Component::*const member) const
       -> optional_reference_wrapper<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
@@ -81,7 +81,7 @@ public:
     }
 
     template <typename T>
-    auto read(T Component::*member) const
+    auto read(T Component::*const member) const
       -> optional_reference_wrapper<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
@@ -122,23 +122,23 @@ class manipulator
 public:
     manipulator() = default;
 
-    manipulator(bool can_rem)
+    manipulator(const bool can_rem)
       : _can_rem{can_rem} {}
 
-    manipulator(Component* pcmp, bool can_rem)
+    manipulator(Component* pcmp, const bool can_rem)
       : _base{pcmp}
       , _can_rem{can_rem} {}
 
-    manipulator(Component& cmp, bool can_rem)
+    manipulator(Component& cmp, const bool can_rem)
       : _base{&cmp}
       , _can_rem{can_rem} {}
 
-    manipulator(Component& cmp, _nonconstC& add, bool can_rem)
+    manipulator(Component& cmp, _nonconstC& add, const bool can_rem)
       : _base(&cmp)
       , _add_place{&add}
       , _can_rem(can_rem) {}
 
-    manipulator(std::nullptr_t, _nonconstC& add, bool can_rem)
+    manipulator(std::nullptr_t, _nonconstC& add, const bool can_rem)
       : _add_place{&add}
       , _can_rem{can_rem} {}
 

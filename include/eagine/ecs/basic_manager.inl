@@ -304,14 +304,14 @@ inline auto basic_manager<Entity>::_do_rem_r(
 template <typename Entity>
 template <typename T, typename C>
 inline auto basic_manager<Entity>::_do_get_c(
-  T C::*mvp,
+  T C::*const mvp,
   entity_param_t<Entity> ent,
   T res) -> T {
     EAGINE_ASSERT(mvp);
 
     using MC = manipulator<const C>;
 
-    auto getter = [mvp, &res](entity_param_t<Entity>, MC& cmp) {
+    const auto getter = [mvp, &res](entity_param_t<Entity>, MC& cmp) {
         res = cmp.read().*mvp;
     };
 
@@ -466,8 +466,8 @@ public:
             }
         } else {
             EAGINE_ASSERT(m == this->_current());
-            auto hlpr = [&clm..., this](
-                          entity_param_t<Entity> e, manipulator<C>& cm) {
+            const auto hlpr = [&clm..., this](
+                                entity_param_t<Entity> e, manipulator<C>& cm) {
                 _func(e, clm..., cm);
             };
             this->_apply({construct_from, hlpr});
@@ -532,8 +532,8 @@ public:
         } else {
             EAGINE_ASSERT(m == this->_current());
             EAGINE_MAYBE_UNUSED(m);
-            auto hlpr = [&clm..., this](
-                          entity_param_t<Entity> e, manipulator<C>& cm) {
+            const auto hlpr = [&clm..., this](
+                                entity_param_t<Entity> e, manipulator<C>& cm) {
                 _rest.apply(e, clm..., cm);
             };
             this->_apply({construct_from, hlpr});
@@ -634,8 +634,8 @@ public:
     void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
         EAGINE_ASSERT(m == this->_current());
         EAGINE_MAYBE_UNUSED(m);
-        auto hlpr = [&clm..., this](
-                      entity_param_t<Entity> e, manipulator<C>& cm) {
+        const auto hlpr = [&clm..., this](
+                            entity_param_t<Entity> e, manipulator<C>& cm) {
             _func(e, clm..., cm);
         };
         this->_apply({construct_from, hlpr});
@@ -687,8 +687,8 @@ public:
     void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
         EAGINE_ASSERT(m == this->_current());
         EAGINE_MAYBE_UNUSED(m);
-        auto hlpr = [&clm..., this](
-                      entity_param_t<Entity> e, manipulator<C>& cm) {
+        const auto hlpr = [&clm..., this](
+                            entity_param_t<Entity> e, manipulator<C>& cm) {
             _rest.apply(e, clm..., cm);
         };
         this->_apply({construct_from, hlpr});
