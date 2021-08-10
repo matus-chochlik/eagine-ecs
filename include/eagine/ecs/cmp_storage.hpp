@@ -29,7 +29,7 @@ struct storage_iterator_intf<Entity, false>
 
     virtual void next() = 0;
 
-    virtual auto find(Entity) -> bool = 0;
+    virtual auto find(entity_param_t<Entity>) -> bool = 0;
 
     virtual auto current() -> Entity = 0;
 };
@@ -80,7 +80,7 @@ public:
         return *this;
     }
 
-    auto find(Entity e) -> bool {
+    auto find(entity_param_t<Entity> e) -> bool {
         return get().find(e);
     }
 
@@ -137,26 +137,26 @@ struct storage<Entity, Component, false> : base_storage<Entity, false> {
       -> Component* = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, manipulator<const Component>&)>,
+      const callable_ref<void(entity_param, manipulator<const Component>&)>,
       entity_param) = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, manipulator<const Component>&)>,
+      const callable_ref<void(entity_param, manipulator<const Component>&)>,
       iterator_t&) = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, manipulator<Component>&)>,
+      const callable_ref<void(entity_param, manipulator<Component>&)>,
       entity_param) = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, manipulator<Component>&)>,
+      const callable_ref<void(entity_param, manipulator<Component>&)>,
       iterator_t&) = 0;
 
     virtual void for_each(
-      callable_ref<void(entity_param, manipulator<const Component>&)>) = 0;
+      const callable_ref<void(entity_param, manipulator<const Component>&)>) = 0;
 
-    virtual void
-      for_each(callable_ref<void(entity_param, manipulator<Component>&)>) = 0;
+    virtual void for_each(
+      const callable_ref<void(entity_param, manipulator<Component>&)>) = 0;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs

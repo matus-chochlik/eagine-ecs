@@ -37,7 +37,7 @@ template <typename Entity>
 class storage_iterator<Entity, true> {
 public:
     storage_iterator(storage_iterator_intf<Entity, true>* i) noexcept
-      : _i(i) {
+      : _i{i} {
         EAGINE_ASSERT(_i);
     }
 
@@ -110,7 +110,7 @@ struct base_storage<Entity, true> : interface<base_storage<Entity, true>> {
     virtual void remove(iterator_t&) = 0;
 
     virtual void for_each(
-      callable_ref<void(entity_param, entity_param)>,
+      const callable_ref<void(entity_param, entity_param)>,
       entity_param subject) = 0;
 
     virtual void for_each(callable_ref<void(entity_param, entity_param)>) = 0;
@@ -127,42 +127,46 @@ struct storage<Entity, Relation, true> : base_storage<Entity, true> {
       -> Relation* = 0;
 
     virtual void for_single(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>,
       entity_param subject,
       entity_param object) = 0;
 
     virtual void for_single(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>,
       iterator_t&) = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>,
       entity_param subject,
       entity_param object) = 0;
 
     virtual void for_single(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>,
       iterator_t&) = 0;
 
     using base_storage<Entity, true>::for_each;
 
     virtual void for_each(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>,
       entity_param subject) = 0;
 
     virtual void for_each(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>,
       entity_param subject) = 0;
 
     virtual void for_each(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>) = 0;
 
     virtual void for_each(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>) = 0;
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>) = 0;
 };
 
 } // namespace eagine::ecs

@@ -47,7 +47,7 @@ public:
         ++_i;
     }
 
-    auto find(Entity e) -> bool override {
+    auto find(entity_param_t<Entity> e) -> bool override {
         if(done()) {
             return false;
         }
@@ -200,7 +200,7 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, manipulator<const Component>&)> func,
+      const callable_ref<void(entity_param, manipulator<const Component>&)> func,
       entity_param e) override {
         auto p = _components.find(e);
         if(p != _components.end()) {
@@ -217,7 +217,7 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, manipulator<const Component>&)> func,
+      const callable_ref<void(entity_param, manipulator<const Component>&)> func,
       iterator_t& i) override {
         EAGINE_ASSERT(!i.done());
         auto& p = _iter_cast(i)._i;
@@ -234,7 +234,7 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, manipulator<Component>&)> func,
+      const callable_ref<void(entity_param, manipulator<Component>&)> func,
       entity_param e) override {
         auto p = _components.find(e);
         if(p != _components.end()) {
@@ -252,7 +252,7 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, manipulator<Component>&)> func,
+      const callable_ref<void(entity_param, manipulator<Component>&)> func,
       iterator_t& i) override {
         EAGINE_ASSERT(!i.done());
         auto& p = _iter_cast(i)._i;
@@ -270,8 +270,8 @@ public:
     }
 
     void for_each(
-      callable_ref<void(entity_param, manipulator<const Component>&)> func)
-      override {
+      const callable_ref<void(entity_param, manipulator<const Component>&)>
+        func) override {
         concrete_manipulator<const Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
@@ -290,7 +290,8 @@ public:
     }
 
     void for_each(
-      callable_ref<void(entity_param, manipulator<Component>&)> func) override {
+      const callable_ref<void(entity_param, manipulator<Component>&)> func)
+      override {
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
@@ -423,7 +424,7 @@ public:
     }
 
     void for_single(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       entity_param subject,
       entity_param object) override {
@@ -440,7 +441,7 @@ public:
     }
 
     void for_single(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       iterator_t& i) override {
         EAGINE_ASSERT(!i.done());
@@ -457,8 +458,8 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>
-        func,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)> func,
       entity_param subject,
       entity_param object) override {
         auto po = _relations.find(_pair_t(subject, object));
@@ -475,8 +476,8 @@ public:
     }
 
     void for_single(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>
-        func,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)> func,
       iterator_t& i) override {
         EAGINE_ASSERT(!i.done());
         auto& po = _iter_cast(i)._i;
@@ -493,7 +494,7 @@ public:
     }
 
     void for_each(
-      callable_ref<void(entity_param, entity_param)> func,
+      const callable_ref<void(entity_param, entity_param)> func,
       entity_param subject) override {
         entity_param object = entity_traits<Entity>::minimum();
         auto po = _relations.lower_bound(_pair_t(subject, object));
@@ -503,14 +504,15 @@ public:
         }
     }
 
-    void for_each(callable_ref<void(entity_param, entity_param)> func) override {
+    void for_each(
+      const callable_ref<void(entity_param, entity_param)> func) override {
         for(auto& p : _relations) {
             func(p.first.first, p.first.second);
         }
     }
 
     void for_each(
-      callable_ref<
+      const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       entity_param subject) override {
         concrete_manipulator<const Relation> m(true /*can_remove*/);
@@ -528,8 +530,8 @@ public:
     }
 
     void for_each(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>
-        func,
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)> func,
       entity_param subject) override {
         concrete_manipulator<Relation> m(true /*can_remove*/);
         entity_param object = entity_traits<Entity>::minimum();
@@ -547,8 +549,9 @@ public:
     }
 
     void for_each(
-      callable_ref<void(entity_param, entity_param, manipulator<const Relation>&)>
-        func) override {
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<const Relation>&)> func)
+      override {
         concrete_manipulator<const Relation> m(true /*can_remove*/);
         auto po = _relations.begin();
         while(po != _relations.end()) {
@@ -562,9 +565,9 @@ public:
         }
     }
 
-    void for_each(
-      callable_ref<void(entity_param, entity_param, manipulator<Relation>&)>
-        func) override {
+    void for_each(const callable_ref<
+                  void(entity_param, entity_param, manipulator<Relation>&)>
+                    func) override {
         concrete_manipulator<Relation> m(true /*can_remove*/);
         auto po = _relations.begin();
         while(po != _relations.end()) {

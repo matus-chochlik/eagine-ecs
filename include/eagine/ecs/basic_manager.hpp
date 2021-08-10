@@ -45,10 +45,10 @@ private:
     basic_manager<Entity>& _m;
 
     template <typename F, typename... C, typename... X>
-    static inline auto _apply(
+    static auto _apply(
       basic_manager<Entity>& m,
       const F& func,
-      mp_list<mp_list<C...>>,
+      const mp_list<mp_list<C...>>,
       X&&... x) {
         const auto wrap = [&func, &x...](
                             entity_param_t<Entity> e, manipulator<C>&... c) {
@@ -63,7 +63,7 @@ private:
     static inline auto _apply(
       basic_manager<Entity>& m,
       const F& func,
-      mp_list<mp_list<C...>, L, Ls...>,
+      const mp_list<mp_list<C...>, L, Ls...>,
       X&&... x) {
         const auto wrap = [&m, &func, &x...](
                             entity_param_t<Entity> e, manipulator<C>&... c) {
@@ -163,14 +163,14 @@ public:
     }
 
     template <typename Component>
-    auto component_storage_can(storage_cap_bit cap) const -> bool {
+    auto component_storage_can(const storage_cap_bit cap) const -> bool {
         return _get_stg_type_caps<false>(
                  Component::uid(), _cmp_name_getter<Component>())
           .has(cap);
     }
 
     template <typename Relation>
-    auto relation_storage_can(storage_cap_bit cap) const -> bool {
+    auto relation_storage_can(const storage_cap_bit cap) const -> bool {
         return _get_stg_type_caps<true>(
                  Relation::uid(), _cmp_name_getter<Relation>())
           .has(cap);
@@ -291,7 +291,7 @@ public:
     }
 
     template <typename T, typename Component>
-    auto get(T Component::*mvp, entity_param ent, T res = T()) -> T {
+    auto get(T Component::*const mvp, entity_param ent, T res = T()) -> T {
         return _do_get_c(mvp, ent, res);
     }
 
@@ -345,9 +345,9 @@ public:
     }
 
     template <typename Relation>
-    auto
-    for_each(const callable_ref<
-             void(entity_param, entity_param, manipulator<Relation>&)>& func)
+    auto for_each(
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)>& func)
       -> auto& {
         _call_for_each_r<Relation>(func);
         return *this;
@@ -469,9 +469,11 @@ private:
     auto _does_know_stg_type(component_uid_t) const -> bool;
 
     template <bool IsR, typename Result, typename Func>
-    auto
-    _apply_on_base_stg(Result, const Func&, component_uid_t, std::string (*)())
-      const -> Result;
+    auto _apply_on_base_stg(
+      Result,
+      const Func&,
+      component_uid_t,
+      std::string (*)()) const -> Result;
 
     template <typename D, bool IsR, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
@@ -501,23 +503,31 @@ private:
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
       -> Relation*;
 
-    auto
-      _do_add_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
+    auto _do_add_r(
+      entity_param,
+      entity_param,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
-    auto
-    _do_cpy(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> void*;
+    auto _do_cpy(
+      entity_param f,
+      entity_param t,
+      component_uid_t,
+      std::string (*)()) -> void*;
 
-    auto
-    _do_swp(entity_param f, entity_param t, component_uid_t, std::string (*)())
-      -> bool;
+    auto _do_swp(
+      entity_param f,
+      entity_param t,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
     auto _do_rem_c(entity_param, component_uid_t, std::string (*)()) -> bool;
 
-    auto
-      _do_rem_r(entity_param, entity_param, component_uid_t, std::string (*)())
-        -> bool;
+    auto _do_rem_r(
+      entity_param,
+      entity_param,
+      component_uid_t,
+      std::string (*)()) -> bool;
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
@@ -535,7 +545,7 @@ private:
     void _call_for_each_c_m_r(const Func&);
 
     template <typename T, typename C>
-    auto _do_get_c(T C::*, entity_param, T) -> T;
+    auto _do_get_c(T C::*const, entity_param, T) -> T;
 };
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs

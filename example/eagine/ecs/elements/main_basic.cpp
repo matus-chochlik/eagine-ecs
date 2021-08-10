@@ -22,8 +22,8 @@ namespace eagine {
 //------------------------------------------------------------------------------
 // Usage
 //------------------------------------------------------------------------------
-static void
-print_elements_with_english_name(ecs::basic_manager<element_symbol>& elements) {
+static void print_elements_with_english_name(
+  ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name>(
       [](const auto& sym, ecs::manipulator<const element_name>& name) {
@@ -34,8 +34,8 @@ print_elements_with_english_name(ecs::basic_manager<element_symbol>& elements) {
     std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
-static void
-print_names_of_noble_gasses(ecs::basic_manager<element_symbol>& elements) {
+static void print_names_of_noble_gasses(
+  ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name, const element_group>(
       [](
@@ -49,8 +49,8 @@ print_names_of_noble_gasses(ecs::basic_manager<element_symbol>& elements) {
     std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
-static void
-print_names_of_actinides(ecs::basic_manager<element_symbol>& elements) {
+static void print_names_of_actinides(
+  ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with_opt<
       const element_name,
@@ -70,8 +70,8 @@ print_names_of_actinides(ecs::basic_manager<element_symbol>& elements) {
     std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
-static void
-print_isotopes_of_hydrogen(ecs::basic_manager<element_symbol>& elements) {
+static void print_isotopes_of_hydrogen(
+  ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const isotope_neutrons>(
       [&](const auto& isot, auto& neutrons) {
