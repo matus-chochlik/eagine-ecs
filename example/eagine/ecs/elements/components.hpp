@@ -64,12 +64,12 @@ struct get_manipulator<element_protons, Const> {
     struct type : basic_manipulator<element_protons, Const> {
         using basic_manipulator<element_protons, Const>::basic_manipulator;
 
-        auto set(short number) -> auto& {
+        auto set(const short number) -> auto& {
             this->write().number = number;
             return *this;
         }
 
-        auto has_number(short number) const -> bool {
+        auto has_number(const short number) const -> bool {
             return this->is_valid() ? this->read().number == number : false;
         }
     };
@@ -86,12 +86,12 @@ struct get_manipulator<isotope_neutrons, Const> {
     struct type : basic_manipulator<isotope_neutrons, Const> {
         using basic_manipulator<isotope_neutrons, Const>::basic_manipulator;
 
-        auto set(short number) -> auto& {
+        auto set(const short number) -> auto& {
             this->write().number = number;
             return *this;
         }
 
-        auto has_number(short number) const -> bool {
+        auto has_number(const short number) const -> bool {
             return this->is_valid() ? this->read().number == number : false;
         }
     };
@@ -108,12 +108,12 @@ struct get_manipulator<element_period, Const> {
     struct type : basic_manipulator<element_period, Const> {
         using basic_manipulator<element_period, Const>::basic_manipulator;
 
-        auto set(short number) -> auto& {
+        auto set(const short number) -> auto& {
             this->write().number = number;
             return *this;
         }
 
-        auto has_number(short number) const -> bool {
+        auto has_number(const short number) const -> bool {
             return this->is_valid() ? this->read().number == number : false;
         }
     };
@@ -130,12 +130,12 @@ struct get_manipulator<element_group, Const> {
     struct type : basic_manipulator<element_group, Const> {
         using basic_manipulator<element_group, Const>::basic_manipulator;
 
-        auto set(short number) -> auto& {
+        auto set(const short number) -> auto& {
             this->write().number = number;
             return *this;
         }
 
-        auto has_number(short number) const -> bool {
+        auto has_number(const short number) const -> bool {
             return this->is_valid() ? this->read().number == number : false;
         }
     };
@@ -152,7 +152,7 @@ struct get_manipulator<atomic_weight, Const> {
     struct type : basic_manipulator<atomic_weight, Const> {
         using basic_manipulator<atomic_weight, Const>::basic_manipulator;
 
-        auto set(float value) -> auto& {
+        auto set(const float value) -> auto& {
             this->write().value = value;
             return *this;
         }
@@ -175,7 +175,7 @@ struct get_manipulator<half_life, Const> {
         using basic_manipulator<half_life, Const>::basic_manipulator;
 
         template <typename R, typename P>
-        auto set(std::chrono::duration<R, P> value) -> auto& {
+        auto set(const std::chrono::duration<R, P> value) -> auto& {
             this->write().time_seconds = value;
             return *this;
         }
@@ -191,8 +191,8 @@ class decay_modes : public ecs::component<EAGINE_ID_V(DecayModes)> {
 public:
     auto add(string_view symbol) -> decay* {
         int nv = 0;
-        if(auto nid{known_decay_modes::get_id(symbol)}) {
-            for(auto& [id, v, info] : _modes) {
+        if(const auto nid{known_decay_modes::get_id(symbol)}) {
+            for(const auto& [id, v, info] : _modes) {
                 if(nid == id) {
                     nv = nv + 1;
                 }
@@ -233,7 +233,7 @@ struct get_manipulator<decay_modes, Const> {
     struct type : basic_manipulator<decay_modes, Const> {
         using basic_manipulator<decay_modes, Const>::basic_manipulator;
 
-        auto add(string_view symbol) -> decay* {
+        auto add(const string_view symbol) -> decay* {
             return this->write().add(symbol);
         }
     };

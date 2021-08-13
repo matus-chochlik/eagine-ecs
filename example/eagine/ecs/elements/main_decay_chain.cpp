@@ -55,7 +55,7 @@ static void decay_of(
   std::set<element_symbol>& done) {
 
     int d = 0;
-    auto func = [&](const auto&, auto& modes) {
+    const auto func = [&](const auto&, auto& modes) {
         modes->for_each([&](const auto& mode, const auto& dcy) {
             const auto direct = dcy.products.size() == 1;
             if(!direct) {

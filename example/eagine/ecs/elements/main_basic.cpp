@@ -26,7 +26,7 @@ static void print_elements_with_english_name(
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name>(
-      [](const auto& sym, ecs::manipulator<const element_name>& name) {
+      [](const auto& sym, const auto& name) {
           if(name.has_english_name()) {
               std::cout << sym << ": " << name.get_english_name() << std::endl;
           }
@@ -38,10 +38,7 @@ static void print_names_of_noble_gasses(
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name, const element_group>(
-      [](
-        const auto&,
-        ecs::manipulator<const element_name>& name,
-        ecs::manipulator<const element_group>& group) {
+      [](const auto&, const auto& name, const auto& group) {
           if(group.has_number(18)) {
               std::cout << name.get_latin_name() << std::endl;
           }
