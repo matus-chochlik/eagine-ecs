@@ -7,7 +7,7 @@
 ///
 #include <eagine/assert.hpp>
 
-#if !EAGINE_ECS_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_ECS_LIBRARY || defined(EAGINE_IMPLEMENTING_ECS_LIBRARY)
 #include <eagine/str_format.hpp>
 #include <stdexcept>
 #endif
@@ -15,7 +15,7 @@
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
 namespace detail {
-#if !EAGINE_ECS_LIBRARY || defined(EAGINE_IMPLEMENTING_LIBRARY)
+#if !EAGINE_ECS_LIBRARY || defined(EAGINE_IMPLEMENTING_ECS_LIBRARY)
 //------------------------------------------------------------------------------
 [[noreturn]] EAGINE_LIB_FUNC void mgr_handle_cmp_is_reg(std::string&& c_name) {
     throw std::runtime_error(
