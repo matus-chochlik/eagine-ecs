@@ -23,93 +23,99 @@ static void populate(
 
     const auto elem_root{source.structure()};
     const auto elem_count = source.nested_count(elem_root);
-    for(span_size_t e = 0; e < elem_count; ++e) {
+    for(const auto e : integer_range(elem_count)) {
         const auto elem_attr{source.nested(elem_root, e)};
         const element_symbol elem{to_string(elem_attr.name())};
 
-        if(auto name_a{source.nested(elem_attr, "name")}) {
+        if(const auto name_a{source.nested(elem_attr, "name")}) {
             std::string latin;
-            if(auto latin_a{source.nested(name_a, "latin")}) {
+            if(const auto latin_a{source.nested(name_a, "latin")}) {
                 source.fetch_value(latin_a, latin);
             }
             std::string english;
-            if(auto english_a{source.nested(name_a, "english")}) {
+            if(const auto english_a{source.nested(name_a, "english")}) {
                 source.fetch_value(english_a, english);
             }
             elements.add<element_name>(elem).set_names(latin, english);
         }
-        if(auto protons_a{source.nested(elem_attr, "protons")}) {
-            if(auto number{source.get(protons_a, type_identity<short>())}) {
+        if(const auto protons_a{source.nested(elem_attr, "protons")}) {
+            if(const auto number{
+                 source.get(protons_a, type_identity<short>())}) {
                 elements.add<element_protons>(elem).set(extract(number));
             }
         }
-        if(auto period_a{source.nested(elem_attr, "period")}) {
-            if(auto number{source.get(period_a, type_identity<short>())}) {
+        if(const auto period_a{source.nested(elem_attr, "period")}) {
+            if(const auto number{
+                 source.get(period_a, type_identity<short>())}) {
                 elements.add<element_period>(elem).set(extract(number));
             }
         }
-        if(auto group_a{source.nested(elem_attr, "group")}) {
-            if(auto number{source.get(group_a, type_identity<short>())}) {
+        if(const auto group_a{source.nested(elem_attr, "group")}) {
+            if(const auto number{source.get(group_a, type_identity<short>())}) {
                 elements.add<element_group>(elem).set(extract(number));
             }
         }
-        if(auto atomic_weight_a{source.nested(elem_attr, "atomic_weight")}) {
-            if(auto number{
+        if(const auto atomic_weight_a{
+             source.nested(elem_attr, "atomic_weight")}) {
+            if(const auto number{
                  source.get(atomic_weight_a, type_identity<float>())}) {
                 elements.add<atomic_weight>(elem).set(extract(number));
             }
         }
 
-        if(auto isot_root{source.nested(elem_attr, "isotopes")}) {
+        if(const auto isot_root{source.nested(elem_attr, "isotopes")}) {
             const auto isot_count = source.nested_count(isot_root);
-            for(span_size_t i = 0; i < isot_count; ++i) {
+            for(const auto i : integer_range(isot_count)) {
                 const auto isot_attr{source.nested(isot_root, i)};
 
                 element_symbol isot;
-                if(auto symbol_a{source.nested(isot_attr, "symbol")}) {
+                if(const auto symbol_a{source.nested(isot_attr, "symbol")}) {
                     source.fetch_value(symbol_a, isot);
                 }
                 if(isot.empty()) {
                     break;
                 }
 
-                if(auto name_a{source.nested(isot_attr, "name")}) {
+                if(const auto name_a{source.nested(isot_attr, "name")}) {
                     std::string latin;
-                    if(auto latin_a{source.nested(name_a, "latin")}) {
+                    if(const auto latin_a{source.nested(name_a, "latin")}) {
                         source.fetch_value(latin_a, latin);
                     }
                     std::string english;
-                    if(auto english_a{source.nested(name_a, "english")}) {
+                    if(const auto english_a{source.nested(name_a, "english")}) {
                         source.fetch_value(english_a, english);
                     }
                     elements.add<element_name>(isot).set_names(latin, english);
                 }
-                if(auto neutrons_a{source.nested(isot_attr, "neutrons")}) {
-                    if(auto number{
+                if(const auto neutrons_a{
+                     source.nested(isot_attr, "neutrons")}) {
+                    if(const auto number{
                          source.get(neutrons_a, type_identity<short>())}) {
                         elements.add<isotope_neutrons>(isot).set(
                           extract(number));
                     }
                 }
 
-                if(auto half_life_a{source.nested(isot_attr, "half_life")}) {
+                if(const auto half_life_a{
+                     source.nested(isot_attr, "half_life")}) {
                     using hl_t = std::chrono::duration<float>;
-                    if(auto hl{
+                    if(const auto hl{
                          source.get(half_life_a, type_identity<hl_t>())}) {
                         elements.add<half_life>(isot).set(extract(hl));
                     }
                 }
 
-                if(auto decays_a{source.nested(isot_attr, "decay")}) {
+                if(const auto decays_a{source.nested(isot_attr, "decay")}) {
                     auto isot_decay = elements.add<decay_modes>(isot);
                     const auto n = source.nested_count(decays_a);
-                    for(span_size_t d : integer_range(n)) {
-                        if(auto decay_a{source.nested(decays_a, d)}) {
-                            if(auto mode_a{source.nested(decay_a, "mode")}) {
+                    for(const auto d : integer_range(n)) {
+                        if(const auto decay_a{source.nested(decays_a, d)}) {
+                            if(const auto mode_a{
+                                 source.nested(decay_a, "mode")}) {
                                 std::string mode_sym;
                                 if(source.fetch_value(mode_a, mode_sym)) {
                                     if(auto info{isot_decay.add(mode_sym)}) {
-                                        if(auto prod_a{source.nested(
+                                        if(const auto prod_a{source.nested(
                                              decay_a, "products")}) {
                                             auto& prod = extract(info).products;
                                             prod.resize(std_size(
@@ -207,9 +213,10 @@ void initialize(main_ctx& ctx, ecs::basic_manager<element_symbol>& elements) {
 
     const auto json_res{embed(EAGINE_ID(ElemJSON), "elements.json")};
 
-    auto json_tree{
+    const auto json_tree{
       valtree::from_json_text(as_chars(json_res.unpack(ctx)), ctx)};
 
     do_initialize(elements, json_tree);
 }
+//------------------------------------------------------------------------------
 } // namespace eagine

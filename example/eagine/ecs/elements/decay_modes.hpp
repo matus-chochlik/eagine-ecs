@@ -115,6 +115,16 @@ struct decay_mode_traits<decay_mode_t<decay_part::transition>> {
 //------------------------------------------------------------------------------
 template <decay_part... P>
 struct decay_mode_traits<decay_mode_t<P...>> {
+public:
+    static auto info() noexcept -> const auto& {
+        static const decay_mode_info i{
+          _make_symbol(),
+          (0 + ... + mode_info(decay_mode_t<P>{}).proton_count_diff),
+          (0 + ... + mode_info(decay_mode_t<P>{}).neutron_count_diff),
+          is_fission_v<P...>};
+        return i;
+    }
+
 private:
     template <decay_part H>
     static void _append_symbol(decay_mode_t<H> m, std::string& s) {
@@ -128,20 +138,10 @@ private:
         _append_symbol(decay_mode_t<N, T...>{}, s);
     }
 
-    static auto _make_symbol() noexcept {
+    static auto _make_symbol() noexcept -> std::string {
         std::string s;
         _append_symbol(decay_mode_t<P...>{}, s);
         return s;
-    }
-
-public:
-    static auto info() noexcept -> const auto& {
-        static const decay_mode_info i{
-          _make_symbol(),
-          (0 + ... + mode_info(decay_mode_t<P>{}).proton_count_diff),
-          (0 + ... + mode_info(decay_mode_t<P>{}).neutron_count_diff),
-          is_fission_v<P...>};
-        return i;
     }
 };
 //------------------------------------------------------------------------------
@@ -240,23 +240,23 @@ struct known_decay_modes {
         return decay_mode_id<decay_mode_t<M...>>::value;
     }
 
-    static auto get_id(string_view symbol) -> identifier_t {
+    static auto get_id(const string_view symbol) -> identifier_t {
         return _get_id(symbol, list{});
     }
 
-    static auto get_info(identifier_t mode_id) -> const decay_mode_info* {
+    static auto get_info(const identifier_t mode_id) -> const decay_mode_info* {
         return _get_info(mode_id, list{});
     }
 
-    static auto proton_count_diff(identifier_t mode_id) noexcept -> int {
-        if(auto i{get_info(mode_id)}) {
+    static auto proton_count_diff(const identifier_t mode_id) noexcept -> int {
+        if(const auto i{get_info(mode_id)}) {
             return extract(i).proton_count_diff;
         }
         return 0;
     }
 
     static auto neutron_count_diff(identifier_t mode_id) noexcept -> int {
-        if(auto i{get_info(mode_id)}) {
+        if(const auto i{get_info(mode_id)}) {
             return extract(i).neutron_count_diff;
         }
         return 0;
@@ -269,7 +269,7 @@ private:
     }
 
     template <typename H, typename... T>
-    static auto _get_info(identifier_t id, mp_list<H, T...>)
+    static auto _get_info(const identifier_t id, const mp_list<H, T...>)
       -> const decay_mode_info* {
         if(decay_mode_id<H>::value == id) {
             return &mode_info(H{});
@@ -277,12 +277,14 @@ private:
         return _get_info(id, mp_list<T...>{});
     }
 
-    static auto _get_id(string_view, mp_list<>) noexcept -> identifier_t {
+    static auto _get_id(const string_view, const mp_list<>) noexcept
+      -> identifier_t {
         return 0;
     }
 
     template <typename H, typename... T>
-    static auto _get_id(string_view symbol, mp_list<H, T...>) -> identifier_t {
+    static auto _get_id(const string_view symbol, const mp_list<H, T...>)
+      -> identifier_t {
         if(are_equal(string_view(mode_info(H{}).symbol), symbol)) {
             return get_id(H{});
         }
