@@ -70,7 +70,6 @@ private:
             _apply(
               m, func, mp_list<L, Ls...>(), std::forward<X>(x)..., e, c...);
         };
-        ;
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
             wrap});
