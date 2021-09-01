@@ -22,6 +22,7 @@ enum class storage_cap_bit : unsigned short {
     modify = 1U << 5U
 };
 //------------------------------------------------------------------------------
+#if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
   const type_identity<storage_cap_bit>,
@@ -34,6 +35,7 @@ constexpr auto enumerator_mapping(
        {"remove", storage_cap_bit::remove},
        {"modify", storage_cap_bit::modify}}};
 }
+#endif
 //------------------------------------------------------------------------------
 static inline auto operator|(
   const storage_cap_bit a,
