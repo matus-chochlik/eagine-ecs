@@ -1,0 +1,2 @@
+eagine_ecs_name="$<TARGET_FILE_NAME:eagine-ecs>"
+eagine_ecs_path="$<TARGET_FILE:eagine-ecs>"

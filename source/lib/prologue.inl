@@ -6,5 +6,5 @@
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
 
-#define EAGINE_SHAPES_LIBRARY 1
+#define EAGINE_ECS_LIBRARY 1
 #define EAGINE_LIB_FUNC
