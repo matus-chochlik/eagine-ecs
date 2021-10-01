@@ -14,8 +14,7 @@
 #include <map>
 #include <set>
 
-namespace eagine {
-namespace ecs {
+namespace eagine::ecs {
 
 template <typename Entity, typename Component>
 class std_map_cmp_storage;
@@ -599,7 +598,6 @@ private:
     }
 };
 
-} // namespace ecs
-} // namespace eagine
+} // namespace eagine::ecs
 
 #endif // EAGINE_ECS_STORAGE_STD_MAP_HPP
