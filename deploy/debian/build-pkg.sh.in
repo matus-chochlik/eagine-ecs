@@ -71,7 +71,7 @@ Package: eagine-ecs-dev
 Version: @PKG_VERSION@
 Architecture: @PKG_ARCH@
 Installed-Size: $(du -k -s ${pkg_dir} | cut -f1)
-Depends: eagine-core-dev
+Depends: eagine-core-dev (>= @PKG_VERSION@)
 Maintainer: Matus Chochlik <chochlik@gmail.com>
-Description: Message bus for distributed C++ applications.
+Description: C++ Entity-component system.
 EOD
