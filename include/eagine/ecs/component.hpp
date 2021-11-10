@@ -8,7 +8,7 @@
 #ifndef EAGINE_ECS_COMPONENT_HPP
 #define EAGINE_ECS_COMPONENT_HPP
 
-#include <eagine/config/basic.hpp>
+#include "config/basic.hpp"
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier_t.hpp>
 #include <eagine/optional_ref.hpp>

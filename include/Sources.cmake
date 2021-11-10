@@ -4,6 +4,7 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 #
 set(HEADERS
+    eagine/ecs/config/basic.hpp
     eagine/ecs/basic_manager.hpp
     eagine/ecs/cmp_storage.hpp
     eagine/ecs/component.hpp
