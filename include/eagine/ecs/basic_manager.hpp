@@ -234,26 +234,26 @@ public:
 
     template <typename Component>
     auto add(entity_param ent, type_identity<Component> = {})
-      -> std::enable_if_t<(Component::is_component()), manipulator<Component>> {
+      -> manipulator<Component> requires(Component::is_component()) {
         return {_do_add_c(ent, Component{}), false};
     }
 
     template <typename Relation>
     auto add(entity_param subject, entity_param object, Relation&& rel)
-      -> std::enable_if_t<(Relation::is_relation()), manipulator<Relation>> {
+      -> manipulator<Relation> requires(Relation::is_relation()) {
         return {_do_add_r(subject, object, std::forward<Relation>(rel)), false};
     }
 
     template <typename Relation>
     auto add(entity_param subject, entity_param object)
-      -> std::enable_if_t<(Relation::is_relation()), bool> {
+      -> bool requires(Relation::is_relation()) {
         return _do_add_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
     template <typename Component>
     auto copy(entity_param from, entity_param to)
-      -> std::enable_if_t<(Component::is_component()), manipulator<Component>> {
+      -> manipulator<Component> requires(Component::is_component()) {
         return {
           static_cast<Component*>(
             _do_cpy(from, to, Component::uid(), _cmp_name_getter<Component>())),
@@ -262,7 +262,7 @@ public:
 
     template <typename... Components>
     auto copy(entity_param from, entity_param to)
-      -> std::enable_if_t<(sizeof...(Components) > 1), basic_manager&> {
+      -> basic_manager& requires(sizeof...(Components) > 1) {
         (...,
          _do_cpy(from, to, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
@@ -370,7 +370,7 @@ public:
     template <typename... Components>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Components>&...)>& func)
-      -> std::enable_if_t<(sizeof...(Components) > 1), basic_manager&> {
+      -> basic_manager& requires(sizeof...(Components) > 1) {
         _call_for_each_c_m_r<Components...>(func);
         return *this;
     }
