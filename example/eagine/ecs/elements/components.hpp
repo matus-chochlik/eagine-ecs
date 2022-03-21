@@ -206,7 +206,7 @@ public:
     template <typename Function>
     void for_each(const Function& func) {
         for(auto& [id, v, info] : _modes) {
-            EAGINE_MAYBE_UNUSED(v);
+            (void)(v);
             if(auto mode_info{known_decay_modes::get_info(id)}) {
                 func(*mode_info, info);
             }
@@ -216,7 +216,7 @@ public:
     template <typename Function>
     void for_each(const Function& func) const {
         for(const auto& [id, v, info] : _modes) {
-            EAGINE_MAYBE_UNUSED(v);
+            (void)(v);
             if(auto mode_info{known_decay_modes::get_info(id)}) {
                 func(*mode_info, info);
             }
