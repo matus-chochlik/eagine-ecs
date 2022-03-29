@@ -521,7 +521,9 @@ public:
         next_if_min(min_entity());
     }
 
-    void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
+    void apply(
+      [[maybe_unused]] entity_param_t<Entity> m,
+      manipulator<CL>&... clm) {
         if(this->_done() || (m < this->_current())) {
             std::remove_const_t<C> cadd;
             concrete_manipulator<C> cman(nullptr, cadd, false);
@@ -531,7 +533,6 @@ public:
             }
         } else {
             EAGINE_ASSERT(m == this->_current());
-            EAGINE_MAYBE_UNUSED(m);
             const auto hlpr = [&clm..., this](
                                 entity_param_t<Entity> e, manipulator<C>& cm) {
                 _rest.apply(e, clm..., cm);
@@ -631,9 +632,10 @@ public:
         return this->_next();
     }
 
-    void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
+    void apply(
+      [[maybe_unused]] entity_param_t<Entity> m,
+      manipulator<CL>&... clm) {
         EAGINE_ASSERT(m == this->_current());
-        EAGINE_MAYBE_UNUSED(m);
         const auto hlpr = [&clm..., this](
                             entity_param_t<Entity> e, manipulator<C>& cm) {
             _func(e, clm..., cm);
@@ -684,9 +686,10 @@ public:
         return _rest.next() && this->_next();
     }
 
-    void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
+    void apply(
+      [[maybe_unused]] entity_param_t<Entity> m,
+      manipulator<CL>&... clm) {
         EAGINE_ASSERT(m == this->_current());
-        EAGINE_MAYBE_UNUSED(m);
         const auto hlpr = [&clm..., this](
                             entity_param_t<Entity> e, manipulator<C>& cm) {
             _rest.apply(e, clm..., cm);
