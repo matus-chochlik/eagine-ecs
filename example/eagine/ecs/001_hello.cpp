@@ -5,6 +5,7 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/ecs/basic_manager.hpp>
 #include <eagine/ecs/component.hpp>
 #include <eagine/ecs/manipulator.hpp>
@@ -41,9 +42,11 @@ auto main(main_ctx& ctx) -> int {
     mgr.add<object>(he).write().name = "Entity";
 
     mgr.for_each_with<const greeting, const object>(
-      [](const auto&, auto& grt, auto& obj) {
-          std::cout << grt.read().expression << ", " << obj.read().name
-                    << std::endl;
+      [&](const auto&, auto& grt, auto& obj) {
+          ctx.cio()
+            .print(EAGINE_ID(ECS), "${expr}, ${name}")
+            .arg(EAGINE_ID(expr), grt.read().expression)
+            .arg(EAGINE_ID(name), obj.read().name);
       });
 
     return 0;

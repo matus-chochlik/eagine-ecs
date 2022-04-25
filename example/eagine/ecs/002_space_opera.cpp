@@ -5,13 +5,13 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#include <eagine/console/console.hpp>
 #include <eagine/ecs/basic_manager.hpp>
 #include <eagine/ecs/component.hpp>
 #include <eagine/ecs/manipulator.hpp>
 #include <eagine/ecs/storage/std_map.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
-#include <iostream>
 
 namespace eagine {
 
@@ -61,7 +61,7 @@ struct get_manipulator<name_surname, Const> {
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
-    ctx.log().info("starting");
+    ctx.cio().print(EAGINE_ID(ECS), "starting");
 
     ecs::basic_manager<std::string> sso;
     sso.register_component_storage<ecs::std_map_cmp_storage, name_surname>();

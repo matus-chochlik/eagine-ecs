@@ -56,7 +56,7 @@ private:
         };
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
-            wrap});
+            construct_from, wrap});
     }
 
     template <typename F, typename... C, typename L, typename... Ls, typename... X>
@@ -363,7 +363,7 @@ public:
     template <typename... Components, typename Func>
     auto for_each_with_opt(const Func& func) -> auto& {
         callable_ref<void(entity_param, manipulator<Components> & ...)> wrap(
-          func);
+          construct_from, func);
         return for_each_opt<Components...>(wrap);
     }
 
