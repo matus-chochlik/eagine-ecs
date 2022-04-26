@@ -9,50 +9,53 @@
 #include "entity.hpp"
 #include "init.hpp"
 #include "relations.hpp"
+#include <eagine/console/console.hpp>
 #include <eagine/ecs/basic_manager.hpp>
 #include <eagine/ecs/cmp_storage.hpp>
 #include <eagine/ecs/entity/string.hpp>
 #include <eagine/ecs/rel_storage.hpp>
 #include <eagine/ecs/storage_caps.hpp>
-#include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
-#include <iostream>
 
 namespace eagine {
 //------------------------------------------------------------------------------
 // Usage
 //------------------------------------------------------------------------------
 static void print_elements_with_english_name(
+  const console& cio,
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name>(
-      [](const auto& sym, const auto& name) {
+      [&](const auto& sym, const auto& name) {
           if(name.has_english_name()) {
-              std::cout << sym << ": " << name.get_english_name() << std::endl;
+              cio.print(EAGINE_ID(ECS), "${sym}: ${name}")
+                .arg(EAGINE_ID(sym), sym)
+                .arg(EAGINE_ID(name), name.get_english_name());
           }
       });
-    std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
 static void print_names_of_noble_gasses(
+  const console& cio,
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const element_name, const element_group>(
-      [](const auto&, const auto& name, const auto& group) {
+      [&](const auto&, const auto& name, const auto& group) {
           if(group.has_number(18)) {
-              std::cout << name.get_latin_name() << std::endl;
+              cio.print(EAGINE_ID(ECS), "${name}")
+                .arg(EAGINE_ID(name), name.get_latin_name());
           }
       });
-    std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
 static void print_names_of_actinides(
+  const console& cio,
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with_opt<
       const element_name,
       const element_period,
-      const element_group>([](
+      const element_group>([&](
                              const auto&,
                              ecs::manipulator<const element_name>& name,
                              ecs::manipulator<const element_period>& period,
@@ -60,41 +63,45 @@ static void print_names_of_actinides(
         if(period.has_number(7)) {
             auto opt_grp{group.read(&element_group::number)};
             if(opt_grp.value_or(3) == 3) {
-                std::cout << name.get_latin_name() << std::endl;
+                cio.print(EAGINE_ID(ECS), "${name}")
+                  .arg(EAGINE_ID(name), name.get_latin_name());
             }
         }
     });
-    std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
 static void print_isotopes_of_hydrogen(
+  const console& cio,
   ecs::basic_manager<element_symbol>& elements) {
 
     elements.for_each_with<const isotope_neutrons>(
       [&](const auto& isot, auto& neutrons) {
           if(elements.has<isotope>("H", isot)) {
-              std::cout << isot << ": " << neutrons.read().number;
+              string_view stabil;
               if(elements.has<half_life>(isot)) {
-                  std::cout << " (unstable)";
+                  stabil = " (unstable)";
               }
-              std::cout << std::endl;
+              cio.print(EAGINE_ID(ECS), "${isotope}: ${neutrons}${stability}")
+                .arg(EAGINE_ID(isotope), isot)
+                .arg(EAGINE_ID(neutrons), neutrons.read().number)
+                .arg(EAGINE_ID(stability), stabil);
           }
       });
-    std::cout << std::endl;
 }
 //------------------------------------------------------------------------------
 // Main
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
-    ctx.log().info("starting");
+    const auto& cio = ctx.cio();
+    cio.print(EAGINE_ID(ECS), "starting");
 
     ecs::basic_manager<element_symbol> elements;
     initialize(ctx, elements);
 
-    print_elements_with_english_name(elements);
-    print_names_of_noble_gasses(elements);
-    print_names_of_actinides(elements);
-    print_isotopes_of_hydrogen(elements);
+    print_elements_with_english_name(cio, elements);
+    print_names_of_noble_gasses(cio, elements);
+    print_names_of_actinides(cio, elements);
+    print_isotopes_of_hydrogen(cio, elements);
 
     return 0;
 }
