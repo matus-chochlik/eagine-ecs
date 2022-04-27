@@ -28,7 +28,7 @@ enum class decay_part {
 };
 //------------------------------------------------------------------------------
 template <decay_part... M>
-using decay_mode_t = std::integer_sequence<decay_part, M...>;
+struct decay_mode_t {};
 //------------------------------------------------------------------------------
 template <decay_part... M>
 static constexpr const auto is_fission_v =
