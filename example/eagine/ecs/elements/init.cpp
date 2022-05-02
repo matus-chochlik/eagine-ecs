@@ -118,7 +118,7 @@ static void populate(
                                         if(const auto prod_a{source.nested(
                                              decay_a, "products")}) {
                                             auto& prod = extract(info).products;
-                                            prod.resize(std_size(
+                                            prod.resize(integer(
                                               source.value_count(prod_a)));
                                             source.fetch_values(
                                               prod_a, cover(prod));
