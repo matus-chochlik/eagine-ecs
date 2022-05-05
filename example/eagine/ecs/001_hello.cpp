@@ -12,7 +12,6 @@
 #include <eagine/ecs/storage/std_map.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main.hpp>
-#include <iostream>
 
 namespace eagine {
 
