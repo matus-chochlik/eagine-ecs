@@ -25,7 +25,7 @@ enum class storage_cap_bit : unsigned short {
 #if !EAGINE_CXX_REFLECTION
 template <typename Selector>
 constexpr auto enumerator_mapping(
-  const type_identity<storage_cap_bit>,
+  const std::type_identity<storage_cap_bit>,
   const Selector) noexcept {
     return enumerator_map_type<storage_cap_bit, 6>{
       {{"hide", storage_cap_bit::hide},

@@ -40,25 +40,26 @@ static void populate(
         }
         if(const auto protons_a{source.nested(elem_attr, "protons")}) {
             if(const auto number{
-                 source.get(protons_a, type_identity<short>())}) {
+                 source.get(protons_a, std::type_identity<short>())}) {
                 elements.add<element_protons>(elem).set(extract(number));
             }
         }
         if(const auto period_a{source.nested(elem_attr, "period")}) {
             if(const auto number{
-                 source.get(period_a, type_identity<short>())}) {
+                 source.get(period_a, std::type_identity<short>())}) {
                 elements.add<element_period>(elem).set(extract(number));
             }
         }
         if(const auto group_a{source.nested(elem_attr, "group")}) {
-            if(const auto number{source.get(group_a, type_identity<short>())}) {
+            if(const auto number{
+                 source.get(group_a, std::type_identity<short>())}) {
                 elements.add<element_group>(elem).set(extract(number));
             }
         }
         if(const auto atomic_weight_a{
              source.nested(elem_attr, "atomic_weight")}) {
             if(const auto number{
-                 source.get(atomic_weight_a, type_identity<float>())}) {
+                 source.get(atomic_weight_a, std::type_identity<float>())}) {
                 elements.add<atomic_weight>(elem).set(extract(number));
             }
         }
@@ -90,7 +91,7 @@ static void populate(
                 if(const auto neutrons_a{
                      source.nested(isot_attr, "neutrons")}) {
                     if(const auto number{
-                         source.get(neutrons_a, type_identity<short>())}) {
+                         source.get(neutrons_a, std::type_identity<short>())}) {
                         elements.add<isotope_neutrons>(isot).set(
                           extract(number));
                     }
@@ -100,7 +101,7 @@ static void populate(
                      source.nested(isot_attr, "half_life")}) {
                     using hl_t = std::chrono::duration<float>;
                     if(const auto hl{
-                         source.get(half_life_a, type_identity<hl_t>())}) {
+                         source.get(half_life_a, std::type_identity<hl_t>())}) {
                         elements.add<half_life>(isot).set(extract(hl));
                     }
                 }
