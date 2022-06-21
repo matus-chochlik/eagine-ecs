@@ -48,6 +48,16 @@ eagine_add_module(
 		entity_traits manipulator component
 		storage cmp_storage rel_storage
 		eagine.core.types
+		eagine.core.utility
+)
+
+eagine_add_module(
+	eagine.ecs PARTITION manager
+	IMPORTS
+		entity_traits manipulator component
+		storage cmp_storage rel_storage
+		eagine.core.debug
+		eagine.core.types
 		eagine.core.string
 		eagine.core.utility
 )
@@ -64,6 +74,7 @@ eagine_add_module(
 		cmp_storage
 		rel_storage
 		std_map_storage
+		manager
 	SOURCES
 )
 
