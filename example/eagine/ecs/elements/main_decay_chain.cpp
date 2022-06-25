@@ -15,7 +15,7 @@
 #include <eagine/ecs/rel_storage.hpp>
 #include <eagine/ecs/storage_caps.hpp>
 #include <eagine/logging/logger.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 #include <eagine/string_algo.hpp>
 #include <array>
 #include <iostream>
@@ -158,3 +158,8 @@ auto main(main_ctx& ctx) -> int {
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
+
