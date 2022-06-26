@@ -15,7 +15,7 @@
 #include <eagine/ecs/entity/string.hpp>
 #include <eagine/ecs/rel_storage.hpp>
 #include <eagine/ecs/storage_caps.hpp>
-#include <eagine/main.hpp>
+#include <eagine/main_ctx.hpp>
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -107,3 +107,7 @@ auto main(main_ctx& ctx) -> int {
 }
 //------------------------------------------------------------------------------
 } // namespace eagine
+
+auto main(int argc, const char** argv) -> int {
+    return eagine::default_main(argc, argv, eagine::main);
+}
