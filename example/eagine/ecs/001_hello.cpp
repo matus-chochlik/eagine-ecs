@@ -8,6 +8,7 @@
 #if EAGINE_ECS_MODULE
 import eagine.core;
 import eagine.ecs;
+import <string>;
 #else
 #include <eagine/console/console.hpp>
 #include <eagine/ecs/basic_manager.hpp>

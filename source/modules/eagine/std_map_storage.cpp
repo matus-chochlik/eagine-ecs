@@ -19,15 +19,15 @@ import :manipulator;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-import <map>;
-import <set>;
+export import <map>;
+export import <set>;
 
 namespace eagine::ecs {
 
-template <typename Entity, typename Component>
+export template <typename Entity, typename Component>
 class std_map_cmp_storage;
 
-template <typename Entity, typename Component>
+export template <typename Entity, typename Component>
 class std_map_cmp_storage_iterator
   : public component_storage_iterator_intf<Entity> {
     using _map_t = std::map<Entity, Component>;
@@ -85,7 +85,7 @@ private:
     friend class std_map_cmp_storage<Entity, Component>;
 };
 
-template <typename Entity, typename Component>
+export template <typename Entity, typename Component>
 class std_map_cmp_storage : public component_storage<Entity, Component> {
 public:
     using entity_param = entity_param_t<Entity>;
@@ -339,10 +339,10 @@ private:
     }
 };
 
-template <typename Entity, typename Relation>
+export template <typename Entity, typename Relation>
 class std_map_rel_storage;
 
-template <typename Entity, typename Relation>
+export template <typename Entity, typename Relation>
 class std_map_rel_storage_iterator
   : public relation_storage_iterator_intf<Entity> {
     using _pair_t = std::pair<Entity, Entity>;
@@ -386,7 +386,7 @@ private:
     friend class std_map_rel_storage<Entity, Relation>;
 };
 
-template <typename Entity, typename Relation>
+export template <typename Entity, typename Relation>
 class std_map_rel_storage : public relation_storage<Entity, Relation> {
 public:
     using entity_param = entity_param_t<Entity>;

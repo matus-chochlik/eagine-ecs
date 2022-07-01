@@ -73,40 +73,40 @@ public:
     }
 };
 //------------------------------------------------------------------------------
-template <typename Entity, bool IsRelation>
+export template <typename Entity, bool IsRelation>
 struct storage_iterator_intf;
 
-template <typename Entity>
+export template <typename Entity>
 using component_storage_iterator_intf = storage_iterator_intf<Entity, false>;
 
-template <typename Entity>
+export template <typename Entity>
 using relation_storage_iterator_intf = storage_iterator_intf<Entity, true>;
 
-template <typename Entity, bool IsRelation>
+export template <typename Entity, bool IsRelation>
 class storage_iterator;
 
-template <typename Entity>
+export template <typename Entity>
 using component_storage_iterator = storage_iterator<Entity, false>;
 
-template <typename Entity>
+export template <typename Entity>
 using relation_storage_iterator = storage_iterator<Entity, true>;
 
-template <typename Entity, bool IsRelation>
+export template <typename Entity, bool IsRelation>
 struct base_storage;
 
-template <typename Entity>
+export template <typename Entity>
 using base_component_storage = base_storage<Entity, false>;
 
-template <typename Entity>
+export template <typename Entity>
 using base_relation_storage = base_storage<Entity, true>;
 
-template <typename Entity, typename Data, bool IsRelation>
+export template <typename Entity, typename Data, bool IsRelation>
 struct storage;
 
-template <typename Entity, typename Data>
+export template <typename Entity, typename Data>
 using component_storage = storage<Entity, Data, false>;
 
-template <typename Entity, typename Data>
+export template <typename Entity, typename Data>
 using relation_storage = storage<Entity, Data, true>;
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs
