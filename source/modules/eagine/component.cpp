@@ -8,7 +8,7 @@
 export module eagine.ecs:component;
 
 import eagine.core.types;
-import eagine.core.container;
+export import eagine.core.container;
 import <type_traits>;
 
 namespace eagine::ecs {

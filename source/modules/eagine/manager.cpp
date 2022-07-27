@@ -21,19 +21,31 @@ import :component;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-import <memory>;
-import <string>;
+export import <memory>;
+export import <string>;
+import <stdexcept>;
 import <type_traits>;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
-template <typename Entity>
+export [[noreturn]] void mgr_handle_cmp_is_reg(std::string&& c_name) {
+    throw std::runtime_error(
+      format("Component type '${1}' is already registered") %
+      std::move(c_name));
+}
+//------------------------------------------------------------------------------
+export [[noreturn]] void mgr_handle_cmp_not_reg(std::string&& c_name) {
+    throw std::runtime_error(
+      format("Component type '${1}' is not registered") % std::move(c_name));
+}
+//------------------------------------------------------------------------------
+export template <typename Entity>
 class basic_manager;
 //------------------------------------------------------------------------------
-template <typename Entity, typename PL>
+export template <typename Entity, typename PL>
 class component_relation;
 
-template <typename Entity, typename... PL>
+export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
 
 public:
@@ -69,7 +81,7 @@ private:
     }
 
     template <typename F, typename... C, typename L, typename... Ls, typename... X>
-    static inline auto _apply(
+    static auto _apply(
       basic_manager<Entity>& m,
       const F& func,
       const mp_list<mp_list<C...>, L, Ls...>,
@@ -85,7 +97,7 @@ private:
     }
 };
 //------------------------------------------------------------------------------
-template <typename Entity>
+export template <typename Entity>
 class basic_manager {
 public:
     using entity_param = entity_param_t<Entity>;
@@ -94,10 +106,9 @@ public:
 
     template <typename Component>
     auto register_component_type(
-      std::unique_ptr<component_storage<Entity, Component>>&& storage)
-      -> auto& {
+      std::unique_ptr<component_storage<Entity, Component>>&& strg) -> auto& {
         _do_reg_stg_type<false>(
-          _base_cmp_storage_ptr_t(std::move(storage)),
+          _base_cmp_storage_ptr_t(std::move(strg)),
           Component::uid(),
           _cmp_name_getter<Component>());
         return *this;
@@ -105,9 +116,9 @@ public:
 
     template <typename Relation>
     auto register_relation_type(
-      std::unique_ptr<relation_storage<Entity, Relation>>&& storage) -> auto& {
+      std::unique_ptr<relation_storage<Entity, Relation>>&& strg) -> auto& {
         _do_reg_stg_type<true>(
-          _base_rel_storage_ptr_t(std::move(storage)),
+          _base_rel_storage_ptr_t(std::move(strg)),
           Relation::uid(),
           _cmp_name_getter<Relation>());
         return *this;
@@ -258,14 +269,12 @@ public:
     }
 
     template <typename Relation>
-    auto add(entity_param subject, entity_param object)
-      -> bool requires(Relation::is_relation()) {
-                  return _do_add_r(
-                    subject,
-                    object,
-                    Relation::uid(),
-                    _cmp_name_getter<Relation>());
-              }
+    auto add(entity_param subject, entity_param object) -> bool
+        requires(Relation::is_relation())
+    {
+        return _do_add_r(
+          subject, object, Relation::uid(), _cmp_name_getter<Relation>());
+    }
 
     template <typename Component>
     auto copy(entity_param from, entity_param to) -> manipulator<Component>
@@ -475,17 +484,29 @@ private:
         return _find_storage<R, true>();
     }
 
-    template <bool IsR>
+    template <bool IsRelation>
     void _do_reg_stg_type(
-      std::unique_ptr<base_storage<Entity, IsR>>&&,
-      component_uid_t,
-      std::string (*)());
+      std::unique_ptr<base_storage<Entity, IsRelation>>&& strg,
+      component_uid_t cid,
+      std::string (*get_name)()) {
+        assert(bool(strg));
 
-    template <bool IsR>
-    void _do_unr_stg_type(component_uid_t, std::string (*)());
+        if(!_get_storages<IsRelation>().emplace(cid, std::move(strg))) {
+            mgr_handle_cmp_is_reg(get_name());
+        }
+    }
 
-    template <bool IsR>
-    auto _does_know_stg_type(component_uid_t) const -> bool;
+    template <bool IsRelation>
+    void _do_unr_stg_type(component_uid_t cid, std::string (*get_name)()) {
+        if(_get_storages<IsRelation>().erase(cid) != 1) {
+            mgr_handle_cmp_not_reg(get_name());
+        }
+    }
+
+    template <bool IsRelation>
+    auto _does_know_stg_type(component_uid_t cid) const -> bool {
+        return _get_storages<IsRelation>().find(cid).is_valid();
+    }
 
     template <bool IsR, typename Result, typename Func>
     auto _apply_on_base_stg(
@@ -567,17 +588,6 @@ private:
     auto _do_get_c(T C::*const, entity_param, T) -> T;
 };
 //------------------------------------------------------------------------------
-[[noreturn]] void mgr_handle_cmp_is_reg(std::string&& c_name) {
-    throw std::runtime_error(
-      format("Component type '${1}' is already registered") %
-      std::move(c_name));
-}
-//------------------------------------------------------------------------------
-[[noreturn]] void mgr_handle_cmp_not_reg(std::string&& c_name) {
-    throw std::runtime_error(
-      format("Component type '${1}' is not registered") % std::move(c_name));
-}
-//------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Data, bool IsR>
 auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
@@ -601,40 +611,8 @@ auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <bool IsRelation>
-inline void basic_manager<Entity>::_do_reg_stg_type(
-  std::unique_ptr<base_storage<Entity, IsRelation>>&& storage,
-  component_uid_t cid,
-  std::string (*get_name)()) {
-    assert(bool(storage));
-
-    if(!_get_storages<IsRelation>().emplace(cid, std::move(storage))) {
-        mgr_handle_cmp_is_reg(get_name());
-    }
-}
-//------------------------------------------------------------------------------
-template <typename Entity>
-template <bool IsRelation>
-inline void basic_manager<Entity>::_do_unr_stg_type(
-  component_uid_t cid,
-  std::string (*get_name)()) {
-
-    if(_get_storages<IsRelation>().erase(cid) != 1) {
-        mgr_handle_cmp_not_reg(get_name());
-    }
-}
-//------------------------------------------------------------------------------
-template <typename Entity>
-template <bool IsRelation>
-inline auto basic_manager<Entity>::_does_know_stg_type(component_uid_t cid) const
-  -> bool {
-
-    return _get_storages<IsRelation>().find(cid).is_valid();
-}
-//------------------------------------------------------------------------------
-template <typename Entity>
 template <bool IsRelation, typename Result, typename Func>
-inline auto basic_manager<Entity>::_apply_on_base_stg(
+auto basic_manager<Entity>::_apply_on_base_stg(
   Result fallback,
   const Func& func,
   component_uid_t cid,
@@ -653,9 +631,8 @@ inline auto basic_manager<Entity>::_apply_on_base_stg(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component, bool IsRelation, typename Result, typename Func>
-inline auto basic_manager<Entity>::_apply_on_stg(
-  Result fallback,
-  const Func& func) const -> Result {
+auto basic_manager<Entity>::_apply_on_stg(Result fallback, const Func& func)
+  const -> Result {
     return _apply_on_base_stg<IsRelation>(
       fallback,
       [&func](auto& b_storage) -> Result {
@@ -672,7 +649,7 @@ inline auto basic_manager<Entity>::_apply_on_stg(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <bool IsRelation>
-inline auto basic_manager<Entity>::_get_stg_type_caps(
+auto basic_manager<Entity>::_get_stg_type_caps(
   component_uid_t cid,
   std::string (*get_name)()) const -> storage_caps {
     return _apply_on_base_stg<IsRelation>(
@@ -683,7 +660,7 @@ inline auto basic_manager<Entity>::_get_stg_type_caps(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_does_have_c(
+auto basic_manager<Entity>::_does_have_c(
   entity_param_t<Entity> ent,
   component_uid_t cid,
   std::string (*get_name)()) -> bool {
@@ -695,7 +672,7 @@ inline auto basic_manager<Entity>::_does_have_c(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_does_have_r(
+auto basic_manager<Entity>::_does_have_r(
   entity_param_t<Entity> subject,
   entity_param_t<Entity> object,
   component_uid_t cid,
@@ -710,7 +687,7 @@ inline auto basic_manager<Entity>::_does_have_r(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_is_hidn(
+auto basic_manager<Entity>::_is_hidn(
   entity_param_t<Entity> ent,
   component_uid_t cid,
   std::string (*get_name)()) -> bool {
@@ -722,7 +699,7 @@ inline auto basic_manager<Entity>::_is_hidn(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_show(
+auto basic_manager<Entity>::_do_show(
   entity_param_t<Entity> ent,
   component_uid_t cid,
   std::string (*get_name)()) -> bool {
@@ -734,7 +711,7 @@ inline auto basic_manager<Entity>::_do_show(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_hide(
+auto basic_manager<Entity>::_do_hide(
   entity_param_t<Entity> ent,
   component_uid_t cid,
   std::string (*get_name)()) -> bool {
@@ -747,7 +724,7 @@ inline auto basic_manager<Entity>::_do_hide(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component>
-inline auto basic_manager<Entity>::_do_add_c(
+auto basic_manager<Entity>::_do_add_c(
   entity_param_t<Entity> ent,
   Component&& component) -> Component* {
     return _apply_on_stg<Component, false>(
@@ -758,7 +735,7 @@ inline auto basic_manager<Entity>::_do_add_c(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Relation>
-inline auto basic_manager<Entity>::_do_add_r(
+auto basic_manager<Entity>::_do_add_r(
   entity_param subj,
   entity_param obj,
   Relation&& relation) -> Relation* {
@@ -770,7 +747,7 @@ inline auto basic_manager<Entity>::_do_add_r(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_add_r(
+auto basic_manager<Entity>::_do_add_r(
   entity_param subject,
   entity_param object,
   component_uid_t cid,
@@ -785,7 +762,7 @@ inline auto basic_manager<Entity>::_do_add_r(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_cpy(
+auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
   component_uid_t cid,
@@ -800,7 +777,7 @@ inline auto basic_manager<Entity>::_do_cpy(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_swp(
+auto basic_manager<Entity>::_do_swp(
   entity_param_t<Entity> e1,
   entity_param_t<Entity> e2,
   component_uid_t cid,
@@ -816,7 +793,7 @@ inline auto basic_manager<Entity>::_do_swp(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_rem_c(
+auto basic_manager<Entity>::_do_rem_c(
   entity_param_t<Entity> ent,
   component_uid_t cid,
   std::string (*get_name)()) -> bool {
@@ -828,7 +805,7 @@ inline auto basic_manager<Entity>::_do_rem_c(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-inline auto basic_manager<Entity>::_do_rem_r(
+auto basic_manager<Entity>::_do_rem_r(
   entity_param_t<Entity> subj,
   entity_param_t<Entity> obj,
   component_uid_t cid,
@@ -844,7 +821,7 @@ inline auto basic_manager<Entity>::_do_rem_r(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename T, typename C>
-inline auto basic_manager<Entity>::_do_get_c(
+auto basic_manager<Entity>::_do_get_c(
   T C::*const mvp,
   entity_param_t<Entity> ent,
   T res) -> T {
@@ -865,7 +842,7 @@ inline auto basic_manager<Entity>::_do_get_c(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component, typename Func>
-inline auto basic_manager<Entity>::_call_for_single_c(
+auto basic_manager<Entity>::_call_for_single_c(
   entity_param_t<Entity> ent,
   const Func& func) -> bool {
     return _apply_on_stg<std::remove_const_t<Component>, false>(
@@ -877,7 +854,7 @@ inline auto basic_manager<Entity>::_call_for_single_c(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component, typename Func>
-inline void basic_manager<Entity>::_call_for_each_c(const Func& func) {
+void basic_manager<Entity>::_call_for_each_c(const Func& func) {
     _apply_on_stg<std::remove_const_t<Component>, false>(
       false, [&func](auto& c_storage) -> bool {
           c_storage->for_each(func);
@@ -887,7 +864,7 @@ inline void basic_manager<Entity>::_call_for_each_c(const Func& func) {
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Relation, typename Func>
-inline void basic_manager<Entity>::_call_for_each_r(const Func& func) {
+void basic_manager<Entity>::_call_for_each_r(const Func& func) {
     _apply_on_stg<std::remove_const_t<Relation>, true>(
       false, [&func](auto& c_storage) -> bool {
           c_storage->for_each(func);
@@ -905,8 +882,8 @@ protected:
     Entity _curr;
 
     _manager_for_each_c_m_base(
-      component_storage<Entity, std::remove_const_t<C>>& storage)
-      : _storage(storage)
+      component_storage<Entity, std::remove_const_t<C>>& strg)
+      : _storage(strg)
       , _iter(_storage.new_iterator())
       , _curr(_iter.done() ? Entity() : _iter.current()) {
         assert(std::is_const<C>::value || _storage.capabilities().can_modify());
@@ -945,8 +922,8 @@ class _manager_for_each_c_m_p_base
   : public _manager_for_each_c_m_base<Entity, C> {
 protected:
     _manager_for_each_c_m_p_base(
-      component_storage<Entity, std::remove_const_t<C>>& storage)
-      : _manager_for_each_c_m_base<Entity, C>(storage) {}
+      component_storage<Entity, std::remove_const_t<C>>& strg)
+      : _manager_for_each_c_m_base<Entity, C>(strg) {}
 
     using _manager_for_each_c_m_base<Entity, C>::_iter;
     using _manager_for_each_c_m_base<Entity, C>::_curr;
@@ -1095,7 +1072,7 @@ using _manager_for_each_c_m_p_helper =
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename... Component, typename Func>
-inline void basic_manager<Entity>::_call_for_each_c_m_p(const Func& func) {
+void basic_manager<Entity>::_call_for_each_c_m_p(const Func& func) {
     _manager_for_each_c_m_p_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
     while(!hlp.done()) {
@@ -1251,7 +1228,7 @@ using _manager_for_each_c_m_r_helper =
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename... Component, typename Func>
-inline void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
+void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
     _manager_for_each_c_m_r_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
     if(hlp.sync()) {

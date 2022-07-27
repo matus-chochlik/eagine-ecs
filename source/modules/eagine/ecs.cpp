@@ -7,10 +7,11 @@
 ///
 export module eagine.ecs;
 
-import :entity_traits;
-import :component;
-import :manipulator;
-import :storage;
-import :cmp_storage;
-import :rel_storage;
-import :std_map_storage;
+export import :entity_traits;
+export import :component;
+export import :manipulator;
+export import :storage;
+export import :cmp_storage;
+export import :rel_storage;
+export import :std_map_storage;
+export import :manager;

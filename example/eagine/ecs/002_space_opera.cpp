@@ -5,6 +5,11 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
+#if EAGINE_ECS_MODULE
+import eagine.core;
+import eagine.ecs;
+import <string>;
+#else
 #include <eagine/console/console.hpp>
 #include <eagine/ecs/basic_manager.hpp>
 #include <eagine/ecs/component.hpp>
@@ -12,10 +17,11 @@
 #include <eagine/ecs/storage/std_map.hpp>
 #include <eagine/logging/logger.hpp>
 #include <eagine/main_ctx.hpp>
+#endif
 
 namespace eagine {
 
-struct name_surname : ecs::component<EAGINE_ID_V(NameSurnme)> {
+struct name_surname : ecs::component<id_v("NameSurnme")> {
     std::string first_name;
     std::string family_name;
 };
@@ -47,8 +53,8 @@ struct name_surname_manip : ecs::basic_manipulator<name_surname, Const> {
     }
 };
 
-struct father : ecs::relation<EAGINE_ID_V(Father)> {};
-struct mother : ecs::relation<EAGINE_ID_V(Mother)> {};
+struct father : ecs::relation<id_v("Father")> {};
+struct mother : ecs::relation<id_v("Mother")> {};
 
 namespace ecs {
 
@@ -61,7 +67,7 @@ struct get_manipulator<name_surname, Const> {
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
-    ctx.cio().print(EAGINE_ID(ECS), "starting");
+    ctx.cio().print(identifier{"ECS"}, "starting");
 
     ecs::basic_manager<std::string> sso;
     sso.register_component_storage<ecs::std_map_cmp_storage, name_surname>();
