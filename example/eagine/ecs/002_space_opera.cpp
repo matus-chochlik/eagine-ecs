@@ -21,7 +21,7 @@ import <string>;
 
 namespace eagine {
 
-struct name_surname : ecs::component<id_v("NameSurnme")> {
+struct name_surname : ecs::component<"NameSurnme"> {
     std::string first_name;
     std::string family_name;
 };
@@ -53,8 +53,8 @@ struct name_surname_manip : ecs::basic_manipulator<name_surname, Const> {
     }
 };
 
-struct father : ecs::relation<id_v("Father")> {};
-struct mother : ecs::relation<id_v("Mother")> {};
+struct father : ecs::relation<"Father"> {};
+struct mother : ecs::relation<"Mother"> {};
 
 namespace ecs {
 

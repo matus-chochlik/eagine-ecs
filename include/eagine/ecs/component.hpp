@@ -10,7 +10,7 @@
 
 #include "config/basic.hpp"
 #include <eagine/flat_map.hpp>
-#include <eagine/identifier_t.hpp>
+#include <eagine/identifier.hpp>
 #include <eagine/optional_ref.hpp>
 #include <type_traits>
 
@@ -22,7 +22,7 @@ using component_uid_t = identifier_t;
 enum class data_kind : bool { component = false, relation = true };
 
 // entity_data
-template <component_uid_t Uid, data_kind Kind>
+template <identifier_value Uid, data_kind Kind>
 struct entity_data {
     static constexpr auto uid() noexcept {
         return Uid;
@@ -42,18 +42,18 @@ struct entity_data {
 };
 
 // component - base class
-template <component_uid_t Uid>
+template <identifier_value Uid>
 using component = entity_data<Uid, data_kind::component>;
 
 // relation - base class
-template <component_uid_t Uid>
+template <identifier_value Uid>
 using relation = entity_data<Uid, data_kind::relation>;
 
 // component_uid_map
 template <typename T>
 class component_uid_map {
 public:
-    auto find(const component_uid_t cid) noexcept
+    auto find(const identifier_value cid) noexcept
       -> optional_reference_wrapper<T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
@@ -62,7 +62,7 @@ public:
         return {nothing};
     }
 
-    auto find(const component_uid_t cid) const noexcept
+    auto find(const identifier_value cid) const noexcept
       -> optional_reference_wrapper<const T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
@@ -72,15 +72,15 @@ public:
     }
 
     template <typename... Args>
-    auto emplace(const component_uid_t cid, Args&&... args) -> bool {
+    auto emplace(const identifier_value cid, Args&&... args) -> bool {
         return _storage.emplace(cid, std::forward<Args>(args)...).second;
     }
 
-    auto erase(const component_uid_t cid) {
+    auto erase(const identifier_value cid) {
         return _storage.erase(cid);
     }
 
-    auto operator[](const component_uid_t cid) -> T& {
+    auto operator[](const identifier_value cid) -> T& {
         return _storage[cid];
     }
 

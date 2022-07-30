@@ -151,70 +151,70 @@ struct decay_mode_id;
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::alpha>>
-  : selector<EAGINE_ID_V(AlphaDcy)> {};
+  : selector<id_v("AlphaDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::proton_emi>>
-  : selector<EAGINE_ID_V(PrtnEmissn)> {};
+  : selector<id_v("PrtnEmissn")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::neutron_emi>>
-  : selector<EAGINE_ID_V(NtrnEmissn)> {};
+  : selector<id_v("NtrnEmissn")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::electron_cap>>
-  : selector<EAGINE_ID_V(ElnCapDcy)> {};
+  : selector<id_v("ElnCapDcy")> {};
 
 template <>
 struct decay_mode_id<
   decay_mode_t<decay_part::electron_cap, decay_part::electron_cap>>
-  : selector<EAGINE_ID_V(2ElnCapDcy)> {};
+  : selector<id_v("2ElnCapDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::electron_cap, decay_part::fission>>
-  : selector<EAGINE_ID_V(ElnCapFisn)> {};
+  : selector<id_v("ElnCapFisn")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_m>>
-  : selector<EAGINE_ID_V(BetaMDcy)> {};
+  : selector<id_v("BetaMDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_m, decay_part::beta_m>>
-  : selector<EAGINE_ID_V(BetaM2Dcy)> {};
+  : selector<id_v("BetaM2Dcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_m, decay_part::alpha>>
-  : selector<EAGINE_ID_V(BtaMAlpDcy)> {};
+  : selector<id_v("BtaMAlpDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_m, decay_part::neutron_emi>>
-  : selector<EAGINE_ID_V(BetaMNDcy)> {};
+  : selector<id_v("BetaMNDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<
   decay_part::beta_m,
   decay_part::neutron_emi,
-  decay_part::neutron_emi>> : selector<EAGINE_ID_V(BetaMN2Dcy)> {};
+  decay_part::neutron_emi>> : selector<id_v("BetaMN2Dcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_p>>
-  : selector<EAGINE_ID_V(BetaPDcy)> {};
+  : selector<id_v("BetaPDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_p, decay_part::beta_p>>
-  : selector<EAGINE_ID_V(BetaP2Dcy)> {};
+  : selector<id_v("BetaP2Dcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::beta_p, decay_part::alpha>>
-  : selector<EAGINE_ID_V(BtaPAlpDcy)> {};
+  : selector<id_v("BtaPAlpDcy")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::fission>>
-  : selector<EAGINE_ID_V(Fission)> {};
+  : selector<id_v("Fission")> {};
 
 template <>
 struct decay_mode_id<decay_mode_t<decay_part::transition>>
-  : selector<EAGINE_ID_V(Transition)> {};
+  : selector<id_v("Transition")> {};
 //------------------------------------------------------------------------------
 struct known_decay_modes {
     using m = decay_part;

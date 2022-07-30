@@ -8,18 +8,16 @@
 export module eagine.ecs:component;
 
 import eagine.core.types;
+import eagine.core.identifier;
 export import eagine.core.container;
 import <type_traits>;
 
 namespace eagine::ecs {
 
-// component unique identifier
-export using component_uid_t = identifier_t;
-
 export enum class data_kind : bool { component = false, relation = true };
 
 // entity_data
-export template <component_uid_t Uid, data_kind Kind>
+export template <identifier_value Uid, data_kind Kind>
 struct entity_data {
     static constexpr auto uid() noexcept {
         return Uid;
@@ -39,18 +37,18 @@ struct entity_data {
 };
 
 // component - base class
-export template <component_uid_t Uid>
+export template <identifier_value Uid>
 using component = entity_data<Uid, data_kind::component>;
 
 // relation - base class
-export template <component_uid_t Uid>
+export template <identifier_value Uid>
 using relation = entity_data<Uid, data_kind::relation>;
 
 // component_uid_map
 export template <typename T>
 class component_uid_map {
 public:
-    auto find(const component_uid_t cid) noexcept
+    auto find(const identifier_value cid) noexcept
       -> optional_reference_wrapper<T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
@@ -59,7 +57,7 @@ public:
         return {nothing};
     }
 
-    auto find(const component_uid_t cid) const noexcept
+    auto find(const identifier_value cid) const noexcept
       -> optional_reference_wrapper<const T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
@@ -69,20 +67,20 @@ public:
     }
 
     template <typename... Args>
-    auto emplace(const component_uid_t cid, Args&&... args) -> bool {
+    auto emplace(const identifier_value cid, Args&&... args) -> bool {
         return _storage.emplace(cid, std::forward<Args>(args)...).second;
     }
 
-    auto erase(const component_uid_t cid) {
+    auto erase(const identifier_value cid) {
         return _storage.erase(cid);
     }
 
-    auto operator[](const component_uid_t cid) -> T& {
+    auto operator[](const identifier_value cid) -> T& {
         return _storage[cid];
     }
 
 private:
-    flat_map<component_uid_t, T> _storage{};
+    flat_map<identifier_t, T> _storage{};
 };
 
 } // namespace eagine::ecs
