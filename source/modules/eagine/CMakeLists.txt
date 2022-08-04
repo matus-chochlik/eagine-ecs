@@ -10,6 +10,7 @@ eagine_add_module(
 	eagine.ecs PARTITION component
 	IMPORTS
 		eagine.core.types
+		eagine.core.identifier
 		eagine.core.container
 )
 
