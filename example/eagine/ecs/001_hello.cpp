@@ -21,11 +21,11 @@ import <string>;
 
 namespace eagine {
 
-struct object : ecs::component<id_v("Object")> {
+struct object : ecs::component<"Object"> {
     std::string name;
 };
 
-struct greeting : ecs::component<id_v("Greeting")> {
+struct greeting : ecs::component<"Greeting"> {
     std::string expression;
 };
 

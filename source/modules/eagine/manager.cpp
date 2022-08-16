@@ -487,7 +487,7 @@ private:
     template <bool IsRelation>
     void _do_reg_stg_type(
       std::unique_ptr<base_storage<Entity, IsRelation>>&& strg,
-      component_uid_t cid,
+      identifier_t cid,
       std::string (*get_name)()) {
         assert(bool(strg));
 
@@ -497,44 +497,41 @@ private:
     }
 
     template <bool IsRelation>
-    void _do_unr_stg_type(component_uid_t cid, std::string (*get_name)()) {
+    void _do_unr_stg_type(identifier_t cid, std::string (*get_name)()) {
         if(_get_storages<IsRelation>().erase(cid) != 1) {
             mgr_handle_cmp_not_reg(get_name());
         }
     }
 
     template <bool IsRelation>
-    auto _does_know_stg_type(component_uid_t cid) const -> bool {
+    auto _does_know_stg_type(identifier_t cid) const -> bool {
         return _get_storages<IsRelation>().find(cid).is_valid();
     }
 
     template <bool IsR, typename Result, typename Func>
-    auto _apply_on_base_stg(
-      Result,
-      const Func&,
-      component_uid_t,
-      std::string (*)()) const -> Result;
+    auto _apply_on_base_stg(Result, const Func&, identifier_t, std::string (*)())
+      const -> Result;
 
     template <typename D, bool IsR, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
 
     template <bool IsR>
-    auto _get_stg_type_caps(component_uid_t, std::string (*)()) const
+    auto _get_stg_type_caps(identifier_t, std::string (*)()) const
       -> storage_caps;
 
-    auto _does_have_c(entity_param, component_uid_t, std::string (*)()) -> bool;
+    auto _does_have_c(entity_param, identifier_t, std::string (*)()) -> bool;
 
     auto _does_have_r(
       entity_param,
       entity_param,
-      component_uid_t,
+      identifier_t,
       std::string (*)()) -> bool;
 
-    auto _is_hidn(entity_param, component_uid_t, std::string (*)()) -> bool;
+    auto _is_hidn(entity_param, identifier_t, std::string (*)()) -> bool;
 
-    auto _do_show(entity_param, component_uid_t, std::string (*)()) -> bool;
+    auto _do_show(entity_param, identifier_t, std::string (*)()) -> bool;
 
-    auto _do_hide(entity_param, component_uid_t, std::string (*)()) -> bool;
+    auto _do_hide(entity_param, identifier_t, std::string (*)()) -> bool;
 
     template <typename Component>
     auto _do_add_c(entity_param, Component&& component) -> Component*;
@@ -543,31 +540,19 @@ private:
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
       -> Relation*;
 
-    auto _do_add_r(
-      entity_param,
-      entity_param,
-      component_uid_t,
-      std::string (*)()) -> bool;
+    auto _do_add_r(entity_param, entity_param, identifier_t, std::string (*)())
+      -> bool;
 
-    auto _do_cpy(
-      entity_param f,
-      entity_param t,
-      component_uid_t,
-      std::string (*)()) -> void*;
+    auto _do_cpy(entity_param f, entity_param t, identifier_t, std::string (*)())
+      -> void*;
 
-    auto _do_swp(
-      entity_param f,
-      entity_param t,
-      component_uid_t,
-      std::string (*)()) -> bool;
+    auto _do_swp(entity_param f, entity_param t, identifier_t, std::string (*)())
+      -> bool;
 
-    auto _do_rem_c(entity_param, component_uid_t, std::string (*)()) -> bool;
+    auto _do_rem_c(entity_param, identifier_t, std::string (*)()) -> bool;
 
-    auto _do_rem_r(
-      entity_param,
-      entity_param,
-      component_uid_t,
-      std::string (*)()) -> bool;
+    auto _do_rem_r(entity_param, entity_param, identifier_t, std::string (*)())
+      -> bool;
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
@@ -615,7 +600,7 @@ template <bool IsRelation, typename Result, typename Func>
 auto basic_manager<Entity>::_apply_on_base_stg(
   Result fallback,
   const Func& func,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) const -> Result {
     auto& storages = _get_storages<IsRelation>();
 
@@ -650,7 +635,7 @@ auto basic_manager<Entity>::_apply_on_stg(Result fallback, const Func& func)
 template <typename Entity>
 template <bool IsRelation>
 auto basic_manager<Entity>::_get_stg_type_caps(
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) const -> storage_caps {
     return _apply_on_base_stg<IsRelation>(
       storage_caps(),
@@ -662,7 +647,7 @@ auto basic_manager<Entity>::_get_stg_type_caps(
 template <typename Entity>
 auto basic_manager<Entity>::_does_have_c(
   entity_param_t<Entity> ent,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -675,7 +660,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_does_have_r(
   entity_param_t<Entity> subject,
   entity_param_t<Entity> object,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<true>(
       false,
@@ -689,7 +674,7 @@ auto basic_manager<Entity>::_does_have_r(
 template <typename Entity>
 auto basic_manager<Entity>::_is_hidn(
   entity_param_t<Entity> ent,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -701,7 +686,7 @@ auto basic_manager<Entity>::_is_hidn(
 template <typename Entity>
 auto basic_manager<Entity>::_do_show(
   entity_param_t<Entity> ent,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -713,7 +698,7 @@ auto basic_manager<Entity>::_do_show(
 template <typename Entity>
 auto basic_manager<Entity>::_do_hide(
   entity_param_t<Entity> ent,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -750,7 +735,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_add_r(
   entity_param subject,
   entity_param object,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<true>(
       false,
@@ -765,7 +750,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> void* {
     return _apply_on_base_stg<false>(
       static_cast<void*>(nullptr),
@@ -780,7 +765,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_swp(
   entity_param_t<Entity> e1,
   entity_param_t<Entity> e2,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -795,7 +780,7 @@ auto basic_manager<Entity>::_do_swp(
 template <typename Entity>
 auto basic_manager<Entity>::_do_rem_c(
   entity_param_t<Entity> ent,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
@@ -808,7 +793,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_rem_r(
   entity_param_t<Entity> subj,
   entity_param_t<Entity> obj,
-  component_uid_t cid,
+  identifier_t cid,
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<true>(
       false,

@@ -212,7 +212,7 @@ static void do_initialize(
 //------------------------------------------------------------------------------
 void initialize(main_ctx& ctx, ecs::basic_manager<element_symbol>& elements) {
 
-    const auto json_res{embed(EAGINE_ID(ElemJSON), "elements.json")};
+    const auto json_res{embed<"ElemJSON">("elements.json")};
 
     const auto json_tree{
       valtree::from_json_text(as_chars(json_res.unpack(ctx)), ctx)};

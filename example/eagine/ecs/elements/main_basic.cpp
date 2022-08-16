@@ -28,9 +28,9 @@ static void print_elements_with_english_name(
     elements.for_each_with<const element_name>(
       [&](const auto& sym, const auto& name) {
           if(name.has_english_name()) {
-              cio.print(EAGINE_ID(ECS), "${sym}: ${name}")
-                .arg(EAGINE_ID(sym), sym)
-                .arg(EAGINE_ID(name), name.get_english_name());
+              cio.print(identifier{"ECS"}, "${sym}: ${name}")
+                .arg(identifier{"sym"}, sym)
+                .arg(identifier{"name"}, name.get_english_name());
           }
       });
 }
@@ -42,8 +42,8 @@ static void print_names_of_noble_gasses(
     elements.for_each_with<const element_name, const element_group>(
       [&](const auto&, const auto& name, const auto& group) {
           if(group.has_number(18)) {
-              cio.print(EAGINE_ID(ECS), "${name}")
-                .arg(EAGINE_ID(name), name.get_latin_name());
+              cio.print(identifier{"ECS"}, "${name}")
+                .arg(identifier{"name"}, name.get_latin_name());
           }
       });
 }
@@ -63,8 +63,8 @@ static void print_names_of_actinides(
         if(period.has_number(7)) {
             auto opt_grp{group.read(&element_group::number)};
             if(opt_grp.value_or(3) == 3) {
-                cio.print(EAGINE_ID(ECS), "${name}")
-                  .arg(EAGINE_ID(name), name.get_latin_name());
+                cio.print(identifier{"ECS"}, "${name}")
+                  .arg(identifier{"name"}, name.get_latin_name());
             }
         }
     });
@@ -81,10 +81,11 @@ static void print_isotopes_of_hydrogen(
               if(elements.has<half_life>(isot)) {
                   stabil = " (unstable)";
               }
-              cio.print(EAGINE_ID(ECS), "${isotope}: ${neutrons}${stability}")
-                .arg(EAGINE_ID(isotope), isot)
-                .arg(EAGINE_ID(neutrons), neutrons.read().number)
-                .arg(EAGINE_ID(stability), stabil);
+              cio
+                .print(identifier{"ECS"}, "${isotope}: ${neutrons}${stability}")
+                .arg(identifier{"isotope"}, isot)
+                .arg(identifier{"neutrons"}, neutrons.read().number)
+                .arg(identifier{"stability"}, stabil);
           }
       });
 }
@@ -93,7 +94,7 @@ static void print_isotopes_of_hydrogen(
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     const auto& cio = ctx.cio();
-    cio.print(EAGINE_ID(ECS), "starting");
+    cio.print(identifier{"ECS"}, "starting");
 
     ecs::basic_manager<element_symbol> elements;
     initialize(ctx, elements);
