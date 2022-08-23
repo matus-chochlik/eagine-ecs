@@ -49,6 +49,4 @@ endfunction()
 eagine_example_common(001_hello)
 eagine_example_common(002_space_opera)
 
-if(NOT ${WITH_MODULES})
-	add_subdirectory(elements)
-endif()
+add_subdirectory(elements)

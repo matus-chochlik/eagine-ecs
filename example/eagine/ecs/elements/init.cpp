@@ -9,11 +9,13 @@
 #include "components.hpp"
 #include "entity.hpp"
 #include "relations.hpp"
+#if !EAGINE_ECS_MODULE
 #include <eagine/ecs/storage/std_map.hpp>
 #include <eagine/embed.hpp>
 #include <eagine/integer_range.hpp>
 #include <eagine/value_tree/json.hpp>
 #include <eagine/value_tree/wrappers.hpp>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
