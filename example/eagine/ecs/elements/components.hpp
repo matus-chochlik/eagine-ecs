@@ -10,11 +10,16 @@
 
 #include "decay_modes.hpp"
 #include "entity.hpp"
+#if EAGINE_ECS_MODULE
+import <chrono>;
+import <vector>;
+#else
 #include <eagine/ecs/component.hpp>
 #include <eagine/ecs/manipulator.hpp>
 #include <eagine/identifier.hpp>
 #include <chrono>
 #include <vector>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

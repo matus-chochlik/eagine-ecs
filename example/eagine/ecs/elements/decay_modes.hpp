@@ -9,10 +9,14 @@
 #define EAGINE_EXAMPLE_ECS_DECAY_MODES_HPP
 
 #include "entity.hpp"
+#if EAGINE_ECS_MODULE
+import <type_traits>;
+#else
 #include <eagine/flat_map.hpp>
 #include <eagine/identifier.hpp>
 #include <eagine/mp_list.hpp>
 #include <type_traits>
+#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

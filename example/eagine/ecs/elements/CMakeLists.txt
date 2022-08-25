@@ -10,10 +10,18 @@ add_library(
 )
 eagine_add_lib_analysis(eagine-ecs-elements-common)
 eagine_embed_target_resources(TARGET eagine-ecs-elements-common PACKED)
-target_link_libraries(
-	eagine-ecs-elements-common
-	PUBLIC EAGine::ECS
-)
+if(${WITH_MODULES})
+	eagine_target_modules(
+		eagine-ecs-elements-common
+		eagine.core
+		eagine.ecs
+	)
+else()
+	target_link_libraries(
+		eagine-ecs-elements-common
+		PUBLIC EAGine::ECS
+	)
+endif()
 set_target_properties(
 	eagine-ecs-elements-common
 	PROPERTIES FOLDER "Example/ECS"
@@ -27,6 +35,13 @@ macro(eagine_ecs_example EXAMPLE)
 	)
 	eagine_add_exe_analysis(eagine-ecs-elements-${EXAMPLE})
 	add_dependencies(eagine-ecs-examples eagine-ecs-elements-${EXAMPLE})
+	if(${WITH_MODULES})
+		eagine_target_modules(
+			eagine-ecs-elements-${EXAMPLE}
+			eagine.core
+			eagine.ecs
+		)
+	endif()
 	target_link_libraries(
 		eagine-ecs-elements-${EXAMPLE}
 		PRIVATE eagine-ecs-elements-common
