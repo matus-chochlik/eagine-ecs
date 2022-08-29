@@ -12,7 +12,12 @@ set(EAGINE_ECS_EXPORT_TARGETS)
 
 if(TARGET eagine-ecs)
 	add_library(EAGine::ECS INTERFACE IMPORTED GLOBAL)
-	target_link_libraries(EAGine::ECS INTERFACE eagine-ecs)
+	target_link_libraries(
+		EAGine::ECS
+		INTERFACE
+			eagine-ecs-headers
+			eagine-ecs
+	)
 	list(
 		APPEND EAGINE_ECS_EXPORT_TARGETS
 			eagine-ecs-private-headers
