@@ -8,27 +8,16 @@ else()
 	add_subdirectory(lib)
 endif()
 
+set(EAGINE_ECS_EXPORT_TARGETS)
+
 if(TARGET eagine-ecs)
 	add_library(EAGine::ECS INTERFACE IMPORTED GLOBAL)
-	target_link_libraries(EAGine::ECS INTERFACE eagine-ecs-headers)
-
-	target_link_libraries(
-		EAGine::ECS
-		INTERFACE
-			eagine-ecs
-	)
-
-	install(
-		TARGETS
+	target_link_libraries(EAGine::ECS INTERFACE eagine-ecs)
+	list(
+		APPEND EAGINE_ECS_EXPORT_TARGETS
 			eagine-ecs-private-headers
 			eagine-ecs-headers
 			eagine-ecs
-			EXPORT ECS
-		LIBRARY DESTINATION lib
-		ARCHIVE DESTINATION lib
-		RUNTIME DESTINATION bin
-		INCLUDES DESTINATION include
-		PUBLIC_HEADER DESTINATION include
 	)
 
 	install(
@@ -38,3 +27,14 @@ if(TARGET eagine-ecs)
 		DESTINATION lib/cmake/EAGine
 	)
 endif()
+
+install(
+	TARGETS ${EAGINE_ECS_EXPORT_TARGETS}
+	EXPORT ECS
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+	RUNTIME DESTINATION bin
+	INCLUDES DESTINATION include
+	PUBLIC_HEADER DESTINATION include
+)
+
