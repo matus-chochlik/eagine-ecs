@@ -9,11 +9,6 @@
 #define EAGINE_EXAMPLE_ECS_INIT_HPP
 
 #include "entity.hpp"
-#if !EAGINE_ECS_MODULE
-#include <eagine/ecs/basic_manager.hpp>
-#include <eagine/ecs/entity/string.hpp>
-#include <eagine/main_ctx.hpp>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

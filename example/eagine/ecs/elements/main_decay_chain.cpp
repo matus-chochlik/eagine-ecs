@@ -9,23 +9,9 @@
 #include "entity.hpp"
 #include "init.hpp"
 #include "relations.hpp"
-#if EAGINE_ECS_MODULE
 import <array>;
 import <iostream>;
 import <set>;
-#else
-#include <eagine/ecs/basic_manager.hpp>
-#include <eagine/ecs/cmp_storage.hpp>
-#include <eagine/ecs/entity/string.hpp>
-#include <eagine/ecs/rel_storage.hpp>
-#include <eagine/ecs/storage_caps.hpp>
-#include <eagine/logging/logger.hpp>
-#include <eagine/main_ctx.hpp>
-#include <eagine/string_algo.hpp>
-#include <array>
-#include <iostream>
-#include <set>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

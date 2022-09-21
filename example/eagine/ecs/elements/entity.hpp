@@ -8,13 +8,9 @@
 #ifndef EAGINE_EXAMPLE_ECS_ENTITY_HPP // NOLINT(llvm-header-guard)
 #define EAGINE_EXAMPLE_ECS_ENTITY_HPP
 
-#if EAGINE_ECS_MODULE
 import eagine.core;
 import eagine.ecs;
 import <string>;
-#else
-#include <string>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

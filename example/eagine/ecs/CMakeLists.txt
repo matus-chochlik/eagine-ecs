@@ -24,20 +24,12 @@ function(eagine_example_common EXAMPLE_NAME)
 		${ARGN}
 	)
 	add_dependencies(eagine-ecs-examples eagine-${EXAMPLE_NAME})
-	if(${WITH_MODULES})
-		eagine_target_modules(
-			eagine-${EXAMPLE_NAME}
-			eagine.core
-			eagine.ecs
-		)
-	else()
-		eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
-		target_link_libraries(
-			eagine-${EXAMPLE_NAME}
-			PUBLIC EAGine::ECS
-			PRIVATE ${ARGN}
-		)
-	endif()
+	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
+	eagine_target_modules(
+		eagine-${EXAMPLE_NAME}
+		eagine.core
+		eagine.ecs
+	)
 
 	set_target_properties(
 		eagine-${EXAMPLE_NAME}
