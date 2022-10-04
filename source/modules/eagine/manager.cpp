@@ -417,6 +417,11 @@ public:
         return {*this};
     }
 
+    auto clear() noexcept -> basic_manager& {
+        _cmp_storages.clear();
+        return *this;
+    }
+
 private:
     using _base_cmp_storage_t = base_component_storage<Entity>;
     using _base_cmp_storage_ptr_t = std::unique_ptr<_base_cmp_storage_t>;
