@@ -9,128 +9,122 @@
 #include "components.hpp"
 #include "entity.hpp"
 #include "relations.hpp"
+#include <cassert>
+
+import <concepts>;
 
 namespace eagine {
 //------------------------------------------------------------------------------
-static void populate(
-  ecs::basic_manager<element_symbol>& elements,
-  const valtree::compound& source) {
+class elements_data_loader
+  : public valtree::object_builder_impl<elements_data_loader> {
+public:
+    elements_data_loader(ecs::basic_manager<element_symbol>& elements) noexcept
+      : _elements{elements} {}
 
-    const auto elem_root{source.structure()};
-    const auto elem_count = source.nested_count(elem_root);
-    for(const auto e : integer_range(elem_count)) {
-        const auto elem_attr{source.nested(elem_root, e)};
-        const element_symbol elem{to_string(elem_attr.name())};
+    template <std::integral T>
+    void do_add(const basic_string_path& path, span<const T> data) {
+        assert(!path.empty());
+        assert(!data.empty());
 
-        if(const auto name_a{source.nested(elem_attr, "name")}) {
-            std::string latin;
-            if(const auto latin_a{source.nested(name_a, "latin")}) {
-                source.fetch_value(latin_a, latin);
+        const element_symbol elem{path.front()};
+        if(path.size() == 2) {
+            if(path.back() == "protons") {
+                _elements.add<element_protons>(elem).set(
+                  limit_cast<short>(extract(data)));
+            } else if(path.back() == "period") {
+                _elements.add<element_period>(elem).set(
+                  limit_cast<short>(extract(data)));
+            } else if(path.back() == "group") {
+                _elements.add<element_group>(elem).set(
+                  limit_cast<short>(extract(data)));
             }
-            std::string english;
-            if(const auto english_a{source.nested(name_a, "english")}) {
-                source.fetch_value(english_a, english);
-            }
-            elements.add<element_name>(elem).set_names(latin, english);
-        }
-        if(const auto protons_a{source.nested(elem_attr, "protons")}) {
-            if(const auto number{
-                 source.get(protons_a, std::type_identity<short>())}) {
-                elements.add<element_protons>(elem).set(extract(number));
-            }
-        }
-        if(const auto period_a{source.nested(elem_attr, "period")}) {
-            if(const auto number{
-                 source.get(period_a, std::type_identity<short>())}) {
-                elements.add<element_period>(elem).set(extract(number));
-            }
-        }
-        if(const auto group_a{source.nested(elem_attr, "group")}) {
-            if(const auto number{
-                 source.get(group_a, std::type_identity<short>())}) {
-                elements.add<element_group>(elem).set(extract(number));
-            }
-        }
-        if(const auto atomic_weight_a{
-             source.nested(elem_attr, "atomic_weight")}) {
-            if(const auto number{
-                 source.get(atomic_weight_a, std::type_identity<float>())}) {
-                elements.add<atomic_weight>(elem).set(extract(number));
-            }
-        }
-
-        if(const auto isot_root{source.nested(elem_attr, "isotopes")}) {
-            const auto isot_count = source.nested_count(isot_root);
-            for(const auto i : integer_range(isot_count)) {
-                const auto isot_attr{source.nested(isot_root, i)};
-
-                element_symbol isot;
-                if(const auto symbol_a{source.nested(isot_attr, "symbol")}) {
-                    source.fetch_value(symbol_a, isot);
-                }
-                if(isot.empty()) {
-                    break;
-                }
-
-                if(const auto name_a{source.nested(isot_attr, "name")}) {
-                    std::string latin;
-                    if(const auto latin_a{source.nested(name_a, "latin")}) {
-                        source.fetch_value(latin_a, latin);
-                    }
-                    std::string english;
-                    if(const auto english_a{source.nested(name_a, "english")}) {
-                        source.fetch_value(english_a, english);
-                    }
-                    elements.add<element_name>(isot).set_names(latin, english);
-                }
-                if(const auto neutrons_a{
-                     source.nested(isot_attr, "neutrons")}) {
-                    if(const auto number{
-                         source.get(neutrons_a, std::type_identity<short>())}) {
-                        elements.add<isotope_neutrons>(isot).set(
-                          extract(number));
-                    }
-                }
-
-                if(const auto half_life_a{
-                     source.nested(isot_attr, "half_life")}) {
-                    using hl_t = std::chrono::duration<float>;
-                    if(const auto hl{
-                         source.get(half_life_a, std::type_identity<hl_t>())}) {
-                        elements.add<half_life>(isot).set(extract(hl));
-                    }
-                }
-
-                if(const auto decays_a{source.nested(isot_attr, "decay")}) {
-                    auto isot_decay = elements.add<decay_modes>(isot);
-                    const auto n = source.nested_count(decays_a);
-                    for(const auto d : integer_range(n)) {
-                        if(const auto decay_a{source.nested(decays_a, d)}) {
-                            if(const auto mode_a{
-                                 source.nested(decay_a, "mode")}) {
-                                std::string mode_sym;
-                                if(source.fetch_value(mode_a, mode_sym)) {
-                                    if(auto info{isot_decay.add(mode_sym)}) {
-                                        if(const auto prod_a{source.nested(
-                                             decay_a, "products")}) {
-                                            auto& prod = extract(info).products;
-                                            prod.resize(integer(
-                                              source.value_count(prod_a)));
-                                            source.fetch_values(
-                                              prod_a, cover(prod));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                elements.add<isotope>(elem, isot);
+        } else if(path.size() == 4 && path[1] == "isotopes") {
+            element_symbol isot{path[2]};
+            if(path.back() == "neutrons") {
+                _elements.add<isotope_neutrons>(isot).set(
+                  limit_cast<short>(extract(data)));
             }
         }
     }
-}
+
+    template <std::floating_point T>
+    void do_add(const basic_string_path& path, span<const T> data) {
+        assert(!path.empty());
+        assert(!data.empty());
+
+        const element_symbol elem{path.front()};
+        if(path.size() == 2) {
+            if(path.back() == "atomic_weight") {
+                _elements.add<atomic_weight>(elem).set(
+                  limit_cast<float>(extract(data)));
+            }
+        }
+    }
+
+    void do_add(const basic_string_path& path, span<const string_view> data) {
+        assert(!path.empty());
+        assert(!data.empty());
+
+        const element_symbol elem{path.front()};
+        if(path.size() == 3) {
+            if(path.back() == "latin") {
+                _elements.add<element_name>(elem).set_latin_name(
+                  to_string(data.front()));
+            } else if(path.back() == "english") {
+                _elements.add<element_name>(elem).set_english_name(
+                  to_string(data.front()));
+            }
+        } else if(path.size() == 4 && path[1] == "isotopes") {
+            element_symbol isot{path[2]};
+            if(path.back() == "half_life") {
+                using hl_t = std::chrono::duration<float>;
+                if(const auto hl{from_string<hl_t>(extract(data))}) {
+                    _elements.add<half_life>(isot).set(extract(hl));
+                }
+            }
+        } else if(path.size() == 6 && path[1] == "isotopes") {
+            if(path.back() == "latin") {
+                _elements.add<element_name>(elem).set_latin_name(
+                  to_string(data.front()));
+            } else if(path.back() == "english") {
+                _elements.add<element_name>(elem).set_english_name(
+                  to_string(data.front()));
+            }
+        } else if(path.starts_with(_decay_path)) {
+            element_symbol isot{path[2]};
+            if(path.back() == "mode") {
+                _elements.add<decay_modes>(isot).add(extract(data));
+            } else if(path.back() == "products") {
+                if(const auto mode{_elements.add<decay_modes>(isot).back()}) {
+                    for(auto prod : data) {
+                        extract(mode).products.push_back(to_string(prod));
+                    }
+                }
+            }
+        }
+    }
+
+    template <typename T>
+    void do_add(const basic_string_path&, span<const T>) {}
+
+    void add_object(const basic_string_path& path) final {
+        if(path.size() == 3) {
+            const element_symbol elem{path.front()};
+            if(path[1] == "isotopes") {
+                element_symbol isot{path[2]};
+                _elements.add<isotope>(elem, isot);
+            }
+        }
+    }
+
+    void failed() final {
+        _elements.clear();
+    }
+
+private:
+    ecs::basic_manager<element_symbol>& _elements;
+    const basic_string_path _decay_path{"*/isotopes/*/decay/_"};
+};
 //------------------------------------------------------------------------------
 static void cache_decay_products(ecs::basic_manager<element_symbol>& elements) {
 
@@ -180,8 +174,9 @@ static void cache_decay_products(ecs::basic_manager<element_symbol>& elements) {
 }
 //------------------------------------------------------------------------------
 static void do_initialize(
+  main_ctx& ctx,
   ecs::basic_manager<element_symbol>& elements,
-  const valtree::compound& source) {
+  const embedded_resource& json_res) {
     // components
     elements
       .register_component_storage<ecs::std_map_cmp_storage, element_name>();
@@ -197,22 +192,22 @@ static void do_initialize(
       .register_component_storage<ecs::std_map_cmp_storage, atomic_weight>();
     elements.register_component_storage<ecs::std_map_cmp_storage, half_life>();
     elements.register_component_storage<ecs::std_map_cmp_storage, decay_modes>();
-
     // relations
     elements.register_relation_storage<ecs::std_map_rel_storage, isotope>();
 
-    populate(elements, source);
+    auto input{valtree::traverse_json_stream(
+      valtree::make_building_value_tree_visitor(
+        std::make_shared<elements_data_loader>(elements)),
+      64,
+      ctx.buffers(),
+      ctx.log())};
+    json_res.fetch(ctx, input.get_handler());
+
     cache_decay_products(elements);
 }
 //------------------------------------------------------------------------------
 void initialize(main_ctx& ctx, ecs::basic_manager<element_symbol>& elements) {
-
-    const auto json_res{embed<"ElemJSON">("elements.json")};
-
-    const auto json_tree{
-      valtree::from_json_text(as_chars(json_res.unpack(ctx)), ctx)};
-
-    do_initialize(elements, json_tree);
+    do_initialize(ctx, elements, embed<"ElemJSON">("elements.json"));
 }
 //------------------------------------------------------------------------------
 } // namespace eagine

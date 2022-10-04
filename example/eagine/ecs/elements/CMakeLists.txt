@@ -9,7 +9,10 @@ add_library(
 	init.cpp
 )
 eagine_add_lib_analysis(eagine-ecs-elements-common)
-eagine_embed_target_resources(TARGET eagine-ecs-elements-common PACKED)
+eagine_embed_target_resources(
+	TARGET eagine-ecs-elements-common
+	PACKED
+)
 eagine_target_modules(
 	eagine-ecs-elements-common
 	eagine.core
