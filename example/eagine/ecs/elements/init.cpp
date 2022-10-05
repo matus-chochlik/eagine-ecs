@@ -29,19 +29,19 @@ public:
         const element_symbol elem{path.front()};
         if(path.size() == 2) {
             if(path.back() == "protons") {
-                _elements.add<element_protons>(elem).set(
+                _elements.ensure<element_protons>(elem).set(
                   limit_cast<short>(extract(data)));
             } else if(path.back() == "period") {
-                _elements.add<element_period>(elem).set(
+                _elements.ensure<element_period>(elem).set(
                   limit_cast<short>(extract(data)));
             } else if(path.back() == "group") {
-                _elements.add<element_group>(elem).set(
+                _elements.ensure<element_group>(elem).set(
                   limit_cast<short>(extract(data)));
             }
         } else if(path.size() == 4 && path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "neutrons") {
-                _elements.add<isotope_neutrons>(isot).set(
+                _elements.ensure<isotope_neutrons>(isot).set(
                   limit_cast<short>(extract(data)));
             }
         }
@@ -55,7 +55,7 @@ public:
         const element_symbol elem{path.front()};
         if(path.size() == 2) {
             if(path.back() == "atomic_weight") {
-                _elements.add<atomic_weight>(elem).set(
+                _elements.ensure<atomic_weight>(elem).set(
                   limit_cast<float>(extract(data)));
             }
         }
@@ -68,10 +68,10 @@ public:
         const element_symbol elem{path.front()};
         if(path.size() == 3) {
             if(path.back() == "latin") {
-                _elements.add<element_name>(elem).set_latin_name(
+                _elements.ensure<element_name>(elem).set_latin_name(
                   to_string(data.front()));
             } else if(path.back() == "english") {
-                _elements.add<element_name>(elem).set_english_name(
+                _elements.ensure<element_name>(elem).set_english_name(
                   to_string(data.front()));
             }
         } else if(path.size() == 4 && path[1] == "isotopes") {
@@ -79,23 +79,24 @@ public:
             if(path.back() == "half_life") {
                 using hl_t = std::chrono::duration<float>;
                 if(const auto hl{from_string<hl_t>(extract(data))}) {
-                    _elements.add<half_life>(isot).set(extract(hl));
+                    _elements.ensure<half_life>(isot).set(extract(hl));
                 }
             }
         } else if(path.size() == 6 && path[1] == "isotopes") {
             if(path.back() == "latin") {
-                _elements.add<element_name>(elem).set_latin_name(
+                _elements.ensure<element_name>(elem).set_latin_name(
                   to_string(data.front()));
             } else if(path.back() == "english") {
-                _elements.add<element_name>(elem).set_english_name(
+                _elements.ensure<element_name>(elem).set_english_name(
                   to_string(data.front()));
             }
         } else if(path.starts_with(_decay_path)) {
             element_symbol isot{path[2]};
             if(path.back() == "mode") {
-                _elements.add<decay_modes>(isot).add(extract(data));
+                _elements.ensure<decay_modes>(isot).add(extract(data));
             } else if(path.back() == "products") {
-                if(const auto mode{_elements.add<decay_modes>(isot).back()}) {
+                if(const auto mode{
+                     _elements.ensure<decay_modes>(isot).back()}) {
                     for(auto prod : data) {
                         extract(mode).products.push_back(to_string(prod));
                     }
@@ -112,7 +113,7 @@ public:
             const element_symbol elem{path.front()};
             if(path[1] == "isotopes") {
                 element_symbol isot{path[2]};
-                _elements.add<isotope>(elem, isot);
+                _elements.ensure<isotope>(elem, isot);
             }
         }
     }

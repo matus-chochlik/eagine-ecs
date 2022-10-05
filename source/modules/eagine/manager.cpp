@@ -253,7 +253,7 @@ public:
     }
 
     template <typename Component>
-    auto add(entity_param ent, std::type_identity<Component> = {})
+    auto ensure(entity_param ent, std::type_identity<Component> = {})
       -> manipulator<Component>
         requires(Component::is_component())
     {
@@ -269,7 +269,10 @@ public:
     }
 
     template <typename Relation>
-    auto add(entity_param subject, entity_param object) -> bool
+    auto ensure(
+      entity_param subject,
+      entity_param object,
+      std::type_identity<Relation> = {}) -> bool
         requires(Relation::is_relation())
     {
         return _do_add_r(

@@ -30,11 +30,11 @@ auto main(main_ctx& ctx) -> int {
     const auto hw = id_v("HelloWorld");
     const auto he = id_v("HelloNtity");
 
-    mgr.add<greeting>(hw).write().expression = "Hello";
-    mgr.add<object>(hw).write().name = "World";
+    mgr.ensure<greeting>(hw).write().expression = "Hello";
+    mgr.ensure<object>(hw).write().name = "World";
 
     mgr.copy<greeting>(hw, he);
-    mgr.add<object>(he).write().name = "Entity";
+    mgr.ensure<object>(he).write().name = "Entity";
 
     mgr.for_each_with<const greeting, const object>(
       [&](const auto&, auto& grt, auto& obj) {
