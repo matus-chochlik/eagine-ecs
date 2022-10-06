@@ -22,7 +22,7 @@ public:
       : _elements{elements} {}
 
     template <std::integral T>
-    void do_add(const basic_string_path& path, span<const T> data) {
+    void do_add(const basic_string_path& path, span<const T> data) noexcept {
         assert(!path.empty());
         assert(!data.empty());
 
@@ -48,7 +48,7 @@ public:
     }
 
     template <std::floating_point T>
-    void do_add(const basic_string_path& path, span<const T> data) {
+    void do_add(const basic_string_path& path, span<const T> data) noexcept {
         assert(!path.empty());
         assert(!data.empty());
 
@@ -61,7 +61,9 @@ public:
         }
     }
 
-    void do_add(const basic_string_path& path, span<const string_view> data) {
+    void do_add(
+      const basic_string_path& path,
+      span<const string_view> data) noexcept {
         assert(!path.empty());
         assert(!data.empty());
 
@@ -106,9 +108,9 @@ public:
     }
 
     template <typename T>
-    void do_add(const basic_string_path&, span<const T>) {}
+    void do_add(const basic_string_path&, span<const T>) noexcept {}
 
-    void add_object(const basic_string_path& path) final {
+    void add_object(const basic_string_path& path) noexcept final {
         if(path.size() == 3) {
             const element_symbol elem{path.front()};
             if(path[1] == "isotopes") {
@@ -118,7 +120,7 @@ public:
         }
     }
 
-    void failed() final {
+    void failed() noexcept final {
         _elements.clear();
     }
 
