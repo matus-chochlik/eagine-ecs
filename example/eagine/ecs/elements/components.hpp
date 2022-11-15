@@ -10,16 +10,8 @@
 
 #include "decay_modes.hpp"
 #include "entity.hpp"
-#if EAGINE_ECS_MODULE
 import <chrono>;
 import <vector>;
-#else
-#include <eagine/ecs/component.hpp>
-#include <eagine/ecs/manipulator.hpp>
-#include <eagine/identifier.hpp>
-#include <chrono>
-#include <vector>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -33,6 +25,16 @@ template <bool Const>
 struct get_manipulator<element_name, Const> {
     struct type : basic_manipulator<element_name, Const> {
         using basic_manipulator<element_name, Const>::basic_manipulator;
+
+        auto set_english_name(std::string name) -> auto& {
+            this->write().english = std::move(name);
+            return *this;
+        }
+
+        auto set_latin_name(std::string name) -> auto& {
+            this->write().latin = std::move(name);
+            return *this;
+        }
 
         auto set_names(std::string lat, std::string eng) -> auto& {
             this->write().latin = std::move(lat);
@@ -208,6 +210,13 @@ public:
         return nullptr;
     }
 
+    auto back() -> decay* {
+        if(!_modes.empty()) {
+            return &std::get<2>(_modes.back());
+        }
+        return nullptr;
+    }
+
     template <typename Function>
     void for_each(const Function& func) {
         for(auto& [id, v, info] : _modes) {
@@ -240,6 +249,10 @@ struct get_manipulator<decay_modes, Const> {
 
         auto add(const string_view symbol) -> decay* {
             return this->write().add(symbol);
+        }
+
+        auto back() -> decay* {
+            return this->write().back();
         }
     };
 };

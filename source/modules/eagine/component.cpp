@@ -75,6 +75,10 @@ public:
         return _storage.erase(cid);
     }
 
+    void clear() {
+        _storage.clear();
+    }
+
     auto operator[](const identifier_value cid) -> T& {
         return _storage[cid];
     }

@@ -5,19 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_ECS_MODULE
 import eagine.core;
 import eagine.ecs;
 import <string>;
-#else
-#include <eagine/console/console.hpp>
-#include <eagine/ecs/basic_manager.hpp>
-#include <eagine/ecs/component.hpp>
-#include <eagine/ecs/manipulator.hpp>
-#include <eagine/ecs/storage/std_map.hpp>
-#include <eagine/logging/logger.hpp>
-#include <eagine/main_ctx.hpp>
-#endif
 
 namespace eagine {
 
@@ -74,33 +64,35 @@ auto main(main_ctx& ctx) -> int {
     sso.register_relation_storage<ecs::std_map_rel_storage, father>();
     sso.register_relation_storage<ecs::std_map_rel_storage, mother>();
 
-    sso.add<name_surname>("force").set_first_name("The").set_family_name(
+    sso.ensure<name_surname>("force").set_first_name("The").set_family_name(
       "Force");
-    sso.add<name_surname>("luke").set_first_name("Luke").set_family_name(
+    sso.ensure<name_surname>("luke").set_first_name("Luke").set_family_name(
       "Skywalker");
-    sso.add<name_surname>("leia").set_first_name("Leia").set_family_name(
+    sso.ensure<name_surname>("leia").set_first_name("Leia").set_family_name(
       "Organa");
-    sso.add<name_surname>("hans").set_first_name("Hans").set_family_name("Olo");
-    sso.add<name_surname>("vader").set_first_name("Anakin").set_family_name(
+    sso.ensure<name_surname>("hans").set_first_name("Hans").set_family_name(
+      "Olo");
+    sso.ensure<name_surname>("vader").set_first_name("Anakin").set_family_name(
       "Skywalker");
-    sso.add<name_surname>("padme").set_first_name("Padme").set_family_name(
+    sso.ensure<name_surname>("padme").set_first_name("Padme").set_family_name(
       "Amidala");
-    sso.add<name_surname>("shmi").set_first_name("Shmi").set_family_name(
+    sso.ensure<name_surname>("shmi").set_first_name("Shmi").set_family_name(
       "Skywalker");
-    sso.add<name_surname>("jarjar").set_first_name("Jar-Jar").set_family_name(
+    sso.ensure<name_surname>("jarjar").set_first_name("Jar-Jar").set_family_name(
       "Binks");
-    sso.add<name_surname>("chewie").set_first_name("Chewbacca");
-    sso.add<name_surname>("yoda").set_first_name("Yoda");
-    sso.add<name_surname>("kilo").set_first_name("Kylo").set_family_name("Ren");
+    sso.ensure<name_surname>("chewie").set_first_name("Chewbacca");
+    sso.ensure<name_surname>("yoda").set_first_name("Yoda");
+    sso.ensure<name_surname>("kilo").set_first_name("Kylo").set_family_name(
+      "Ren");
 
-    sso.add<father>("luke", "vader");
-    sso.add<father>("leia", "vader");
-    sso.add<mother>("luke", "padme");
-    sso.add<mother>("leia", "padme");
-    sso.add<mother>("vader", "shmi");
-    sso.add<father>("vader", "force");
-    sso.add<mother>("kilo", "leia");
-    sso.add<father>("kilo", "hans");
+    sso.ensure<father>("luke", "vader");
+    sso.ensure<father>("leia", "vader");
+    sso.ensure<mother>("luke", "padme");
+    sso.ensure<mother>("leia", "padme");
+    sso.ensure<mother>("vader", "shmi");
+    sso.ensure<father>("vader", "force");
+    sso.ensure<mother>("kilo", "leia");
+    sso.ensure<father>("kilo", "hans");
 
     return 0;
 }

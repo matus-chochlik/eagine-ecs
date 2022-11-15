@@ -9,11 +9,6 @@
 #define EAGINE_EXAMPLE_ECS_RELATIONS_HPP
 
 #include "entity.hpp"
-#if !EAGINE_ECS_MODULE
-#include <eagine/ecs/component.hpp>
-#include <eagine/ecs/manipulator.hpp>
-#include <eagine/identifier.hpp>
-#endif
 
 namespace eagine {
 //------------------------------------------------------------------------------

@@ -5,19 +5,9 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 ///  http://www.boost.org/LICENSE_1_0.txt
 ///
-#if EAGINE_ECS_MODULE
 import eagine.core;
 import eagine.ecs;
 import <string>;
-#else
-#include <eagine/console/console.hpp>
-#include <eagine/ecs/basic_manager.hpp>
-#include <eagine/ecs/component.hpp>
-#include <eagine/ecs/manipulator.hpp>
-#include <eagine/ecs/storage/std_map.hpp>
-#include <eagine/logging/logger.hpp>
-#include <eagine/main_ctx.hpp>
-#endif
 
 namespace eagine {
 
@@ -40,11 +30,11 @@ auto main(main_ctx& ctx) -> int {
     const auto hw = id_v("HelloWorld");
     const auto he = id_v("HelloNtity");
 
-    mgr.add<greeting>(hw).write().expression = "Hello";
-    mgr.add<object>(hw).write().name = "World";
+    mgr.ensure<greeting>(hw).write().expression = "Hello";
+    mgr.ensure<object>(hw).write().name = "World";
 
     mgr.copy<greeting>(hw, he);
-    mgr.add<object>(he).write().name = "Entity";
+    mgr.ensure<object>(he).write().name = "Entity";
 
     mgr.for_each_with<const greeting, const object>(
       [&](const auto&, auto& grt, auto& obj) {
