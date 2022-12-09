@@ -21,6 +21,10 @@ public:
     elements_data_loader(ecs::basic_manager<element_symbol>& elements) noexcept
       : _elements{elements} {}
 
+    auto max_token_size() noexcept -> span_size_t final {
+        return 64;
+    }
+
     template <std::integral T>
     void do_add(const basic_string_path& path, span<const T> data) noexcept {
         assert(!path.empty());
@@ -199,9 +203,7 @@ static void do_initialize(
     elements.register_relation_storage<ecs::std_map_rel_storage, isotope>();
 
     auto input{valtree::traverse_json_stream(
-      valtree::make_building_value_tree_visitor(
-        std::make_shared<elements_data_loader>(elements)),
-      64,
+      std::make_shared<elements_data_loader>(elements),
       ctx.buffers(),
       ctx.log())};
     json_res.fetch(ctx, input.get_handler());
