@@ -38,8 +38,7 @@ public:
     }
 
     template <typename T>
-    auto read(T Component::*const member) const
-      -> optional_reference_wrapper<const T> {
+    auto read(T Component::*const member) const -> optional_reference<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
         }
@@ -83,8 +82,7 @@ public:
     }
 
     template <typename T>
-    auto read(T Component::*const member) const
-      -> optional_reference_wrapper<const T> {
+    auto read(T Component::*const member) const -> optional_reference<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
         }

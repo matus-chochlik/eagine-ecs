@@ -48,8 +48,7 @@ using relation = entity_data<Uid, data_kind::relation>;
 export template <typename T>
 class component_uid_map {
 public:
-    auto find(const identifier_value cid) noexcept
-      -> optional_reference_wrapper<T> {
+    auto find(const identifier_value cid) noexcept -> optional_reference<T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
             return {pos->second};
@@ -58,7 +57,7 @@ public:
     }
 
     auto find(const identifier_value cid) const noexcept
-      -> optional_reference_wrapper<const T> {
+      -> optional_reference<const T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
             return {pos->second};
