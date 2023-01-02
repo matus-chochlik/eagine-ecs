@@ -155,7 +155,7 @@ public:
     }
 
     auto can_remove() const noexcept -> bool {
-        return _can_rem && this->is_valid();
+        return _can_rem and this->is_valid();
     }
 
     void remove() {

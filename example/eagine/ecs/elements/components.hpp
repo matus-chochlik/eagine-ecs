@@ -55,7 +55,7 @@ struct get_manipulator<element_name, Const> {
         }
 
         auto has_english_name() const -> bool {
-            return this->is_valid() ? !this->read().english.empty() : false;
+            return this->is_valid() ? not this->read().english.empty() : false;
         }
     };
 };
@@ -211,7 +211,7 @@ public:
     }
 
     auto back() -> decay* {
-        if(!_modes.empty()) {
+        if(not _modes.empty()) {
             return &std::get<2>(_modes.back());
         }
         return nullptr;

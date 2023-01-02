@@ -499,7 +499,7 @@ private:
       std::string (*get_name)()) {
         assert(bool(strg));
 
-        if(!_get_storages<IsRelation>().emplace(cid, std::move(strg))) {
+        if(not _get_storages<IsRelation>().emplace(cid, std::move(strg))) {
             mgr_handle_cmp_is_reg(get_name());
         }
     }
@@ -595,7 +595,7 @@ auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
             assert(pd_storage);
         }
     }
-    if(!pd_storage) {
+    if(not pd_storage) {
         std::string (*get_name)() = _cmp_name_getter<Data>();
         mgr_handle_cmp_not_reg(get_name());
         unreachable();
@@ -879,7 +879,7 @@ protected:
       : _storage(strg)
       , _iter(_storage.new_iterator())
       , _curr(_iter.done() ? Entity() : _iter.current()) {
-        assert(std::is_const<C>::value || _storage.capabilities().can_modify());
+        assert(std::is_const<C>::value or _storage.capabilities().can_modify());
     }
 
     ~_manager_for_each_c_m_base() {
@@ -924,10 +924,10 @@ protected:
     using _manager_for_each_c_m_base<Entity, C>::_current;
 
     void _next_if(entity_param_t<Entity> m) {
-        if(!_done()) {
+        if(not _done()) {
             if(_current() == m) {
                 _iter.next();
-                if(!_done()) {
+                if(not _done()) {
                     _curr = _iter.current();
                 }
             }
@@ -967,7 +967,7 @@ public:
     }
 
     void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
-        if(this->_done() || (m < this->_current())) {
+        if(this->_done() or (m < this->_current())) {
             std::remove_const_t<C> cadd;
             concrete_manipulator<C> cman(nullptr, cadd, false);
             _func(m, clm..., cman);
@@ -1005,7 +1005,7 @@ public:
       , _rest(func, r...) {}
 
     auto done() -> bool {
-        return this->_done() && _rest.done();
+        return this->_done() and _rest.done();
     }
 
     void next_if_min(entity_param_t<Entity> m) {
@@ -1015,7 +1015,7 @@ public:
 
     auto min_entity() -> Entity {
         if(_rest.done()) {
-            assert(!this->_done());
+            assert(not this->_done());
             return this->_current();
         }
 
@@ -1034,7 +1034,7 @@ public:
     void apply(
       [[maybe_unused]] entity_param_t<Entity> m,
       manipulator<CL>&... clm) {
-        if(this->_done() || (m < this->_current())) {
+        if(this->_done() or (m < this->_current())) {
             std::remove_const_t<C> cadd;
             concrete_manipulator<C> cman(nullptr, cadd, false);
             _rest.apply(m, clm..., cman);
@@ -1053,7 +1053,7 @@ public:
 
     void apply() {
         static_assert(sizeof...(CL) == 0);
-        assert(!done());
+        assert(not done());
 
         apply(min_entity());
     }
@@ -1068,7 +1068,7 @@ template <typename... Component, typename Func>
 void basic_manager<Entity>::_call_for_each_c_m_p(const Func& func) {
     _manager_for_each_c_m_p_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
-    while(!hlp.done()) {
+    while(not hlp.done()) {
         hlp.apply();
         hlp.next();
     }
@@ -1091,7 +1091,7 @@ protected:
         if(_current() >= _iter.current()) {
             _iter.next();
         }
-        if(!_iter.done()) {
+        if(not _iter.done()) {
             _curr = _iter.current();
             return true;
         }
@@ -1174,11 +1174,11 @@ public:
       , _rest(func, r...) {}
 
     auto done() -> bool {
-        return this->_done() || _rest.done();
+        return this->_done() or _rest.done();
     }
 
     auto sync_to(entity_param_t<Entity> m) -> bool {
-        return _rest.sync_to(m) && this->_find(m);
+        return _rest.sync_to(m) and this->_find(m);
     }
 
     auto max_entity() -> Entity {
@@ -1193,7 +1193,7 @@ public:
     }
 
     auto next() -> bool {
-        return _rest.next() && this->_next();
+        return _rest.next() and this->_next();
     }
 
     void apply(
@@ -1209,7 +1209,7 @@ public:
 
     void apply() {
         static_assert(sizeof...(CL) == 0);
-        assert(!done());
+        assert(not done());
 
         apply(max_entity());
     }
@@ -1225,12 +1225,12 @@ void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
     _manager_for_each_c_m_r_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
     if(hlp.sync()) {
-        while(!hlp.done()) {
+        while(not hlp.done()) {
             hlp.apply();
-            if(!hlp.next()) {
+            if(not hlp.next()) {
                 break;
             }
-            if(!hlp.sync()) {
+            if(not hlp.sync()) {
                 break;
             }
         }

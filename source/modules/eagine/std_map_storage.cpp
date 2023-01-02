@@ -50,7 +50,7 @@ public:
     }
 
     void next() override {
-        assert(!done());
+        assert(not done());
         ++_i;
     }
 
@@ -114,7 +114,7 @@ public:
     }
 
     auto is_hidden(iterator_t& i) -> bool override {
-        assert(!i.done());
+        assert(not i.done());
         return is_hidden(_iter_entity(i));
     }
 
@@ -127,7 +127,7 @@ public:
     }
 
     void hide(iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         _hidden.insert(_iter_entity(i));
     }
 
@@ -156,13 +156,13 @@ public:
         bool ha = is_hidden(ea);
         bool hb = is_hidden(eb);
 
-        if(pa != _components.end() && pb != _components.end()) {
+        if(pa != _components.end() and pb != _components.end()) {
             using std::swap;
             swap(pa->second, pb->second);
-            if(ha && !hb) {
+            if(ha and not hb) {
                 show(ea);
             }
-            if(hb && !ha) {
+            if(hb and not ha) {
                 show(eb);
             }
         } else if(pa != _components.end()) {
@@ -187,7 +187,7 @@ public:
     }
 
     void remove(iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         _hidden.erase(_iter_entity(i));
         _iter_cast(i)._i = _components.erase(_iter_cast(i)._i);
     }
@@ -211,7 +211,7 @@ public:
       entity_param e) override {
         auto p = _components.find(e);
         if(p != _components.end()) {
-            if(!is_hidden(e)) {
+            if(not is_hidden(e)) {
                 concrete_manipulator<const Component> m(
                   p->second, true /*can_remove*/
                 );
@@ -226,10 +226,10 @@ public:
     void for_single(
       const callable_ref<void(entity_param, manipulator<const Component>&)> func,
       iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
-        if(!is_hidden(p->first)) {
+        if(not is_hidden(p->first)) {
             concrete_manipulator<const Component> m(
               p->second, true /*can_remove*/
             );
@@ -245,7 +245,7 @@ public:
       entity_param e) override {
         auto p = _components.find(e);
         if(p != _components.end()) {
-            if(!is_hidden(e)) {
+            if(not is_hidden(e)) {
                 // TODO: modify notification
                 concrete_manipulator<Component> m(
                   p->second, true /*can_remove*/
@@ -261,10 +261,10 @@ public:
     void for_single(
       const callable_ref<void(entity_param, manipulator<Component>&)> func,
       iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
-        if(!is_hidden(p->first)) {
+        if(not is_hidden(p->first)) {
             // TODO: modify notification
             concrete_manipulator<Component> m(
               p->second, true /*can_remove*/
@@ -282,7 +282,7 @@ public:
         concrete_manipulator<const Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
-            if(!is_hidden(p->first)) {
+            if(not is_hidden(p->first)) {
                 m.reset(p->second);
                 func(p->first, m);
                 if(m.remove_requested()) {
@@ -302,7 +302,7 @@ public:
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
-            if(!is_hidden(p->first)) {
+            if(not is_hidden(p->first)) {
                 // TODO: modify notification
                 m.reset(p->second);
                 func(p->first, m);
@@ -366,7 +366,7 @@ public:
     }
 
     void next() override {
-        assert(!done());
+        assert(not done());
         ++_i;
     }
 
@@ -426,7 +426,7 @@ public:
     }
 
     void remove(iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         _iter_cast(i)._i = _relations.erase(_iter_cast(i)._i);
     }
 
@@ -451,7 +451,7 @@ public:
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         auto& po = _iter_cast(i)._i;
         assert(po != _relations.end());
 
@@ -486,7 +486,7 @@ public:
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)> func,
       iterator_t& i) override {
-        assert(!i.done());
+        assert(not i.done());
         auto& po = _iter_cast(i)._i;
         assert(po != _relations.end());
 
@@ -505,7 +505,7 @@ public:
       entity_param subject) override {
         entity_param object = entity_traits<Entity>::minimum();
         auto po = _relations.lower_bound(_pair_t(subject, object));
-        while((po != _relations.end()) && (po->first.first == subject)) {
+        while((po != _relations.end()) and (po->first.first == subject)) {
             func(subject, po->first.second);
             ++po;
         }
@@ -525,7 +525,7 @@ public:
         concrete_manipulator<const Relation> m(true /*can_remove*/);
         entity_param object = entity_traits<Entity>::minimum();
         auto po = _relations.lower_bound(_pair_t(subject, object));
-        while((po != _relations.end()) && (po->first.first == subject)) {
+        while((po != _relations.end()) and (po->first.first == subject)) {
             m.reset(po->second);
             func(subject, po->first.second, m);
             if(m.remove_requested()) {
@@ -543,7 +543,7 @@ public:
         concrete_manipulator<Relation> m(true /*can_remove*/);
         entity_param object = entity_traits<Entity>::minimum();
         auto po = _relations.lower_bound(_pair_t(subject, object));
-        while((po != _relations.end()) && (po->first.first == subject)) {
+        while((po != _relations.end()) and (po->first.first == subject)) {
             // TODO: modify notification
             m.reset(po->second);
             func(subject, po->first.second, m);
