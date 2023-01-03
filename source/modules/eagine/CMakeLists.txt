@@ -79,3 +79,10 @@ eagine_add_module(
 	SOURCES
 )
 
+eagine_add_module_tests(
+	eagine.ecs
+	UNITS
+		manager
+	IMPORTS
+		eagine.core
+)
