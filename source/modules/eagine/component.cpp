@@ -19,19 +19,19 @@ export enum class data_kind : bool { component = false, relation = true };
 // entity_data
 export template <identifier_value Uid, data_kind Kind>
 struct entity_data {
-    static constexpr auto uid() noexcept {
+    [[nodiscard]] static constexpr auto uid() noexcept {
         return Uid;
     }
 
-    static constexpr auto kind() noexcept {
+    [[nodiscard]] static constexpr auto kind() noexcept {
         return Kind;
     }
 
-    static constexpr auto is_component() noexcept {
+    [[nodiscard]] static constexpr auto is_component() noexcept {
         return Kind == data_kind::component;
     }
 
-    static constexpr auto is_relation() noexcept {
+    [[nodiscard]] static constexpr auto is_relation() noexcept {
         return Kind == data_kind::relation;
     }
 };
@@ -48,7 +48,8 @@ using relation = entity_data<Uid, data_kind::relation>;
 export template <typename T>
 class component_uid_map {
 public:
-    auto find(const identifier_value cid) noexcept -> optional_reference<T> {
+    [[nodiscard]] auto find(const identifier_value cid) noexcept
+      -> optional_reference<T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {
             return {pos->second};
@@ -56,7 +57,7 @@ public:
         return {nothing};
     }
 
-    auto find(const identifier_value cid) const noexcept
+    [[nodiscard]] auto find(const identifier_value cid) const noexcept
       -> optional_reference<const T> {
         const auto pos{_storage.find(cid)};
         if(pos != _storage.end()) {

@@ -19,7 +19,7 @@ namespace eagine::ecs {
 
 export template <typename Component, bool Const>
 class basic_manipulator;
-
+//------------------------------------------------------------------------------
 export template <typename Component>
 class basic_manipulator<Component, false> {
 public:
@@ -28,29 +28,30 @@ public:
     basic_manipulator(Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
-    auto is_valid() const noexcept -> bool {
+    [[nodiscard]] auto is_valid() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
-    auto read() const -> const Component& {
+    [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(is_valid());
         return *_ptr;
     }
 
     template <typename T>
-    auto read(T Component::*const member) const -> optional_reference<const T> {
+    [[nodiscard]] auto read(T Component::*const member) const noexcept
+      -> optional_reference<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
         }
         return {nothing};
     }
 
-    auto write() -> Component& {
+    [[nodiscard]] auto write() -> Component& {
         assert(is_valid());
         return *_ptr;
     }
 
-    auto operator->() -> Component* {
+    [[nodiscard]] auto operator->() -> Component* {
         assert(is_valid());
         return _ptr;
     }
@@ -63,7 +64,7 @@ protected:
 private:
     Component* _ptr{nullptr};
 };
-
+//------------------------------------------------------------------------------
 export template <typename Component>
 class basic_manipulator<Component, true> {
 public:
@@ -72,24 +73,25 @@ public:
     basic_manipulator(const Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
-    auto is_valid() const noexcept -> bool {
+    [[nodiscard]] auto is_valid() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
-    auto read() const -> const Component& {
+    [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(is_valid());
         return *_ptr;
     }
 
     template <typename T>
-    auto read(T Component::*const member) const -> optional_reference<const T> {
+    [[nodiscard]] auto read(T Component::*const member) const
+      -> optional_reference<const T> {
         if(_ptr != nullptr) {
             return {*_ptr.*member};
         }
         return {nothing};
     }
 
-    auto operator->() -> const Component* {
+    [[nodiscard]] auto operator->() -> const Component* {
         assert(is_valid());
         return _ptr;
     }
@@ -102,7 +104,7 @@ protected:
 private:
     const Component* _ptr{nullptr};
 };
-
+//------------------------------------------------------------------------------
 export template <typename Component, bool Const>
 struct get_manipulator {
     using type = basic_manipulator<Component, Const>;
@@ -110,7 +112,7 @@ struct get_manipulator {
 
 export template <typename Component, bool Const>
 using get_manipulator_t = typename get_manipulator<Component, Const>::type;
-
+//------------------------------------------------------------------------------
 export template <typename Component>
 class manipulator
   : public get_manipulator_t<
@@ -142,7 +144,7 @@ public:
       : _add_place{&add}
       , _can_rem{can_rem} {}
 
-    auto can_add_component() const noexcept -> bool {
+    [[nodiscard]] auto can_add_component() const noexcept -> bool {
         return _add_place != nullptr;
     }
 
@@ -154,7 +156,7 @@ public:
         _added = true;
     }
 
-    auto can_remove() const noexcept -> bool {
+    [[nodiscard]] auto can_remove() const noexcept -> bool {
         return _can_rem and this->is_valid();
     }
 
@@ -172,7 +174,7 @@ private:
       std::remove_const_t<Component>,
       std::is_const_v<Component>>;
 };
-
+//------------------------------------------------------------------------------
 export template <typename Component>
 class concrete_manipulator : public manipulator<Component> {
 public:
@@ -184,14 +186,14 @@ public:
         this->_removed = false;
     }
 
-    auto add_requested() const noexcept -> bool {
+    [[nodiscard]] auto add_requested() const noexcept -> bool {
         return this->_added;
     }
 
-    auto remove_requested() const noexcept -> bool {
+    [[nodiscard]] auto remove_requested() const noexcept -> bool {
         return this->_removed;
     }
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine::ecs
 

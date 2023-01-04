@@ -165,31 +165,33 @@ public:
     }
 
     template <typename Relation>
-    auto knows_relation_type() const -> bool {
+    [[nodiscard]] auto knows_relation_type() const -> bool {
         return _does_know_stg_type<true>(Relation::uid());
     }
 
     template <typename Component>
-    auto component_storage_caps() const -> storage_caps {
+    [[nodiscard]] auto component_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<false>(
           Component::uid(), _cmp_name_getter<Component>());
     }
 
     template <typename Relation>
-    auto relation_storage_caps() const -> storage_caps {
+    [[nodiscard]] auto relation_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<true>(
           Relation::uid(), _cmp_name_getter<Relation>());
     }
 
     template <typename Component>
-    auto component_storage_can(const storage_cap_bit cap) const -> bool {
+    [[nodiscard]] auto component_storage_can(const storage_cap_bit cap) const
+      -> bool {
         return _get_stg_type_caps<false>(
                  Component::uid(), _cmp_name_getter<Component>())
           .has(cap);
     }
 
     template <typename Relation>
-    auto relation_storage_can(const storage_cap_bit cap) const -> bool {
+    [[nodiscard]] auto relation_storage_can(const storage_cap_bit cap) const
+      -> bool {
         return _get_stg_type_caps<true>(
                  Relation::uid(), _cmp_name_getter<Relation>())
           .has(cap);
@@ -198,37 +200,37 @@ public:
     void forget(entity_param ent);
 
     template <typename Component>
-    auto has(entity_param ent) -> bool {
+    [[nodiscard]] auto has(entity_param ent) -> bool {
         return _does_have_c(
           ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
     template <typename Relation>
-    auto has(entity_param subject, entity_param object) -> bool {
+    [[nodiscard]] auto has(entity_param subject, entity_param object) -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
     template <typename... Components>
-    auto has_all(entity_param ent) -> bool {
+    [[nodiscard]] auto has_all(entity_param ent) -> bool {
         return _count_true(_does_have_c(
                  ent, Components::uid(), _cmp_name_getter<Components>())...) ==
                (sizeof...(Components));
     }
 
     template <typename Relation>
-    auto is(entity_param object, entity_param subject) -> bool {
+    [[nodiscard]] auto is(entity_param object, entity_param subject) -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
     template <typename Component>
-    auto hidden(entity_param ent) -> bool {
+    [[nodiscard]] auto hidden(entity_param ent) -> bool {
         return _is_hidn(ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
     template <typename... Components>
-    auto all_hidden(entity_param ent) -> bool {
+    [[nodiscard]] auto all_hidden(entity_param ent) -> bool {
         return _count_true(_is_hidn(
                  ent, Components::uid(), _cmp_name_getter<Components>())...) ==
                (sizeof...(Components));
@@ -320,7 +322,10 @@ public:
     }
 
     template <typename T, typename Component>
-    auto get(T Component::*const mvp, entity_param ent, T res = T()) -> T {
+    [[nodiscard]] auto get(
+      T Component::*const mvp,
+      entity_param ent,
+      T res = T()) -> T {
         return _do_get_c(mvp, ent, res);
     }
 
@@ -415,7 +420,7 @@ public:
     }
 
     template <typename... Components>
-    auto select()
+    [[nodiscard]] auto select()
       -> component_relation<Entity, mp_list<mp_list<Components...>>> {
         return {*this};
     }

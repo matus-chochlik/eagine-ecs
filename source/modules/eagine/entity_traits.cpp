@@ -15,7 +15,7 @@ export template <typename Entity>
 struct entity_traits {
     using parameter_type = const Entity;
 
-    static auto minimum() noexcept -> Entity {
+    [[nodiscard]] static auto minimum() noexcept -> Entity {
         return Entity();
     }
 };
@@ -27,7 +27,7 @@ export template <>
 struct entity_traits<std::string> {
     using parameter_type = const std::string&;
 
-    static inline auto minimum() noexcept -> std::string {
+    [[nodiscard]] static auto minimum() noexcept -> std::string {
         return {};
     }
 };
