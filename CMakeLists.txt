@@ -17,6 +17,7 @@ add_subdirectory(submodules)
 
 include(EAGineCoreCommon)
 
+enable_testing()
 add_subdirectory(source)
 add_subdirectory(example)
 add_subdirectory(deploy)
