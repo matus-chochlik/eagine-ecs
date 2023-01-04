@@ -347,6 +347,7 @@ public:
     }
 
     template <typename Component>
+        requires(Component::is_component())
     auto for_each(
       const callable_ref<void(entity_param, manipulator<const Component>&)>&
         func) -> auto& {
@@ -355,6 +356,7 @@ public:
     }
 
     template <typename Component>
+        requires(Component::is_component())
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Component>&)>& func)
       -> auto& {
@@ -362,7 +364,22 @@ public:
         return *this;
     }
 
+    template <typename Component, typename Function>
+    auto write_each(Function&& function) -> auto& {
+        return for_each(
+          callable_ref<void(entity_param, manipulator<Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
+    template <typename Component, typename Function>
+    auto read_each(Function&& function) -> auto& {
+        return for_each(
+          callable_ref<void(entity_param, manipulator<const Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
     template <typename Relation>
+        requires(Relation::is_relation())
     auto for_each(const callable_ref<void(entity_param, entity_param)>& func)
       -> auto& {
         _call_for_each_r<Relation>(func);
@@ -370,6 +387,7 @@ public:
     }
 
     template <typename Relation>
+        requires(Relation::is_relation())
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>& func)
@@ -379,6 +397,7 @@ public:
     }
 
     template <typename Relation>
+        requires(Relation::is_relation())
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)>& func)
