@@ -225,12 +225,12 @@ public:
     }
 
     template <typename Component>
-    [[nodiscard]] auto hidden(entity_param ent) -> bool {
+    [[nodiscard]] auto is_hidden(entity_param ent) -> bool {
         return _is_hidn(ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
     template <typename... Components>
-    [[nodiscard]] auto all_hidden(entity_param ent) -> bool {
+    [[nodiscard]] auto are_hidden(entity_param ent) -> bool {
         return _count_true(_is_hidn(
                  ent, Components::uid(), _cmp_name_getter<Components>())...) ==
                (sizeof...(Components));
@@ -365,6 +365,7 @@ public:
     }
 
     template <typename Component, typename Function>
+        requires(Component::is_component())
     auto write_each(Function&& function) -> auto& {
         return for_each(
           callable_ref<void(entity_param, manipulator<Component>&)>{
@@ -372,6 +373,7 @@ public:
     }
 
     template <typename Component, typename Function>
+        requires(Component::is_component())
     auto read_each(Function&& function) -> auto& {
         return for_each(
           callable_ref<void(entity_param, manipulator<const Component>&)>{
@@ -380,8 +382,8 @@ public:
 
     template <typename Relation>
         requires(Relation::is_relation())
-    auto for_each(const callable_ref<void(entity_param, entity_param)>& func)
-      -> auto& {
+    auto for_each_having(
+      const callable_ref<void(entity_param, entity_param)>& func) -> auto& {
         _call_for_each_r<Relation>(func);
         return *this;
     }
@@ -710,7 +712,7 @@ auto basic_manager<Entity>::_is_hidn(
   std::string (*get_name)()) -> bool {
     return _apply_on_base_stg<false>(
       false,
-      [&ent](auto& b_storage) -> bool { return b_storage->hidden(ent); },
+      [&ent](auto& b_storage) -> bool { return b_storage->is_hidden(ent); },
       cid,
       get_name);
 }
