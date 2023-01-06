@@ -74,6 +74,10 @@ public:
     }
 };
 //------------------------------------------------------------------------------
+export auto all_storage_caps() noexcept -> storage_caps {
+    return {static_cast<storage_cap_bit>((1U << 6U) - 1U)};
+}
+//------------------------------------------------------------------------------
 export template <typename Entity, bool IsRelation>
 struct storage_iterator_intf;
 

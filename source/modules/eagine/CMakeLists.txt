@@ -82,6 +82,7 @@ eagine_add_module(
 eagine_add_module_tests(
 	eagine.ecs
 	UNITS
+		storage
 		manager
 	IMPORTS
 		eagine.core
