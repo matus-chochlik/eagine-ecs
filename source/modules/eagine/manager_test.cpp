@@ -56,10 +56,64 @@ struct get_manipulator<::person, Const> {
 };
 } // namespace eagine::ecs
 //------------------------------------------------------------------------------
+// register / unregister
+//------------------------------------------------------------------------------
+void manager_component_register_1(auto& s) {
+    eagitest::case_ test{s, 1, "register component"};
+
+    eagine::ecs::basic_manager<eagine::identifier_t> mgr;
+
+    test.check(not mgr.knows_component_type<person>(), "person 1");
+    test.check(not mgr.knows_component_type<greeting>(), "greeting 1");
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+
+    test.check(mgr.knows_component_type<person>(), "person 2");
+    test.check(not mgr.knows_component_type<greeting>(), "greeting 2");
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+
+    test.check(mgr.knows_component_type<person>(), "person 3");
+    test.check(mgr.knows_component_type<greeting>(), "greeting 3");
+
+    mgr.unregister_component_type<person>();
+    test.check(not mgr.knows_component_type<person>(), "person 4");
+    test.check(mgr.knows_component_type<greeting>(), "greeting 4");
+
+    mgr.unregister_component_type<greeting>();
+    test.check(not mgr.knows_component_type<person>(), "person 5");
+    test.check(not mgr.knows_component_type<greeting>(), "greeting 5");
+}
+//------------------------------------------------------------------------------
+// register / unregister
+//------------------------------------------------------------------------------
+void manager_component_register_2(auto& s) {
+    eagitest::case_ test{s, 2, "register relation"};
+
+    eagine::ecs::basic_manager<eagine::identifier_t> mgr;
+
+    test.check(not mgr.knows_relation_type<mother>(), "mother 1");
+    test.check(not mgr.knows_relation_type<father>(), "father 1");
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+
+    test.check(mgr.knows_relation_type<mother>(), "mother 2");
+    test.check(not mgr.knows_relation_type<father>(), "father 2");
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
+
+    test.check(mgr.knows_relation_type<mother>(), "mother 3");
+    test.check(mgr.knows_relation_type<father>(), "father 3");
+
+    mgr.unregister_relation_type<mother>();
+    test.check(not mgr.knows_relation_type<mother>(), "mother 4");
+    test.check(mgr.knows_relation_type<father>(), "father 4");
+
+    mgr.unregister_relation_type<father>();
+    test.check(not mgr.knows_relation_type<mother>(), "mother 5");
+    test.check(not mgr.knows_relation_type<father>(), "father 5");
+}
+//------------------------------------------------------------------------------
 // write / has
 //------------------------------------------------------------------------------
 void manager_component_write_has_1(auto& s) {
-    eagitest::case_ test{s, 1, "write/has"};
+    eagitest::case_ test{s, 3, "write/has"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -80,7 +134,7 @@ void manager_component_write_has_1(auto& s) {
 // write / get
 //------------------------------------------------------------------------------
 void manager_component_write_get_1(auto& s) {
-    eagitest::case_ test{s, 2, "write/get"};
+    eagitest::case_ test{s, 4, "write/get"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -104,7 +158,7 @@ void manager_component_write_get_1(auto& s) {
 // write / read
 //------------------------------------------------------------------------------
 void manager_component_write_read_1(auto& s) {
-    eagitest::case_ test{s, 3, "write/read"};
+    eagitest::case_ test{s, 5, "write/read"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -122,7 +176,7 @@ void manager_component_write_read_1(auto& s) {
 // manipulator
 //------------------------------------------------------------------------------
 void manager_component_manipulator_1(auto& s) {
-    eagitest::case_ test{s, 4, "manipulator"};
+    eagitest::case_ test{s, 6, "manipulator"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -154,7 +208,7 @@ void manager_component_manipulator_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_add_has_name_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 5, "add/get"};
+    eagitest::case_ test{s, 7, "add/get"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -178,7 +232,7 @@ void manager_component_add_has_name_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_for_each_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 6, "for-each"};
+    eagitest::case_ test{s, 8, "for-each"};
     eagitest::track trck{test, 0, 3};
 
     std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
@@ -217,7 +271,7 @@ void manager_component_for_each_1(auto& s) {
 // has / has-all
 //------------------------------------------------------------------------------
 void manager_component_has_1(auto& s) {
-    eagitest::case_ test{s, 7, "has"};
+    eagitest::case_ test{s, 9, "has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -249,7 +303,7 @@ void manager_component_has_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_show_hide_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 8, "show/hide"};
+    eagitest::case_ test{s, 10, "show/hide"};
     eagitest::track trck{test, 0, 2};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
@@ -362,7 +416,7 @@ void manager_component_show_hide_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_relation_has_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 8, "relation/has"};
+    eagitest::case_ test{s, 11, "relation/has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -429,7 +483,9 @@ void manager_component_relation_has_1(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 8};
+    eagitest::ctx_suite test{ctx, "manager", 11};
+    test.once(manager_component_register_1);
+    test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
     test.once(manager_component_write_get_1);
     test.once(manager_component_write_read_1);

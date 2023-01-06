@@ -539,7 +539,7 @@ private:
 
     template <bool IsRelation>
     auto _does_know_stg_type(identifier_t cid) const -> bool {
-        return _get_storages<IsRelation>().find(cid).is_valid();
+        return _get_storages<IsRelation>().find(cid).has_value();
     }
 
     template <bool IsR, typename Result, typename Func>
