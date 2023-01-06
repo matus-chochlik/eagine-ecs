@@ -254,44 +254,36 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component>
     auto ensure(entity_param ent, std::type_identity<Component> = {})
-      -> manipulator<Component>
-        requires(Component::is_component())
-    {
+      -> manipulator<Component> {
         return {_do_add_c(ent, Component{}), false};
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto add(entity_param subject, entity_param object, Relation&& rel)
-      -> manipulator<Relation>
-        requires(Relation::is_relation())
-    {
+      -> manipulator<Relation> {
         return {_do_add_r(subject, object, std::forward<Relation>(rel)), false};
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto ensure(
       entity_param subject,
       entity_param object,
-      std::type_identity<Relation> = {}) -> bool
-        requires(Relation::is_relation())
-    {
+      std::type_identity<Relation> = {}) -> bool {
         return _do_add_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
-    auto copy(entity_param from, entity_param to) -> manipulator<Component>
-        requires(Component::is_component())
-    {
+    template <component_data Component>
+    auto copy(entity_param from, entity_param to) -> manipulator<Component> {
         return {
           static_cast<Component*>(
             _do_cpy(from, to, Component::uid(), _cmp_name_getter<Component>())),
           false};
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto copy(entity_param from, entity_param to) -> basic_manager&
         requires(sizeof...(Components) > 1)
     {
@@ -300,28 +292,28 @@ public:
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto swap(entity_param e1, entity_param e2) -> auto& {
         (...,
          _do_swp(e1, e2, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto remove(entity_param ent) -> auto& {
         (...,
          _do_rem_c(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto remove_relation(entity_param subject, entity_param object) -> auto& {
         _do_rem_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
-    template <typename T, typename Component>
+    template <typename T, component_data Component>
     [[nodiscard]] auto get(
       T Component::*const mvp,
       entity_param ent,
@@ -329,7 +321,7 @@ public:
         return _do_get_c(mvp, ent, res);
     }
 
-    template <typename Component>
+    template <component_data Component>
     auto for_single(
       entity_param ent,
       const callable_ref<void(entity_param, manipulator<const Component>&)>&
@@ -338,7 +330,7 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component>
     auto for_single(
       const callable_ref<void(entity_param, manipulator<Component>&)>& func,
       entity_param ent) -> auto& {
@@ -346,8 +338,7 @@ public:
         return *this;
     }
 
-    template <typename Component>
-        requires(Component::is_component())
+    template <component_data Component>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<const Component>&)>&
         func) -> auto& {
@@ -355,8 +346,7 @@ public:
         return *this;
     }
 
-    template <typename Component>
-        requires(Component::is_component())
+    template <component_data Component>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Component>&)>& func)
       -> auto& {
@@ -364,32 +354,28 @@ public:
         return *this;
     }
 
-    template <typename Component, typename Function>
-        requires(Component::is_component())
+    template <component_data Component, typename Function>
     auto write_each(Function&& function) -> auto& {
         return for_each(
           callable_ref<void(entity_param, manipulator<Component>&)>{
             construct_from, std::forward<Function>(function)});
     }
 
-    template <typename Component, typename Function>
-        requires(Component::is_component())
+    template <component_data Component, typename Function>
     auto read_each(Function&& function) -> auto& {
         return for_each(
           callable_ref<void(entity_param, manipulator<const Component>&)>{
             construct_from, std::forward<Function>(function)});
     }
 
-    template <typename Relation>
-        requires(Relation::is_relation())
+    template <relation_data Relation>
     auto for_each_having(
       const callable_ref<void(entity_param, entity_param)>& func) -> auto& {
         _call_for_each_r<Relation>(func);
         return *this;
     }
 
-    template <typename Relation>
-        requires(Relation::is_relation())
+    template <relation_data Relation>
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>& func)
@@ -398,8 +384,7 @@ public:
         return *this;
     }
 
-    template <typename Relation>
-        requires(Relation::is_relation())
+    template <relation_data Relation>
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)>& func)
@@ -408,7 +393,7 @@ public:
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto for_each_opt(
       const callable_ref<void(entity_param, manipulator<Components>&...)>& func)
       -> auto& {
@@ -416,14 +401,14 @@ public:
         return *this;
     }
 
-    template <typename... Components, typename Func>
+    template <component_data... Components, typename Func>
     auto for_each_with_opt(const Func& func) -> auto& {
         callable_ref<void(entity_param, manipulator<Components> & ...)> wrap(
           construct_from, func);
         return for_each_opt<Components...>(wrap);
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Components>&...)>& func)
       -> basic_manager&
@@ -433,14 +418,14 @@ public:
         return *this;
     }
 
-    template <typename... Components, typename Func>
+    template <component_data... Components, typename Func>
     auto for_each_with(const Func& func) -> auto& {
         return for_each<Components...>(
           callable_ref<void(entity_param, manipulator<Components> & ...)>{
             construct_from, func});
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     [[nodiscard]] auto select()
       -> component_relation<Entity, mp_list<mp_list<Components...>>> {
         return {*this};
