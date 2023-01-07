@@ -51,6 +51,15 @@ public:
         return *_ptr;
     }
 
+    template <typename T>
+    [[nodiscard]] auto write(T Component::*member) const noexcept
+      -> optional_reference<T> {
+        if(_ptr != nullptr) {
+            return {*_ptr.*member};
+        }
+        return {nothing};
+    }
+
     [[nodiscard]] auto operator->() -> Component* {
         assert(has_value());
         return _ptr;
