@@ -28,12 +28,12 @@ public:
     basic_manipulator(Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
-    [[nodiscard]] auto is_valid() const noexcept -> bool {
+    [[nodiscard]] auto has_value() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
     [[nodiscard]] auto read() const noexcept -> const Component& {
-        assert(is_valid());
+        assert(has_value());
         return *_ptr;
     }
 
@@ -47,12 +47,12 @@ public:
     }
 
     [[nodiscard]] auto write() -> Component& {
-        assert(is_valid());
+        assert(has_value());
         return *_ptr;
     }
 
     [[nodiscard]] auto operator->() -> Component* {
-        assert(is_valid());
+        assert(has_value());
         return _ptr;
     }
 
@@ -73,12 +73,12 @@ public:
     basic_manipulator(const Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
-    [[nodiscard]] auto is_valid() const noexcept -> bool {
+    [[nodiscard]] auto has_value() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
     [[nodiscard]] auto read() const noexcept -> const Component& {
-        assert(is_valid());
+        assert(has_value());
         return *_ptr;
     }
 
@@ -92,7 +92,7 @@ public:
     }
 
     [[nodiscard]] auto operator->() -> const Component* {
-        assert(is_valid());
+        assert(has_value());
         return _ptr;
     }
 
@@ -157,7 +157,7 @@ public:
     }
 
     [[nodiscard]] auto can_remove() const noexcept -> bool {
-        return _can_rem and this->is_valid();
+        return _can_rem and this->has_value();
     }
 
     void remove() {

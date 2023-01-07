@@ -55,7 +55,7 @@ struct get_manipulator<element_name, Const> {
         }
 
         auto has_english_name() const -> bool {
-            return this->is_valid() ? not this->read().english.empty() : false;
+            return this->has_value() ? not this->read().english.empty() : false;
         }
     };
 };
@@ -77,7 +77,7 @@ struct get_manipulator<element_protons, Const> {
         }
 
         auto has_number(const short number) const -> bool {
-            return this->is_valid() ? this->read().number == number : false;
+            return this->has_value() ? this->read().number == number : false;
         }
     };
 };
@@ -99,7 +99,7 @@ struct get_manipulator<isotope_neutrons, Const> {
         }
 
         auto has_number(const short number) const -> bool {
-            return this->is_valid() ? this->read().number == number : false;
+            return this->has_value() ? this->read().number == number : false;
         }
     };
 };
@@ -121,7 +121,7 @@ struct get_manipulator<element_period, Const> {
         }
 
         auto has_number(const short number) const -> bool {
-            return this->is_valid() ? this->read().number == number : false;
+            return this->has_value() ? this->read().number == number : false;
         }
     };
 };
@@ -143,7 +143,7 @@ struct get_manipulator<element_group, Const> {
         }
 
         auto has_number(const short number) const -> bool {
-            return this->is_valid() ? this->read().number == number : false;
+            return this->has_value() ? this->read().number == number : false;
         }
     };
 };

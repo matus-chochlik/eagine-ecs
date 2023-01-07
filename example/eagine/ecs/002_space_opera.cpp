@@ -30,7 +30,7 @@ struct name_surname_manip : ecs::basic_manipulator<name_surname, Const> {
     }
 
     auto has_family_name(const char* str) const -> bool {
-        return this->is_valid() and this->read().family_name == str;
+        return this->has_value() and this->read().family_name == str;
     }
 
     auto get_family_name() const -> const std::string& {
