@@ -228,11 +228,43 @@ void manager_component_add_has_name_1(auto& s) {
       mgr.ensure<person>(id_v("bill")).has_name("Bill", "Roe"), "has name 3");
 }
 //------------------------------------------------------------------------------
+// for-single
+//------------------------------------------------------------------------------
+void manager_component_for_single_1(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 8, "for-single"};
+
+    eagine::ecs::basic_manager<std::string> mgr;
+
+    mgr.ensure<person>("john");
+    mgr.ensure<person>("jane");
+
+    mgr.write_single<person>("john", [&](const auto& ent, auto& p) {
+        test.check(ent == "john", "john id");
+        p.set("John", "Doe");
+    });
+
+    mgr.write_single<person>("jane", [&](const auto& ent, auto& p) {
+        test.check(ent == "jane", "jane id");
+        p.set("Jane", "Roe");
+    });
+
+    mgr.read_single<person>("jane", [&](const auto& ent, auto& p) {
+        test.check(ent == "jane", "jane id");
+        test.check(p.has_name("Jane", "Roe"), "has name jane");
+    });
+
+    mgr.read_single<person>("john", [&](const auto& ent, auto& p) {
+        test.check(ent == "john", "john id");
+        test.check(p.has_name("John", "Doe"), "has name john");
+    });
+}
+//------------------------------------------------------------------------------
 // for-each
 //------------------------------------------------------------------------------
 void manager_component_for_each_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 8, "for-each"};
+    eagitest::case_ test{s, 9, "for-each"};
     eagitest::track trck{test, 0, 3};
 
     std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
@@ -271,7 +303,7 @@ void manager_component_for_each_1(auto& s) {
 // has / has-all
 //------------------------------------------------------------------------------
 void manager_component_has_1(auto& s) {
-    eagitest::case_ test{s, 9, "has"};
+    eagitest::case_ test{s, 10, "has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -303,7 +335,7 @@ void manager_component_has_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_show_hide_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 10, "show/hide"};
+    eagitest::case_ test{s, 11, "show/hide"};
     eagitest::track trck{test, 0, 2};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
@@ -416,7 +448,7 @@ void manager_component_show_hide_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_relation_has_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 11, "relation/has"};
+    eagitest::case_ test{s, 12, "relation/has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -483,7 +515,7 @@ void manager_component_relation_has_1(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 11};
+    eagitest::ctx_suite test{ctx, "manager", 12};
     test.once(manager_component_register_1);
     test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
@@ -491,6 +523,7 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(manager_component_write_read_1);
     test.once(manager_component_manipulator_1);
     test.once(manager_component_add_has_name_1);
+    test.once(manager_component_for_single_1);
     test.once(manager_component_for_each_1);
     test.once(manager_component_has_1);
     test.once(manager_component_show_hide_1);

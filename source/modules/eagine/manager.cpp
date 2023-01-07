@@ -330,12 +330,29 @@ public:
         return *this;
     }
 
+    template <component_data Component, typename Function>
+    auto read_single(entity_param ent, Function&& function) -> auto& {
+        return for_single(
+          ent,
+          callable_ref<void(entity_param, manipulator<const Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
     template <component_data Component>
     auto for_single(
-      const callable_ref<void(entity_param, manipulator<Component>&)>& func,
-      entity_param ent) -> auto& {
-        _call_for_single_c<Component>(func, ent);
+      entity_param ent,
+      const callable_ref<void(entity_param, manipulator<Component>&)>& func)
+      -> auto& {
+        _call_for_single_c<Component>(ent, func);
         return *this;
+    }
+
+    template <component_data Component, typename Function>
+    auto write_single(entity_param ent, Function&& function) -> auto& {
+        return for_single(
+          ent,
+          callable_ref<void(entity_param, manipulator<Component>&)>{
+            construct_from, std::forward<Function>(function)});
     }
 
     template <component_data Component>
@@ -344,6 +361,13 @@ public:
         func) -> auto& {
         _call_for_each_c<Component>(func);
         return *this;
+    }
+
+    template <component_data Component, typename Function>
+    auto read_each(Function&& function) -> auto& {
+        return for_each(
+          callable_ref<void(entity_param, manipulator<const Component>&)>{
+            construct_from, std::forward<Function>(function)});
     }
 
     template <component_data Component>
@@ -358,13 +382,6 @@ public:
     auto write_each(Function&& function) -> auto& {
         return for_each(
           callable_ref<void(entity_param, manipulator<Component>&)>{
-            construct_from, std::forward<Function>(function)});
-    }
-
-    template <component_data Component, typename Function>
-    auto read_each(Function&& function) -> auto& {
-        return for_each(
-          callable_ref<void(entity_param, manipulator<const Component>&)>{
             construct_from, std::forward<Function>(function)});
     }
 
