@@ -322,11 +322,102 @@ void manager_component_add_copy_1(auto& s) {
     test.check(mgr.has<greeting>("john3"), "john3 greeting");
 }
 //------------------------------------------------------------------------------
+// add / swap 1
+//------------------------------------------------------------------------------
+void manager_component_add_swap_1(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 10, "add/swap 1"};
+
+    eagine::ecs::basic_manager<std::string> mgr;
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+
+    mgr.add("john1", person("John", "Doe"), greeting("Hi"));
+    mgr.add("john2", person("John", "Roe"), greeting("Hey"));
+
+    const std::string na{"N/A"};
+
+    test.check(
+      mgr.get(&greeting::expression, "john1", na) == "Hi", "john1 greeting 1");
+    test.check(
+      mgr.get(&greeting::expression, "john2", na) == "Hey", "john2 greeting 1");
+
+    mgr.swap<greeting>("john1", "john2");
+
+    test.check(
+      mgr.get(&greeting::expression, "john1", na) == "Hey", "john1 greeting 2");
+    test.check(
+      mgr.get(&greeting::expression, "john2", na) == "Hi", "john2 greeting 2");
+
+    test.check(
+      mgr.get(&person::family_name, "john1", na) == "Doe", "john1 name 1");
+    test.check(
+      mgr.get(&person::family_name, "john2", na) == "Roe", "john2 name 1");
+
+    mgr.swap<person>("john1", "john2");
+
+    test.check(
+      mgr.get(&person::family_name, "john1", na) == "Roe", "john1 name 2");
+    test.check(
+      mgr.get(&person::family_name, "john2", na) == "Doe", "john2 name 2");
+}
+//------------------------------------------------------------------------------
+// add / swap 2
+//------------------------------------------------------------------------------
+void manager_component_add_swap_2(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 11, "add/swap 2"};
+
+    eagine::ecs::basic_manager<std::string> mgr;
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+
+    mgr.add("john1", greeting("Hi"));
+    mgr.add("john2", person("John", "Roe"));
+
+    const std::string na{"N/A"};
+
+    test.check(
+      mgr.get(&greeting::expression, "john1", na) == "Hi", "john1 greeting 1");
+    test.check(
+      mgr.get(&greeting::expression, "john2", na) == na, "john2 greeting 1");
+
+    mgr.swap<greeting>("john1", "john2");
+
+    test.check(
+      mgr.get(&greeting::expression, "john1", na) == na, "john1 greeting 2");
+    test.check(
+      mgr.get(&greeting::expression, "john2", na) == "Hi", "john2 greeting 2");
+
+    test.check(
+      mgr.get(&person::family_name, "john1", na) == na, "john1 name 1");
+    test.check(
+      mgr.get(&person::family_name, "john2", na) == "Roe", "john2 name 1");
+
+    mgr.swap<person>("john1", "john2");
+
+    test.check(
+      mgr.get(&person::family_name, "john1", na) == "Roe", "john1 name 2");
+    test.check(
+      mgr.get(&person::family_name, "john2", na) == na, "john2 name 2");
+
+    mgr.swap<person, greeting>("john1", "john2");
+
+    test.check(
+      mgr.get(&greeting::expression, "john1", na) == "Hi", "john1 greeting 3");
+    test.check(
+      mgr.get(&greeting::expression, "john2", na) == na, "john2 greeting 3");
+    test.check(
+      mgr.get(&person::family_name, "john1", na) == na, "john1 name 3");
+    test.check(
+      mgr.get(&person::family_name, "john2", na) == "Roe", "john2 name 3");
+}
+//------------------------------------------------------------------------------
 // for-single
 //------------------------------------------------------------------------------
 void manager_component_for_single_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 10, "for-single"};
+    eagitest::case_ test{s, 12, "for-single"};
 
     eagine::ecs::basic_manager<std::string> mgr;
 
@@ -358,7 +449,7 @@ void manager_component_for_single_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_for_each_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 11, "for-each"};
+    eagitest::case_ test{s, 13, "for-each"};
     eagitest::track trck{test, 0, 3};
 
     std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
@@ -397,7 +488,7 @@ void manager_component_for_each_1(auto& s) {
 // has / has-all
 //------------------------------------------------------------------------------
 void manager_component_has_1(auto& s) {
-    eagitest::case_ test{s, 12, "has"};
+    eagitest::case_ test{s, 14, "has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -429,7 +520,7 @@ void manager_component_has_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_show_hide_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 13, "show/hide"};
+    eagitest::case_ test{s, 15, "show/hide"};
     eagitest::track trck{test, 0, 2};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
@@ -542,7 +633,7 @@ void manager_component_show_hide_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_relation_has_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 14, "relation/has"};
+    eagitest::case_ test{s, 16, "relation/has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -609,7 +700,7 @@ void manager_component_relation_has_1(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 14};
+    eagitest::ctx_suite test{ctx, "manager", 16};
     test.once(manager_component_register_1);
     test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
@@ -619,6 +710,8 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(manager_component_add_has_name_1);
     test.once(manager_component_add_remove_1);
     test.once(manager_component_add_copy_1);
+    test.once(manager_component_add_swap_1);
+    test.once(manager_component_add_swap_2);
     test.once(manager_component_for_single_1);
     test.once(manager_component_for_each_1);
     test.once(manager_component_has_1);
