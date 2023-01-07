@@ -485,10 +485,67 @@ void manager_component_for_each_1(auto& s) {
     });
 }
 //------------------------------------------------------------------------------
+// for-each 2
+//------------------------------------------------------------------------------
+void manager_component_for_each_2(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 14, "for-each 2"};
+    eagitest::track trck{test, 0, 4};
+
+    std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
+
+    eagine::ecs::basic_manager<eagine::identifier_t> mgr;
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+
+    std::map<std::string, std::string> greetings;
+
+    const auto add =
+      [&](
+        auto eid, std::string name, std::string family_name, std::string expr) {
+          greetings[family_name] = expr;
+          mgr.add(
+            eid,
+            person(std::move(name), std::move(family_name)),
+            greeting(std::move(expr)));
+      };
+
+    add(id_v("John"), "John", "Doe", "Hi");
+    add(id_v("Jane"), "Jane", "Roe", "Hey");
+    add(id_v("Jack"), "Jack", "Daniels", "Howdy");
+
+    mgr.for_each_with<const person, const greeting>(
+      [&](const auto, auto& p, auto& g) {
+          test.check(
+            greetings[p.read().family_name] == g.read().expression, "1");
+          greetings[p.read().name] = g.read().expression;
+          trck.checkpoint(1);
+      });
+
+    mgr.for_each_with<person, greeting>([&](const auto, auto& p, auto& g) {
+        test.check(greetings[p.write().name] == g.write().expression, "2");
+        trck.checkpoint(2);
+    });
+
+    mgr.for_each_with<const person, greeting>(
+      [&](const auto, auto& p, auto& g) {
+          test.check(greetings[p.read().name] == g.read().expression, "3");
+          g.write().expression = "How's going";
+          trck.checkpoint(3);
+      });
+
+    mgr.for_each_with<person, const greeting>(
+      [&](const auto e, auto& p, auto& g) {
+          test.check(p.read().name == eagine::identifier(e).name().str(), "4");
+          test.check(g.read().expression == "How's going", "5");
+          trck.checkpoint(4);
+      });
+}
+//------------------------------------------------------------------------------
 // has / has-all
 //------------------------------------------------------------------------------
 void manager_component_has_1(auto& s) {
-    eagitest::case_ test{s, 14, "has"};
+    eagitest::case_ test{s, 15, "has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -520,7 +577,7 @@ void manager_component_has_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_show_hide_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 15, "show/hide"};
+    eagitest::case_ test{s, 16, "show/hide"};
     eagitest::track trck{test, 0, 2};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
@@ -633,7 +690,7 @@ void manager_component_show_hide_1(auto& s) {
 //------------------------------------------------------------------------------
 void manager_component_relation_has_1(auto& s) {
     using eagine::id_v;
-    eagitest::case_ test{s, 16, "relation/has"};
+    eagitest::case_ test{s, 17, "relation/has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -700,7 +757,7 @@ void manager_component_relation_has_1(auto& s) {
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 16};
+    eagitest::ctx_suite test{ctx, "manager", 17};
     test.once(manager_component_register_1);
     test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
@@ -714,6 +771,7 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(manager_component_add_swap_2);
     test.once(manager_component_for_single_1);
     test.once(manager_component_for_each_1);
+    test.once(manager_component_for_each_2);
     test.once(manager_component_has_1);
     test.once(manager_component_show_hide_1);
     test.once(manager_component_relation_has_1);
