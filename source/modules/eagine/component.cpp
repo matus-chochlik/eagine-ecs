@@ -92,6 +92,14 @@ public:
         _storage.clear();
     }
 
+    [[nodiscard]] auto begin() noexcept {
+        return _storage.begin();
+    }
+
+    [[nodiscard]] auto end() noexcept {
+        return _storage.end();
+    }
+
     auto operator[](const identifier_value cid) -> T& {
         return _storage[cid];
     }

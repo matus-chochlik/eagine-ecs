@@ -12,6 +12,7 @@ module;
 export module eagine.ecs:manipulator;
 
 import eagine.core.types;
+import <optional>;
 import <type_traits>;
 import <utility>;
 
@@ -46,7 +47,7 @@ public:
         return {nothing};
     }
 
-    [[nodiscard]] auto write() -> Component& {
+    [[nodiscard]] auto write() const noexcept -> Component& {
         assert(has_value());
         return *_ptr;
     }
@@ -63,6 +64,31 @@ public:
     [[nodiscard]] auto operator->() -> Component* {
         assert(has_value());
         return _ptr;
+    }
+
+    template <typename F>
+    [[nodiscard]] auto and_then(F&& function) const noexcept {
+        using R = std::invoke_result_t<F, Component&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<P>{
+                  std::invoke(std::forward<F>(function), this->value())};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return std::optional<V>{
+                  std::invoke(std::forward<F>(function), this->value())};
+            } else {
+                return std::optional<V>{};
+            }
+        }
     }
 
 protected:
@@ -103,6 +129,31 @@ public:
     [[nodiscard]] auto operator->() -> const Component* {
         assert(has_value());
         return _ptr;
+    }
+
+    template <typename F>
+    [[nodiscard]] auto and_then(F&& function) const noexcept {
+        using R = std::invoke_result_t<F, const Component&>;
+        if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
+            using P = std::conditional_t<
+              std::is_reference_v<R>,
+              std::remove_reference_t<R>,
+              std::remove_pointer_t<R>>;
+            if(has_value()) {
+                return optional_reference<P>{
+                  std::invoke(std::forward<F>(function), this->value())};
+            } else {
+                return optional_reference<P>{nothing};
+            }
+        } else {
+            using V = std::remove_cvref_t<R>;
+            if(has_value()) {
+                return std::optional<V>{
+                  std::invoke(std::forward<F>(function), this->value())};
+            } else {
+                return std::optional<V>{};
+            }
+        }
     }
 
 protected:

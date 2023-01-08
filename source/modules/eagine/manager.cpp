@@ -1267,9 +1267,10 @@ void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
 //------------------------------------------------------------------------------
 template <typename Entity>
 void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
-    for(auto& storage : _cmp_storages) {
-        if(storage != nullptr) {
-            if(storage->caps().can_remove()) {
+    for(auto& entry : _cmp_storages) {
+        auto& storage{std::get<1>(entry)};
+        if(storage) {
+            if(storage->capabilities().can_remove()) {
                 storage->remove(ent);
             }
         }
