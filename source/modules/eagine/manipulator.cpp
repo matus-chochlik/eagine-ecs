@@ -182,25 +182,25 @@ class manipulator
     _nonconstC* _add_place{nullptr};
 
 public:
-    manipulator() = default;
+    manipulator() noexcept = default;
 
-    manipulator(const bool can_rem)
+    manipulator(const bool can_rem) noexcept
       : _can_rem{can_rem} {}
 
-    manipulator(Component* pcmp, const bool can_rem)
+    manipulator(Component* pcmp, const bool can_rem) noexcept
       : _base{pcmp}
       , _can_rem{can_rem} {}
 
-    manipulator(Component& cmp, const bool can_rem)
+    manipulator(Component& cmp, const bool can_rem) noexcept
       : _base{&cmp}
       , _can_rem{can_rem} {}
 
-    manipulator(Component& cmp, _nonconstC& add, const bool can_rem)
+    manipulator(Component& cmp, _nonconstC& add, const bool can_rem) noexcept
       : _base(&cmp)
       , _add_place{&add}
       , _can_rem(can_rem) {}
 
-    manipulator(std::nullptr_t, _nonconstC& add, const bool can_rem)
+    manipulator(std::nullptr_t, _nonconstC& add, const bool can_rem) noexcept
       : _add_place{&add}
       , _can_rem{can_rem} {}
 
@@ -220,7 +220,7 @@ public:
         return _can_rem and this->has_value();
     }
 
-    void remove() {
+    void remove() noexcept {
         _removed = true;
     }
 

@@ -52,7 +52,7 @@ public:
     component_relation(basic_manager<Entity>& m) noexcept
       : _m{m} {}
 
-    template <typename... C>
+    template <component_data... C>
     auto cross() noexcept
       -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
         return {_m};
@@ -72,10 +72,10 @@ private:
       const F& func,
       const mp_list<mp_list<C...>>,
       X&&... x) {
-        const auto wrap = [&func, &x...](
-                            entity_param_t<Entity> e, manipulator<C>&... c) {
-            func(std::forward<X>(x)..., e, c...);
-        };
+        const auto wrap{
+          [&func, &x...](entity_param_t<Entity> e, manipulator<C>&... c) {
+              func(std::forward<X>(x)..., e, c...);
+          }};
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
             construct_from, wrap});
@@ -87,11 +87,11 @@ private:
       const F& func,
       const mp_list<mp_list<C...>, L, Ls...>,
       X&&... x) {
-        const auto wrap = [&m, &func, &x...](
-                            entity_param_t<Entity> e, manipulator<C>&... c) {
-            _apply(
-              m, func, mp_list<L, Ls...>(), std::forward<X>(x)..., e, c...);
-        };
+        const auto wrap{
+          [&m, &func, &x...](entity_param_t<Entity> e, manipulator<C>&... c) {
+              _apply(
+                m, func, mp_list<L, Ls...>(), std::forward<X>(x)..., e, c...);
+          }};
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
             construct_from, wrap});
