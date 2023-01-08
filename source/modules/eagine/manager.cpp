@@ -260,7 +260,7 @@ public:
     /// @see has_all
     /// @see forget
     template <component_data Component>
-    [[nodiscard]] auto has(entity_param ent) -> bool {
+    [[nodiscard]] auto has(entity_param ent) noexcept -> bool {
         return _does_have_c(
           ent, Component::uid(), _cmp_name_getter<Component>());
     }
@@ -269,7 +269,8 @@ public:
     /// @see has_all
     /// @see forget
     template <relation_data Relation>
-    [[nodiscard]] auto has(entity_param subject, entity_param object) -> bool {
+    [[nodiscard]] auto has(entity_param subject, entity_param object) noexcept
+      -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
@@ -279,27 +280,28 @@ public:
     /// @see forget
     template <component_data... Components>
     [[nodiscard]] auto has_all(entity_param ent) -> bool {
-        return _count_true(_does_have_c(
-                 ent, Components::uid(), _cmp_name_getter<Components>())...) ==
-               (sizeof...(Components));
+        return (
+          ... and
+          _does_have_c(ent, Components::uid(), _cmp_name_getter<Components>()));
     }
 
     template <relation_data Relation>
-    [[nodiscard]] auto is(entity_param object, entity_param subject) -> bool {
+    [[nodiscard]] auto is(entity_param object, entity_param subject) noexcept
+      -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
     template <component_data Component>
-    [[nodiscard]] auto is_hidden(entity_param ent) -> bool {
+    [[nodiscard]] auto is_hidden(entity_param ent) noexcept -> bool {
         return _is_hidn(ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
     template <component_data... Components>
-    [[nodiscard]] auto are_hidden(entity_param ent) -> bool {
-        return _count_true(_is_hidn(
-                 ent, Components::uid(), _cmp_name_getter<Components>())...) ==
-               (sizeof...(Components));
+    [[nodiscard]] auto are_hidden(entity_param ent) noexcept -> bool {
+        return (
+          ... and
+          _is_hidn(ent, Components::uid(), _cmp_name_getter<Components>()));
     }
 
     template <component_data... Components>
@@ -559,30 +561,21 @@ private:
     template <typename C>
     using _bare_t = std::remove_const_t<std::remove_reference_t<C>>;
 
-    static constexpr auto _count_true() -> unsigned {
-        return 0U;
-    }
-
-    template <typename T, typename... P>
-    static constexpr auto _count_true(T v, P... p) -> unsigned {
-        return (bool(v) ? 1U : 0U) + _count_true(p...);
-    }
-
     template <typename C>
-    static auto _cmp_name_getter() -> std::string (*)() {
+    static auto _cmp_name_getter() noexcept -> std::string (*)() noexcept {
         return &type_name<C>;
     }
 
     template <typename Data, bool IsR>
-    auto _find_storage() -> storage<Entity, Data, IsR>&;
+    auto _find_storage() noexcept -> storage<Entity, Data, IsR>&;
 
     template <typename C>
-    auto _find_cmp_storage() -> auto& {
+    auto _find_cmp_storage() noexcept -> auto& {
         return _find_storage<C, false>();
     }
 
     template <typename R>
-    auto _find_rel_storage() -> auto& {
+    auto _find_rel_storage() noexcept -> auto& {
         return _find_storage<R, true>();
     }
 
@@ -590,7 +583,7 @@ private:
     void _do_reg_stg_type(
       std::unique_ptr<base_storage<Entity, IsRelation>>&& strg,
       identifier_t cid,
-      std::string (*get_name)()) {
+      std::string (*get_name)() noexcept) {
         assert(bool(strg));
 
         if(not _get_storages<IsRelation>().emplace(cid, std::move(strg))) {
@@ -599,41 +592,52 @@ private:
     }
 
     template <bool IsRelation>
-    void _do_unr_stg_type(identifier_t cid, std::string (*get_name)()) {
+    void _do_unr_stg_type(identifier_t cid, std::string (*get_name)() noexcept) {
         if(_get_storages<IsRelation>().erase(cid) != 1) {
             mgr_handle_cmp_not_reg(get_name());
         }
     }
 
     template <bool IsRelation>
-    auto _does_know_stg_type(identifier_t cid) const -> bool {
+    auto _does_know_stg_type(identifier_t cid) const noexcept -> bool {
         return _get_storages<IsRelation>().find(cid).has_value();
     }
 
     template <bool IsR, typename Result, typename Func>
-    auto _apply_on_base_stg(Result, const Func&, identifier_t, std::string (*)())
-      const -> Result;
+    auto _apply_on_base_stg(
+      Result,
+      const Func&,
+      identifier_t,
+      std::string (*)() noexcept) const -> Result;
 
     template <typename D, bool IsR, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
 
     template <bool IsR>
-    auto _get_stg_type_caps(identifier_t, std::string (*)()) const
-      -> storage_caps;
+    auto _get_stg_type_caps(identifier_t, std::string (*)() noexcept)
+      const noexcept -> storage_caps;
 
-    auto _does_have_c(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _does_have_c(
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) noexcept -> bool;
 
     auto _does_have_r(
       entity_param,
       entity_param,
       identifier_t,
-      std::string (*)()) -> bool;
+      std::string (*)() noexcept) noexcept -> bool;
 
-    auto _is_hidn(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _is_hidn(
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) noexcept -> bool;
 
-    auto _do_show(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _do_show(entity_param, identifier_t, std::string (*)() noexcept)
+      -> bool;
 
-    auto _do_hide(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _do_hide(entity_param, identifier_t, std::string (*)() noexcept)
+      -> bool;
 
     template <typename Component>
     auto _do_add_c(entity_param, Component&& component) -> Component*;
@@ -642,19 +646,32 @@ private:
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
       -> Relation*;
 
-    auto _do_add_r(entity_param, entity_param, identifier_t, std::string (*)())
+    auto _do_add_r(
+      entity_param,
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
+
+    auto _do_cpy(
+      entity_param f,
+      entity_param t,
+      identifier_t,
+      std::string (*)() noexcept) -> void*;
+
+    auto _do_swp(
+      entity_param f,
+      entity_param t,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
+
+    auto _do_rem_c(entity_param, identifier_t, std::string (*)() noexcept)
       -> bool;
 
-    auto _do_cpy(entity_param f, entity_param t, identifier_t, std::string (*)())
-      -> void*;
-
-    auto _do_swp(entity_param f, entity_param t, identifier_t, std::string (*)())
-      -> bool;
-
-    auto _do_rem_c(entity_param, identifier_t, std::string (*)()) -> bool;
-
-    auto _do_rem_r(entity_param, entity_param, identifier_t, std::string (*)())
-      -> bool;
+    auto _do_rem_r(
+      entity_param,
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
@@ -677,7 +694,8 @@ private:
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Data, bool IsR>
-auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
+auto basic_manager<Entity>::_find_storage() noexcept
+  -> storage<Entity, Data, IsR>& {
 
     using S = storage<Entity, Data, IsR>;
     S* pd_storage = nullptr;
@@ -690,7 +708,7 @@ auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
         }
     }
     if(not pd_storage) {
-        std::string (*get_name)() = _cmp_name_getter<Data>();
+        std::string (*get_name)() noexcept = _cmp_name_getter<Data>();
         mgr_handle_cmp_not_reg(get_name());
         unreachable();
     }
@@ -703,7 +721,7 @@ auto basic_manager<Entity>::_apply_on_base_stg(
   Result fallback,
   const Func& func,
   identifier_t cid,
-  std::string (*get_name)()) const -> Result {
+  std::string (*get_name)() noexcept) const -> Result {
     auto& storages = _get_storages<IsRelation>();
 
     if(auto found{storages.find(cid)}) {
@@ -738,7 +756,7 @@ template <typename Entity>
 template <bool IsRelation>
 auto basic_manager<Entity>::_get_stg_type_caps(
   identifier_t cid,
-  std::string (*get_name)()) const -> storage_caps {
+  std::string (*get_name)() noexcept) const noexcept -> storage_caps {
     return _apply_on_base_stg<IsRelation>(
       storage_caps(),
       [](auto& b_storage) -> storage_caps { return b_storage->capabilities(); },
@@ -750,7 +768,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_does_have_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->has(ent); },
@@ -763,7 +781,7 @@ auto basic_manager<Entity>::_does_have_r(
   entity_param_t<Entity> subject,
   entity_param_t<Entity> object,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subject, &object](auto& b_storage) -> bool {
@@ -777,7 +795,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_is_hidn(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->is_hidden(ent); },
@@ -789,7 +807,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_show(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->show(ent); },
@@ -801,7 +819,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_hide(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->hide(ent); },
@@ -838,7 +856,7 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param subject,
   entity_param object,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subject, &object](auto& b_storage) -> bool {
@@ -853,7 +871,7 @@ auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
   identifier_t cid,
-  std::string (*get_name)()) -> void* {
+  std::string (*get_name)() noexcept) -> void* {
     return _apply_on_base_stg<false>(
       static_cast<void*>(nullptr),
       [&from, &to](auto& b_storage) -> void* {
@@ -868,7 +886,7 @@ auto basic_manager<Entity>::_do_swp(
   entity_param_t<Entity> e1,
   entity_param_t<Entity> e2,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&e1, &e2](auto& b_storage) -> bool {
@@ -883,7 +901,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_rem_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->remove(ent); },
@@ -896,7 +914,7 @@ auto basic_manager<Entity>::_do_rem_r(
   entity_param_t<Entity> subj,
   entity_param_t<Entity> obj,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subj, &obj](auto& b_storage) -> bool {
