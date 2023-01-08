@@ -49,11 +49,12 @@ export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
 
 public:
-    component_relation(basic_manager<Entity>& m)
-      : _m(m) {}
+    component_relation(basic_manager<Entity>& m) noexcept
+      : _m{m} {}
 
     template <typename... C>
-    auto cross() -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
+    auto cross() noexcept
+      -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
         return {_m};
     }
 
@@ -93,7 +94,7 @@ private:
         };
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
-            wrap});
+            construct_from, wrap});
     }
 };
 //------------------------------------------------------------------------------

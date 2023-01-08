@@ -1152,10 +1152,79 @@ void manager_component_clear_1(auto& s) {
     test.check(not mgr.has<father>("angryguy", "hans"), "16");
 }
 //------------------------------------------------------------------------------
+// select/cross
+//------------------------------------------------------------------------------
+void manager_component_select_cross_1(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 24, "select/cross"};
+
+    eagine::ecs::basic_manager<std::string> mgr;
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+
+    const auto run_tests =
+      [&](int same, int diff, int reld, std::string_view label) {
+          int csame{0};
+          int cdiff{0};
+          int creld{0};
+          const auto do_tests = [&](auto e1, auto&, auto e2, auto&) {
+              if(e1 == e2) {
+                  ++csame;
+              } else {
+                  ++cdiff;
+              }
+              if(mgr.has<mother>(e1, e2) or mgr.has<father>(e1, e2)) {
+                  ++creld;
+              }
+          };
+          mgr.select<person>().cross<person>().for_each(do_tests);
+
+          test.check_equal(same, csame, label);
+          test.check_equal(diff, cdiff, label);
+          test.check_equal(reld, creld, label);
+      };
+
+    mgr.ensure<person>("force").set("The", "Force");
+    run_tests(1, 0, 0, "A");
+
+    mgr.ensure<person>("shmi").set("Shmi", "Skywalker");
+    run_tests(2, 2, 0, "B");
+
+    mgr.ensure<person>("vader").set("Anakin", "Skywalker");
+    mgr.ensure<mother>("vader", "shmi");
+    run_tests(3, 6, 1, "C");
+
+    mgr.ensure<person>("padme").set("Padme", "Amidala");
+    mgr.ensure<father>("vader", "force");
+    run_tests(4, 12, 2, "D");
+
+    mgr.ensure<person>("luke").set("Luke", "Skywalker");
+    mgr.ensure<person>("leia").set("Leia", "Organa");
+    mgr.ensure<father>("leia", "vader");
+    mgr.ensure<mother>("leia", "padme");
+    mgr.ensure<father>("luke", "vader");
+    mgr.ensure<mother>("luke", "padme");
+    run_tests(6, 30, 6, "E");
+
+    mgr.ensure<person>("jarjar").set("Jar-Jar", "Binks");
+    run_tests(7, 42, 6, "F");
+
+    mgr.ensure<person>("yoda").set("Yoda", "N/A");
+    mgr.ensure<person>("hans").set("Hans", "Olo");
+    mgr.ensure<person>("chewie").set("Chewbacca", "N/A");
+    run_tests(10, 90, 6, "G");
+
+    mgr.ensure<person>("angryguy").set("Kylo", "Ren");
+    mgr.ensure<mother>("angryguy", "leia");
+    mgr.ensure<father>("angryguy", "hans");
+    run_tests(11, 110, 8, "H");
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 23};
+    eagitest::ctx_suite test{ctx, "manager", 24};
     test.once(manager_component_register_1);
     test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
@@ -1179,6 +1248,7 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(manager_component_relation_has_1);
     test.once(manager_component_remove_relation_1);
     test.once(manager_component_clear_1);
+    test.once(manager_component_select_cross_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
