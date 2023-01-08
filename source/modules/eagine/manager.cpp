@@ -518,6 +518,7 @@ public:
 
     auto clear() noexcept -> basic_manager& {
         _cmp_storages.clear();
+        _rel_storages.clear();
         return *this;
     }
 
@@ -730,7 +731,6 @@ auto basic_manager<Entity>::_apply_on_base_stg(
             return func(bs_storage);
         }
     }
-    mgr_handle_cmp_not_reg(get_name());
     return fallback;
 }
 //------------------------------------------------------------------------------
