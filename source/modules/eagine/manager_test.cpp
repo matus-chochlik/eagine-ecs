@@ -1001,10 +1001,86 @@ void manager_component_relation_has_1(auto& s) {
        }});
 }
 //------------------------------------------------------------------------------
+// remove relation
+//------------------------------------------------------------------------------
+void manager_component_remove_relation_1(auto& s) {
+    using eagine::id_v;
+    eagitest::case_ test{s, 22, "remove relation"};
+
+    eagine::ecs::basic_manager<std::string> mgr;
+    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+
+    mgr.ensure<person>("force").set("The", "Force");
+    mgr.ensure<person>("luke").set("Luke", "Skywalker");
+    mgr.ensure<person>("leia").set("Leia", "Organa");
+    mgr.ensure<person>("hans").set("Hans", "Olo");
+    mgr.ensure<person>("vader").set("Anakin", "Skywalker");
+    mgr.ensure<person>("padme").set("Padme", "Amidala");
+    mgr.ensure<person>("shmi").set("Shmi", "Skywalker");
+    mgr.ensure<person>("jarjar").set("Jar-Jar", "Binks");
+    mgr.ensure<person>("chewie").set("Chewbacca", "N/A");
+    mgr.ensure<person>("yoda").set("Yoda", "N/A");
+    mgr.ensure<person>("angryguy").set("Kylo", "Ren");
+
+    mgr.ensure<father>("luke", "vader");
+    mgr.ensure<father>("leia", "vader");
+    mgr.ensure<mother>("luke", "padme");
+    mgr.ensure<mother>("leia", "padme");
+    mgr.ensure<mother>("vader", "shmi");
+    mgr.ensure<father>("vader", "force");
+    mgr.ensure<mother>("angryguy", "leia");
+    mgr.ensure<father>("angryguy", "hans");
+
+    test.check(mgr.has<father>("luke", "vader"), "1");
+    test.check(mgr.has<father>("leia", "vader"), "2");
+    test.check(mgr.has<mother>("luke", "padme"), "3");
+    test.check(mgr.has<mother>("leia", "padme"), "4");
+    test.check(mgr.has<mother>("vader", "shmi"), "5");
+    test.check(mgr.has<father>("vader", "force"), "6");
+    test.check(mgr.has<mother>("angryguy", "leia"), "7");
+    test.check(mgr.has<father>("angryguy", "hans"), "8");
+
+    mgr.remove_relation<mother>("vader", "shmi");
+    test.check(mgr.has<father>("luke", "vader"), "9");
+    test.check(mgr.has<father>("leia", "vader"), "10");
+    test.check(mgr.has<mother>("luke", "padme"), "11");
+    test.check(mgr.has<mother>("leia", "padme"), "12");
+    test.check(not mgr.has<mother>("vader", "shmi"), "13");
+    test.check(mgr.has<father>("vader", "force"), "14");
+    test.check(mgr.has<mother>("angryguy", "leia"), "15");
+    test.check(mgr.has<father>("angryguy", "hans"), "16");
+
+    mgr.remove_relation<mother>("luke", "padme");
+    mgr.remove_relation<mother>("leia", "padme");
+
+    test.check(mgr.has<father>("luke", "vader"), "17");
+    test.check(mgr.has<father>("leia", "vader"), "18");
+    test.check(not mgr.has<mother>("luke", "padme"), "19");
+    test.check(not mgr.has<mother>("leia", "padme"), "20");
+    test.check(not mgr.has<mother>("vader", "shmi"), "21");
+    test.check(mgr.has<father>("vader", "force"), "22");
+    test.check(mgr.has<mother>("angryguy", "leia"), "23");
+    test.check(mgr.has<father>("angryguy", "hans"), "24");
+
+    mgr.remove_relation<father>("luke", "vader");
+    mgr.remove_relation<father>("leia", "vader");
+
+    test.check(not mgr.has<father>("luke", "vader"), "25");
+    test.check(not mgr.has<father>("leia", "vader"), "26");
+    test.check(not mgr.has<mother>("luke", "padme"), "27");
+    test.check(not mgr.has<mother>("leia", "padme"), "28");
+    test.check(not mgr.has<mother>("vader", "shmi"), "29");
+    test.check(mgr.has<father>("vader", "force"), "30");
+    test.check(mgr.has<mother>("angryguy", "leia"), "31");
+    test.check(mgr.has<father>("angryguy", "hans"), "32");
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "manager", 21};
+    eagitest::ctx_suite test{ctx, "manager", 22};
     test.once(manager_component_register_1);
     test.once(manager_component_register_2);
     test.once(manager_component_write_has_1);
@@ -1026,6 +1102,7 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(manager_component_has_1);
     test.once(manager_component_show_hide_1);
     test.once(manager_component_relation_has_1);
+    test.once(manager_component_remove_relation_1);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
