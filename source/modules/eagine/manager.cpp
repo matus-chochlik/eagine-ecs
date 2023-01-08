@@ -97,14 +97,22 @@ private:
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Main class, managing entity data. Entities are represented by values of Entity.
+/// @ingroup ecs
 export template <typename Entity>
 class basic_manager {
 public:
+    /// @brief Prefered type to pass immutable entity identifier parameters.
     using entity_param = entity_param_t<Entity>;
 
-    basic_manager() = default;
+    /// @brief Default constructor.
+    constexpr basic_manager() noexcept = default;
 
-    template <typename Component>
+    /// @brief Registers the storage to be used to store instances of Component type.
+    /// @see unregister_component_type
+    /// @see knows_component_type
+    /// @see register_relation_storage
+    template <component_data Component>
     auto register_component_type(
       std::unique_ptr<component_storage<Entity, Component>>&& strg) -> auto& {
         _do_reg_stg_type<false>(
@@ -114,7 +122,11 @@ public:
         return *this;
     }
 
-    template <typename Relation>
+    /// @brief Registers the storage to be used to store instances of Relation type.
+    /// @see unregister_relation_type
+    /// @see knows_relation_type
+    /// @see register_component_storage
+    template <relation_data Relation>
     auto register_relation_type(
       std::unique_ptr<relation_storage<Entity, Relation>>&& strg) -> auto& {
         _do_reg_stg_type<true>(
@@ -124,10 +136,14 @@ public:
         return *this;
     }
 
+    /// @brief Registers the storage to be used to store instances of Component type.
+    /// @see unregister_component_type
+    /// @see knows_component_type
+    /// @see register_relation_storage
     template <
       template <class, class>
       class Storage,
-      typename Component,
+      component_data Component,
       typename... P>
     auto register_component_storage(P&&... p) -> auto& {
         register_component_type<Component>(
@@ -135,10 +151,14 @@ public:
         return *this;
     }
 
+    /// @brief Registers the storage to be used to store instances of Relation type.
+    /// @see unregister_relation_type
+    /// @see knows_relation_type
+    /// @see register_component_storage
     template <
       template <class, class>
       class Storage,
-      typename Relation,
+      relation_data Relation,
       typename... P>
     auto register_relation_storage(P&&... p) -> auto& {
         register_relation_type<Relation>(
@@ -146,42 +166,72 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    /// @brief Unregisters the specified Component type.
+    /// @see register_component_storage
+    /// @see knows_component_type
+    /// @see unregister_relation_type
+    template <component_data Component>
     auto unregister_component_type() -> auto& {
         _do_unr_stg_type<false>(
           Component::uid(), _cmp_name_getter<Component>());
         return *this;
     }
 
-    template <typename Relation>
+    /// @brief Unregisters the specified Relation type.
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    /// @see unregister_component_type
+    template <relation_data Relation>
     auto unregister_relation_type() -> auto& {
         _do_unr_stg_type<true>(Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
-    template <typename Component>
+    /// @brief Indicates if the specified Component type can be used with this manager.
+    /// @see register_component_storage
+    /// @see register_relation_storage
+    /// @see component_storage_caps
+    /// @see knows_relation_type
+    template <component_data Component>
     auto knows_component_type() const -> bool {
         return _does_know_stg_type<false>(Component::uid());
     }
 
-    template <typename Relation>
+    /// @brief Indicates if the specified Relation type can be used with this manager.
+    /// @see register_relation_storage
+    /// @see register_component_storage
+    /// @see relation_storage_caps
+    /// @see knows_component_type
+    template <relation_data Relation>
     [[nodiscard]] auto knows_relation_type() const -> bool {
         return _does_know_stg_type<true>(Relation::uid());
     }
 
-    template <typename Component>
+    /// @brief Returns an object specifying Component storage capabilities.
+    /// @see component_storage_can
+    /// @see register_component_storage
+    /// @see knows_component_type
+    template <component_data Component>
     [[nodiscard]] auto component_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<false>(
           Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename Relation>
+    /// @brief Returns an object specifying Relation storage capabilities.
+    /// @see relation_storage_can
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    template <relation_data Relation>
     [[nodiscard]] auto relation_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<true>(
           Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
+    /// @brief Indicates if the storage object for Component has specified capability.
+    /// @see component_storage_caps
+    /// @see register_component_storage
+    /// @see knows_component_type
+    template <component_data Component>
     [[nodiscard]] auto component_storage_can(const storage_cap_bit cap) const
       -> bool {
         return _get_stg_type_caps<false>(
@@ -189,7 +239,11 @@ public:
           .has(cap);
     }
 
-    template <typename Relation>
+    /// @brief Indicates if the storage object for Relation has specified capability.
+    /// @see relation_storage_caps
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    template <relation_data Relation>
     [[nodiscard]] auto relation_storage_can(const storage_cap_bit cap) const
       -> bool {
         return _get_stg_type_caps<true>(
@@ -197,58 +251,70 @@ public:
           .has(cap);
     }
 
+    /// @brief Removes all information, including components, about the specified entity.
+    /// @see has
+    /// @see has_all
     void forget(entity_param ent);
 
-    template <typename Component>
+    /// @brief Indicates if the specified entity has the specified Component.
+    /// @see has_all
+    /// @see forget
+    template <component_data Component>
     [[nodiscard]] auto has(entity_param ent) -> bool {
         return _does_have_c(
           ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename Relation>
+    /// @brief Indicates if the specified subject has the specified Relation with object.
+    /// @see has_all
+    /// @see forget
+    template <relation_data Relation>
     [[nodiscard]] auto has(entity_param subject, entity_param object) -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename... Components>
+    /// @brief Indicates if the specified entity has all the specified Components.
+    /// @see has
+    /// @see forget
+    template <component_data... Components>
     [[nodiscard]] auto has_all(entity_param ent) -> bool {
         return _count_true(_does_have_c(
                  ent, Components::uid(), _cmp_name_getter<Components>())...) ==
                (sizeof...(Components));
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     [[nodiscard]] auto is(entity_param object, entity_param subject) -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
+    template <component_data Component>
     [[nodiscard]] auto is_hidden(entity_param ent) -> bool {
         return _is_hidn(ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     [[nodiscard]] auto are_hidden(entity_param ent) -> bool {
         return _count_true(_is_hidn(
                  ent, Components::uid(), _cmp_name_getter<Components>())...) ==
                (sizeof...(Components));
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto show(entity_param ent) -> auto& {
         (..., _do_show(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto hide(entity_param ent) -> auto& {
         (..., _do_hide(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto add(entity_param ent, Components&&... components) -> auto& {
         (..., _do_add_c(ent, std::move(components)));
         return *this;
