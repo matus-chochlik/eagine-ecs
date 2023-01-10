@@ -45,6 +45,8 @@ class basic_manager;
 export template <typename Entity, typename PL>
 class component_relation;
 
+/// @brief Class that can be used to do cartesian products of various component types.
+/// @see ecs
 export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
 
@@ -52,15 +54,17 @@ public:
     component_relation(basic_manager<Entity>& m) noexcept
       : _m{m} {}
 
-    template <component_data... C>
+    /// @brief Extend this relation with a cross product of additional components.
+    template <component_data... Components>
     auto cross() noexcept
-      -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
+      -> component_relation<Entity, mp_list<PL..., mp_list<Components...>>> {
         return {_m};
     }
 
+    /// @brief Call the specified function on each combination of component objects.
     template <typename Func>
-    void for_each(const Func& func) {
-        _apply(_m, func, mp_list<PL...>());
+    void for_each(const Func& function) {
+        _apply(_m, function, mp_list<PL...>());
     }
 
 private:

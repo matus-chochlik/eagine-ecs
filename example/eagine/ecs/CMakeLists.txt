@@ -38,6 +38,7 @@ function(eagine_example_common EXAMPLE_NAME)
 	eagine_install_example(eagine-${EXAMPLE_NAME})
 endfunction()
 
+eagine_example_common(000_particles)
 eagine_example_common(001_hello)
 eagine_example_common(002_space_opera)
 
