@@ -21,6 +21,9 @@ namespace eagine::ecs {
 export template <typename Component, bool Const>
 class basic_manipulator;
 //------------------------------------------------------------------------------
+/// @brief Implementation of base functionality for read/write manipulators.
+/// @ingroup ecs
+/// @note Do not use directly, use manipulator instead.
 export template <typename Component>
 class basic_manipulator<Component, false> {
 public:
@@ -29,15 +32,18 @@ public:
     basic_manipulator(Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
+    /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
+    /// @brief Gives read access to the referenced component.
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
         return *_ptr;
     }
 
+    /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const noexcept
       -> optional_reference<const T> {
@@ -47,11 +53,13 @@ public:
         return {nothing};
     }
 
+    /// @brief Gives write access to the referenced component.
     [[nodiscard]] auto write() const noexcept -> Component& {
         assert(has_value());
         return *_ptr;
     }
 
+    /// @brief Gives write access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto write(T Component::*member) const noexcept
       -> optional_reference<T> {
@@ -61,11 +69,13 @@ public:
         return {nothing};
     }
 
+    /// @brief Gives write access to the referenced component.
     [[nodiscard]] auto operator->() -> Component* {
         assert(has_value());
         return _ptr;
     }
 
+    /// @brief Calls a function on the referenced component if any.
     template <typename F>
     [[nodiscard]] auto and_then(F&& function) const noexcept {
         using R = std::invoke_result_t<F, Component&>;
@@ -100,6 +110,9 @@ private:
     Component* _ptr{nullptr};
 };
 //------------------------------------------------------------------------------
+/// @brief Implementation of base functionality for read-only manipulators.
+/// @ingroup ecs
+/// @note Do not use directly, use manipulator instead.
 export template <typename Component>
 class basic_manipulator<Component, true> {
 public:
@@ -108,15 +121,18 @@ public:
     basic_manipulator(const Component* pcmp) noexcept
       : _ptr{pcmp} {}
 
+    /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
         return _ptr != nullptr;
     }
 
+    /// @brief Gives read access to the specified component data member.
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
         return *_ptr;
     }
 
+    /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const
       -> optional_reference<const T> {
@@ -126,11 +142,13 @@ public:
         return {nothing};
     }
 
+    /// @brief Gives read access to the referenced component.
     [[nodiscard]] auto operator->() -> const Component* {
         assert(has_value());
         return _ptr;
     }
 
+    /// @brief Calls a function on the referenced component if any.
     template <typename F>
     [[nodiscard]] auto and_then(F&& function) const noexcept {
         using R = std::invoke_result_t<F, const Component&>;
