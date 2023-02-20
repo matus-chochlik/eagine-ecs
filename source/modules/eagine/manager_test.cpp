@@ -768,19 +768,19 @@ void manager_component_for_each_5(auto& s) {
               both.checkpoint(1);
               test.check(
                 g.read(&greeting::expression)
-                  .and_then([&](const auto& expr) { return not expr.empty(); })
+                  .transform([&](const auto& expr) { return not expr.empty(); })
                   .value_or(false),
                 "has greeting");
 
               test.check(
                 p.read(&person::family_name)
-                  .and_then([&](const auto& name) { return not name.empty(); })
+                  .transform([&](const auto& name) { return not name.empty(); })
                   .value_or(false),
                 "has family name");
 
               test.check(
                 p.write(&person::name)
-                  .and_then([&](const auto& name) {
+                  .transform([&](const auto& name) {
                       return name == eagine::identifier(e).name().str();
                   })
                   .value_or(false),

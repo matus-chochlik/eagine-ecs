@@ -77,7 +77,7 @@ public:
 
     /// @brief Calls a function on the referenced component if any.
     template <typename F>
-    [[nodiscard]] auto and_then(F&& function) const noexcept {
+    [[nodiscard]] auto transform(F&& function) const noexcept {
         using R = std::invoke_result_t<F, Component&>;
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using P = std::conditional_t<
@@ -150,7 +150,7 @@ public:
 
     /// @brief Calls a function on the referenced component if any.
     template <typename F>
-    [[nodiscard]] auto and_then(F&& function) const noexcept {
+    [[nodiscard]] auto transform(F&& function) const noexcept {
         using R = std::invoke_result_t<F, const Component&>;
         if constexpr(std::is_reference_v<R> or std::is_pointer_v<R>) {
             using P = std::conditional_t<
