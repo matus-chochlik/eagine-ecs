@@ -12,6 +12,7 @@ module;
 export module eagine.ecs:manipulator;
 
 import eagine.core.types;
+import eagine.core.concepts;
 import <optional>;
 import <type_traits>;
 import <utility>;
@@ -76,6 +77,7 @@ public:
     }
 
     /// @brief Calls a function on the referenced component if any.
+    /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) const noexcept {
         using R = std::invoke_result_t<F, Component&>;
@@ -98,6 +100,20 @@ public:
             } else {
                 return std::optional<V>{};
             }
+        }
+    }
+
+    /// @brief Calls a function on the referenced component if any.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<
+                 std::remove_cvref_t<std::invoke_result_t<F, Component&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R = std::remove_cvref_t<std::invoke_result_t<F, Component&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
         }
     }
 
@@ -149,6 +165,7 @@ public:
     }
 
     /// @brief Calls a function on the referenced component if any.
+    /// @see and_then
     template <typename F>
     [[nodiscard]] auto transform(F&& function) const noexcept {
         using R = std::invoke_result_t<F, const Component&>;
@@ -171,6 +188,21 @@ public:
             } else {
                 return std::optional<V>{};
             }
+        }
+    }
+
+    /// @brief Calls a function on the referenced component if any.
+    /// @see transform
+    template <typename F>
+        requires(optional_like<
+                 std::remove_cvref_t<std::invoke_result_t<F, const Component&>>>)
+    [[nodiscard]] auto and_then(F&& function) {
+        using R =
+          std::remove_cvref_t<std::invoke_result_t<F, const Component&>>;
+        if(has_value()) {
+            return std::invoke(std::forward<F>(function), this->value());
+        } else {
+            return R{};
         }
     }
 
