@@ -10,8 +10,7 @@
 
 #include "decay_modes.hpp"
 #include "entity.hpp"
-import <chrono>;
-import <vector>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

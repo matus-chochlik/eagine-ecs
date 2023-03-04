@@ -8,8 +8,7 @@
 #include <eagine/testing/unit_begin_ctx.hpp>
 import eagine.core;
 import eagine.ecs;
-import <map>;
-import <tuple>;
+import std;
 //------------------------------------------------------------------------------
 struct person : eagine::ecs::component<"Person"> {
     person() noexcept = default;

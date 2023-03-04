@@ -11,7 +11,7 @@
 #include "relations.hpp"
 #include <cassert>
 
-import <concepts>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

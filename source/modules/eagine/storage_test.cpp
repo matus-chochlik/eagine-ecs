@@ -8,6 +8,7 @@
 #include <eagine/testing/unit_begin_ctx.hpp>
 import eagine.core;
 import eagine.ecs;
+import std;
 //------------------------------------------------------------------------------
 // storage capabilities
 //------------------------------------------------------------------------------

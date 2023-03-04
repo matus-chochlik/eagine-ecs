@@ -10,8 +10,7 @@ export module eagine.ecs:component;
 import eagine.core.types;
 import eagine.core.identifier;
 export import eagine.core.container;
-import <concepts>;
-import <type_traits>;
+import std;
 
 namespace eagine::ecs {
 

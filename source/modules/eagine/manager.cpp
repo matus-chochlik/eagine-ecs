@@ -21,10 +21,7 @@ import :component;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-export import <memory>;
-export import <string>;
-import <stdexcept>;
-import <type_traits>;
+import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------

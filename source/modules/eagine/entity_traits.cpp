@@ -7,7 +7,7 @@
 ///
 export module eagine.ecs:entity_traits;
 
-export import <string>;
+import std;
 
 namespace eagine::ecs {
 

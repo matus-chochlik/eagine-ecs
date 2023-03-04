@@ -9,9 +9,7 @@
 #include "entity.hpp"
 #include "init.hpp"
 #include "relations.hpp"
-import <array>;
-import <iostream>;
-import <set>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------

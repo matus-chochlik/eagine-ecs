@@ -13,9 +13,7 @@ export module eagine.ecs:manipulator;
 
 import eagine.core.types;
 import eagine.core.concepts;
-import <optional>;
-import <type_traits>;
-import <utility>;
+import std;
 
 namespace eagine::ecs {
 

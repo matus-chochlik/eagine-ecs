@@ -19,8 +19,7 @@ import :manipulator;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-export import <map>;
-export import <set>;
+import std;
 
 namespace eagine::ecs {
 

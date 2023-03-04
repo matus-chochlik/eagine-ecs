@@ -9,7 +9,7 @@
 #define EAGINE_EXAMPLE_ECS_DECAY_MODES_HPP
 
 #include "entity.hpp"
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
