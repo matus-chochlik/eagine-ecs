@@ -17,7 +17,7 @@ import eagine.core.utility;
 import :entity_traits;
 import :manipulator;
 import :storage;
-import <utility>;
+import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------

@@ -18,6 +18,7 @@ eagine_add_module(
 	eagine.ecs PARTITION manipulator
 	IMPORTS
 		eagine.core.types
+		eagine.core.concepts
 )
 
 eagine_add_module(
@@ -79,3 +80,12 @@ eagine_add_module(
 	SOURCES
 )
 
+eagine_add_module_tests(
+	eagine.ecs
+	UNITS
+		storage
+		manager
+	IMPORTS
+		eagine.core
+)
+set_tests_properties(build-test.eagine.ecs.manager PROPERTIES COST 10)

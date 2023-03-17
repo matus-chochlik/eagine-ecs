@@ -7,7 +7,7 @@
 ///
 import eagine.core;
 import eagine.ecs;
-import <string>;
+import std;
 
 namespace eagine {
 

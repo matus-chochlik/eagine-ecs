@@ -9,9 +9,7 @@
 #include "entity.hpp"
 #include "init.hpp"
 #include "relations.hpp"
-import <array>;
-import <iostream>;
-import <set>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -50,7 +48,7 @@ static void decay_of(
     const auto func = [&](const auto&, auto& modes) {
         modes->for_each([&](const auto& mode, const auto& dcy) {
             const auto direct = dcy.products.size() == 1;
-            if(!direct) {
+            if(not direct) {
                 std::cout << "D" << d << "_" << entity_node{isot, branch}
                           << " [shape=point];\n";
                 std::cout << entity_node{isot, branch} << " -> "
@@ -132,7 +130,7 @@ auto main(main_ctx& ctx) -> int {
     } else {
         std::cout << "label=\"Decay chains of ";
         for(auto arg : ctx.args()) {
-            if(!arg.is_first()) {
+            if(not arg.is_first()) {
                 std::cout << ",";
             }
             std::cout << arg;

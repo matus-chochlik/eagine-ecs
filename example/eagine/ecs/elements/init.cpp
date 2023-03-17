@@ -11,7 +11,7 @@
 #include "relations.hpp"
 #include <cassert>
 
-import <concepts>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -27,8 +27,8 @@ public:
 
     template <std::integral T>
     void do_add(const basic_string_path& path, span<const T> data) noexcept {
-        assert(!path.empty());
-        assert(!data.empty());
+        assert(not path.empty());
+        assert(not data.empty());
 
         const element_symbol elem{path.front()};
         if(path.size() == 2) {
@@ -42,7 +42,7 @@ public:
                 _elements.ensure<element_group>(elem).set(
                   limit_cast<short>(extract(data)));
             }
-        } else if(path.size() == 4 && path[1] == "isotopes") {
+        } else if(path.size() == 4 and path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "neutrons") {
                 _elements.ensure<isotope_neutrons>(isot).set(
@@ -53,8 +53,8 @@ public:
 
     template <std::floating_point T>
     void do_add(const basic_string_path& path, span<const T> data) noexcept {
-        assert(!path.empty());
-        assert(!data.empty());
+        assert(not path.empty());
+        assert(not data.empty());
 
         const element_symbol elem{path.front()};
         if(path.size() == 2) {
@@ -68,8 +68,8 @@ public:
     void do_add(
       const basic_string_path& path,
       span<const string_view> data) noexcept {
-        assert(!path.empty());
-        assert(!data.empty());
+        assert(not path.empty());
+        assert(not data.empty());
 
         const element_symbol elem{path.front()};
         if(path.size() == 3) {
@@ -80,7 +80,7 @@ public:
                 _elements.ensure<element_name>(elem).set_english_name(
                   to_string(data.front()));
             }
-        } else if(path.size() == 4 && path[1] == "isotopes") {
+        } else if(path.size() == 4 and path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "half_life") {
                 using hl_t = std::chrono::duration<float>;
@@ -88,7 +88,7 @@ public:
                     _elements.ensure<half_life>(isot).set(extract(hl));
                 }
             }
-        } else if(path.size() == 6 && path[1] == "isotopes") {
+        } else if(path.size() == 6 and path[1] == "isotopes") {
             if(path.back() == "latin") {
                 _elements.ensure<element_name>(elem).set_latin_name(
                   to_string(data.front()));
@@ -145,7 +145,7 @@ static void cache_decay_products(ecs::basic_manager<element_symbol>& elements) {
                 modes->for_each([&](auto& dcy_mode, auto& dcy) {
                     // if the isotope neutron count after the decay matches
                     if(
-                      (dcy.products.empty() && !dcy_mode.is_fission) &&
+                      (dcy.products.empty() and not dcy_mode.is_fission) and
                       (orig_nc->number + dcy_mode.neutron_count_diff ==
                        prod_nc->number)) {
                         // for each original element with proton count

@@ -9,7 +9,7 @@
 #define EAGINE_EXAMPLE_ECS_DECAY_MODES_HPP
 
 #include "entity.hpp"
-import <type_traits>;
+import std;
 
 namespace eagine {
 //------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ struct decay_mode_t {};
 //------------------------------------------------------------------------------
 template <decay_part... M>
 static constexpr const auto is_fission_v =
-  (false || ... || (M == decay_part::fission));
+  (false or ... or (M == decay_part::fission));
 //------------------------------------------------------------------------------
 struct decay_mode_info {
     std::string symbol;

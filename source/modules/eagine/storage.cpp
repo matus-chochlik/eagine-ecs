@@ -9,6 +9,7 @@ export module eagine.ecs:storage;
 
 import eagine.core.types;
 import eagine.core.reflection;
+import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
@@ -34,8 +35,9 @@ constexpr auto enumerator_mapping(
        {"modify", storage_cap_bit::modify}}};
 }
 //------------------------------------------------------------------------------
-export auto operator|(const storage_cap_bit a, const storage_cap_bit b) noexcept
-  -> bitfield<storage_cap_bit> {
+export [[nodiscard]] auto operator|(
+  const storage_cap_bit a,
+  const storage_cap_bit b) noexcept -> bitfield<storage_cap_bit> {
     return {a, b};
 }
 //------------------------------------------------------------------------------
@@ -48,30 +50,34 @@ public:
     storage_caps(const bitfield<storage_cap_bit> base)
       : _base{base} {}
 
-    auto can_hide() const noexcept -> bool {
+    [[nodiscard]] auto can_hide() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
 
-    auto can_copy() const noexcept -> bool {
+    [[nodiscard]] auto can_copy() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
 
-    auto can_swap() const noexcept -> bool {
+    [[nodiscard]] auto can_swap() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
 
-    auto can_remove() const noexcept -> bool {
+    [[nodiscard]] auto can_remove() const noexcept -> bool {
         return has(storage_cap_bit::remove);
     }
 
-    auto can_store() const noexcept -> bool {
+    [[nodiscard]] auto can_store() const noexcept -> bool {
         return has(storage_cap_bit::store);
     }
 
-    auto can_modify() const noexcept -> bool {
+    [[nodiscard]] auto can_modify() const noexcept -> bool {
         return has(storage_cap_bit::modify);
     }
 };
+//------------------------------------------------------------------------------
+export auto all_storage_caps() noexcept -> storage_caps {
+    return {static_cast<storage_cap_bit>((1U << 6U) - 1U)};
+}
 //------------------------------------------------------------------------------
 export template <typename Entity, bool IsRelation>
 struct storage_iterator_intf;

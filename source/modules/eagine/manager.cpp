@@ -21,10 +21,7 @@ import :component;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-export import <memory>;
-export import <string>;
-import <stdexcept>;
-import <type_traits>;
+import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
@@ -45,21 +42,26 @@ class basic_manager;
 export template <typename Entity, typename PL>
 class component_relation;
 
+/// @brief Class that can be used to do cartesian products of various component types.
+/// @see ecs
 export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
 
 public:
-    component_relation(basic_manager<Entity>& m)
-      : _m(m) {}
+    component_relation(basic_manager<Entity>& m) noexcept
+      : _m{m} {}
 
-    template <typename... C>
-    auto cross() -> component_relation<Entity, mp_list<PL..., mp_list<C...>>> {
+    /// @brief Extend this relation with a cross product of additional components.
+    template <component_data... Components>
+    auto cross() noexcept
+      -> component_relation<Entity, mp_list<PL..., mp_list<Components...>>> {
         return {_m};
     }
 
+    /// @brief Call the specified function on each combination of component objects.
     template <typename Func>
-    void for_each(const Func& func) {
-        _apply(_m, func, mp_list<PL...>());
+    void for_each(const Func& function) {
+        _apply(_m, function, mp_list<PL...>());
     }
 
 private:
@@ -71,10 +73,10 @@ private:
       const F& func,
       const mp_list<mp_list<C...>>,
       X&&... x) {
-        const auto wrap = [&func, &x...](
-                            entity_param_t<Entity> e, manipulator<C>&... c) {
-            func(std::forward<X>(x)..., e, c...);
-        };
+        const auto wrap{
+          [&func, &x...](entity_param_t<Entity> e, manipulator<C>&... c) {
+              func(std::forward<X>(x)..., e, c...);
+          }};
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
             construct_from, wrap});
@@ -86,25 +88,33 @@ private:
       const F& func,
       const mp_list<mp_list<C...>, L, Ls...>,
       X&&... x) {
-        const auto wrap = [&m, &func, &x...](
-                            entity_param_t<Entity> e, manipulator<C>&... c) {
-            _apply(
-              m, func, mp_list<L, Ls...>(), std::forward<X>(x)..., e, c...);
-        };
+        const auto wrap{
+          [&m, &func, &x...](entity_param_t<Entity> e, manipulator<C>&... c) {
+              _apply(
+                m, func, mp_list<L, Ls...>(), std::forward<X>(x)..., e, c...);
+          }};
         m.for_each(
           callable_ref<void(entity_param_t<Entity>, manipulator<C> & ...)>{
-            wrap});
+            construct_from, wrap});
     }
 };
 //------------------------------------------------------------------------------
+/// @brief Main class, managing entity data. Entities are represented by values of Entity.
+/// @ingroup ecs
 export template <typename Entity>
 class basic_manager {
 public:
+    /// @brief Prefered type to pass immutable entity identifier parameters.
     using entity_param = entity_param_t<Entity>;
 
-    basic_manager() = default;
+    /// @brief Default constructor.
+    constexpr basic_manager() noexcept = default;
 
-    template <typename Component>
+    /// @brief Registers the storage to be used to store instances of Component type.
+    /// @see unregister_component_type
+    /// @see knows_component_type
+    /// @see register_relation_storage
+    template <component_data Component>
     auto register_component_type(
       std::unique_ptr<component_storage<Entity, Component>>&& strg) -> auto& {
         _do_reg_stg_type<false>(
@@ -114,7 +124,11 @@ public:
         return *this;
     }
 
-    template <typename Relation>
+    /// @brief Registers the storage to be used to store instances of Relation type.
+    /// @see unregister_relation_type
+    /// @see knows_relation_type
+    /// @see register_component_storage
+    template <relation_data Relation>
     auto register_relation_type(
       std::unique_ptr<relation_storage<Entity, Relation>>&& strg) -> auto& {
         _do_reg_stg_type<true>(
@@ -124,10 +138,14 @@ public:
         return *this;
     }
 
+    /// @brief Registers the storage to be used to store instances of Component type.
+    /// @see unregister_component_type
+    /// @see knows_component_type
+    /// @see register_relation_storage
     template <
       template <class, class>
       class Storage,
-      typename Component,
+      component_data Component,
       typename... P>
     auto register_component_storage(P&&... p) -> auto& {
         register_component_type<Component>(
@@ -135,10 +153,14 @@ public:
         return *this;
     }
 
+    /// @brief Registers the storage to be used to store instances of Relation type.
+    /// @see unregister_relation_type
+    /// @see knows_relation_type
+    /// @see register_component_storage
     template <
       template <class, class>
       class Storage,
-      typename Relation,
+      relation_data Relation,
       typename... P>
     auto register_relation_storage(P&&... p) -> auto& {
         register_relation_type<Relation>(
@@ -146,150 +168,192 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    /// @brief Unregisters the specified Component type.
+    /// @see register_component_storage
+    /// @see knows_component_type
+    /// @see unregister_relation_type
+    template <component_data Component>
     auto unregister_component_type() -> auto& {
         _do_unr_stg_type<false>(
           Component::uid(), _cmp_name_getter<Component>());
         return *this;
     }
 
-    template <typename Relation>
+    /// @brief Unregisters the specified Relation type.
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    /// @see unregister_component_type
+    template <relation_data Relation>
     auto unregister_relation_type() -> auto& {
         _do_unr_stg_type<true>(Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
-    template <typename Component>
+    /// @brief Indicates if the specified Component type can be used with this manager.
+    /// @see register_component_storage
+    /// @see register_relation_storage
+    /// @see component_storage_caps
+    /// @see knows_relation_type
+    template <component_data Component>
     auto knows_component_type() const -> bool {
         return _does_know_stg_type<false>(Component::uid());
     }
 
-    template <typename Relation>
-    auto knows_relation_type() const -> bool {
+    /// @brief Indicates if the specified Relation type can be used with this manager.
+    /// @see register_relation_storage
+    /// @see register_component_storage
+    /// @see relation_storage_caps
+    /// @see knows_component_type
+    template <relation_data Relation>
+    [[nodiscard]] auto knows_relation_type() const -> bool {
         return _does_know_stg_type<true>(Relation::uid());
     }
 
-    template <typename Component>
-    auto component_storage_caps() const -> storage_caps {
+    /// @brief Returns an object specifying Component storage capabilities.
+    /// @see component_storage_can
+    /// @see register_component_storage
+    /// @see knows_component_type
+    template <component_data Component>
+    [[nodiscard]] auto component_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<false>(
           Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename Relation>
-    auto relation_storage_caps() const -> storage_caps {
+    /// @brief Returns an object specifying Relation storage capabilities.
+    /// @see relation_storage_can
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    template <relation_data Relation>
+    [[nodiscard]] auto relation_storage_caps() const -> storage_caps {
         return _get_stg_type_caps<true>(
           Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
-    auto component_storage_can(const storage_cap_bit cap) const -> bool {
+    /// @brief Indicates if the storage object for Component has specified capability.
+    /// @see component_storage_caps
+    /// @see register_component_storage
+    /// @see knows_component_type
+    template <component_data Component>
+    [[nodiscard]] auto component_storage_can(const storage_cap_bit cap) const
+      -> bool {
         return _get_stg_type_caps<false>(
                  Component::uid(), _cmp_name_getter<Component>())
           .has(cap);
     }
 
-    template <typename Relation>
-    auto relation_storage_can(const storage_cap_bit cap) const -> bool {
+    /// @brief Indicates if the storage object for Relation has specified capability.
+    /// @see relation_storage_caps
+    /// @see register_relation_storage
+    /// @see knows_relation_type
+    template <relation_data Relation>
+    [[nodiscard]] auto relation_storage_can(const storage_cap_bit cap) const
+      -> bool {
         return _get_stg_type_caps<true>(
                  Relation::uid(), _cmp_name_getter<Relation>())
           .has(cap);
     }
 
+    /// @brief Removes all information, including components, about the specified entity.
+    /// @see has
+    /// @see has_all
     void forget(entity_param ent);
 
-    template <typename Component>
-    auto has(entity_param ent) -> bool {
+    /// @brief Indicates if the specified entity has the specified Component.
+    /// @see has_all
+    /// @see forget
+    template <component_data Component>
+    [[nodiscard]] auto has(entity_param ent) noexcept -> bool {
         return _does_have_c(
           ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename Relation>
-    auto has(entity_param subject, entity_param object) -> bool {
+    /// @brief Indicates if the specified subject has the specified Relation with object.
+    /// @see has_all
+    /// @see forget
+    template <relation_data Relation>
+    [[nodiscard]] auto has(entity_param subject, entity_param object) noexcept
+      -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename... Components>
-    auto has_all(entity_param ent) -> bool {
-        return _count_true(_does_have_c(
-                 ent, Components::uid(), _cmp_name_getter<Components>())...) ==
-               (sizeof...(Components));
+    /// @brief Indicates if the specified entity has all the specified Components.
+    /// @see has
+    /// @see forget
+    template <component_data... Components>
+    [[nodiscard]] auto has_all(entity_param ent) -> bool {
+        return (
+          ... and
+          _does_have_c(ent, Components::uid(), _cmp_name_getter<Components>()));
     }
 
-    template <typename Relation>
-    auto is(entity_param object, entity_param subject) -> bool {
+    template <relation_data Relation>
+    [[nodiscard]] auto is(entity_param object, entity_param subject) noexcept
+      -> bool {
         return _does_have_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
-    auto hidden(entity_param ent) -> bool {
+    template <component_data Component>
+    [[nodiscard]] auto is_hidden(entity_param ent) noexcept -> bool {
         return _is_hidn(ent, Component::uid(), _cmp_name_getter<Component>());
     }
 
-    template <typename... Components>
-    auto all_hidden(entity_param ent) -> bool {
-        return _count_true(_is_hidn(
-                 ent, Components::uid(), _cmp_name_getter<Components>())...) ==
-               (sizeof...(Components));
+    template <component_data... Components>
+    [[nodiscard]] auto are_hidden(entity_param ent) noexcept -> bool {
+        return (
+          ... and
+          _is_hidn(ent, Components::uid(), _cmp_name_getter<Components>()));
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto show(entity_param ent) -> auto& {
         (..., _do_show(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto hide(entity_param ent) -> auto& {
         (..., _do_hide(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto add(entity_param ent, Components&&... components) -> auto& {
         (..., _do_add_c(ent, std::move(components)));
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component>
     auto ensure(entity_param ent, std::type_identity<Component> = {})
-      -> manipulator<Component>
-        requires(Component::is_component())
-    {
+      -> manipulator<Component> {
         return {_do_add_c(ent, Component{}), false};
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto add(entity_param subject, entity_param object, Relation&& rel)
-      -> manipulator<Relation>
-        requires(Relation::is_relation())
-    {
+      -> manipulator<Relation> {
         return {_do_add_r(subject, object, std::forward<Relation>(rel)), false};
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto ensure(
       entity_param subject,
       entity_param object,
-      std::type_identity<Relation> = {}) -> bool
-        requires(Relation::is_relation())
-    {
+      std::type_identity<Relation> = {}) -> bool {
         return _do_add_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
     }
 
-    template <typename Component>
-    auto copy(entity_param from, entity_param to) -> manipulator<Component>
-        requires(Component::is_component())
-    {
+    template <component_data Component>
+    auto copy(entity_param from, entity_param to) -> manipulator<Component> {
         return {
           static_cast<Component*>(
             _do_cpy(from, to, Component::uid(), _cmp_name_getter<Component>())),
           false};
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto copy(entity_param from, entity_param to) -> basic_manager&
         requires(sizeof...(Components) > 1)
     {
@@ -298,33 +362,36 @@ public:
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto swap(entity_param e1, entity_param e2) -> auto& {
         (...,
          _do_swp(e1, e2, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto remove(entity_param ent) -> auto& {
         (...,
          _do_rem_c(ent, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto remove_relation(entity_param subject, entity_param object) -> auto& {
         _do_rem_r(
           subject, object, Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
-    template <typename T, typename Component>
-    auto get(T Component::*const mvp, entity_param ent, T res = T()) -> T {
+    template <typename T, component_data Component>
+    [[nodiscard]] auto get(
+      T Component::*const mvp,
+      entity_param ent,
+      T res = T()) -> T {
         return _do_get_c(mvp, ent, res);
     }
 
-    template <typename Component>
+    template <component_data Component>
     auto for_single(
       entity_param ent,
       const callable_ref<void(entity_param, manipulator<const Component>&)>&
@@ -333,15 +400,32 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component, typename Function>
+    auto read_single(entity_param ent, Function&& function) -> auto& {
+        return for_single(
+          ent,
+          callable_ref<void(entity_param, manipulator<const Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
+    template <component_data Component>
     auto for_single(
-      const callable_ref<void(entity_param, manipulator<Component>&)>& func,
-      entity_param ent) -> auto& {
-        _call_for_single_c<Component>(func, ent);
+      entity_param ent,
+      const callable_ref<void(entity_param, manipulator<Component>&)>& func)
+      -> auto& {
+        _call_for_single_c<Component>(ent, func);
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component, typename Function>
+    auto write_single(entity_param ent, Function&& function) -> auto& {
+        return for_single(
+          ent,
+          callable_ref<void(entity_param, manipulator<Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
+    template <component_data Component>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<const Component>&)>&
         func) -> auto& {
@@ -349,7 +433,14 @@ public:
         return *this;
     }
 
-    template <typename Component>
+    template <component_data Component, typename Function>
+    auto read_each(Function&& function) -> auto& {
+        return for_each(
+          callable_ref<void(entity_param, manipulator<const Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
+    template <component_data Component>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Component>&)>& func)
       -> auto& {
@@ -357,14 +448,21 @@ public:
         return *this;
     }
 
-    template <typename Relation>
-    auto for_each(const callable_ref<void(entity_param, entity_param)>& func)
-      -> auto& {
+    template <component_data Component, typename Function>
+    auto write_each(Function&& function) -> auto& {
+        return for_each(
+          callable_ref<void(entity_param, manipulator<Component>&)>{
+            construct_from, std::forward<Function>(function)});
+    }
+
+    template <relation_data Relation>
+    auto for_each_having(
+      const callable_ref<void(entity_param, entity_param)>& func) -> auto& {
         _call_for_each_r<Relation>(func);
         return *this;
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)>& func)
@@ -373,7 +471,7 @@ public:
         return *this;
     }
 
-    template <typename Relation>
+    template <relation_data Relation>
     auto for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)>& func)
@@ -382,7 +480,7 @@ public:
         return *this;
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto for_each_opt(
       const callable_ref<void(entity_param, manipulator<Components>&...)>& func)
       -> auto& {
@@ -390,14 +488,14 @@ public:
         return *this;
     }
 
-    template <typename... Components, typename Func>
+    template <component_data... Components, typename Func>
     auto for_each_with_opt(const Func& func) -> auto& {
         callable_ref<void(entity_param, manipulator<Components> & ...)> wrap(
           construct_from, func);
         return for_each_opt<Components...>(wrap);
     }
 
-    template <typename... Components>
+    template <component_data... Components>
     auto for_each(
       const callable_ref<void(entity_param, manipulator<Components>&...)>& func)
       -> basic_manager&
@@ -407,21 +505,22 @@ public:
         return *this;
     }
 
-    template <typename... Components, typename Func>
+    template <component_data... Components, typename Func>
     auto for_each_with(const Func& func) -> auto& {
         return for_each<Components...>(
           callable_ref<void(entity_param, manipulator<Components> & ...)>{
             construct_from, func});
     }
 
-    template <typename... Components>
-    auto select()
+    template <component_data... Components>
+    [[nodiscard]] auto select()
       -> component_relation<Entity, mp_list<mp_list<Components...>>> {
         return {*this};
     }
 
     auto clear() noexcept -> basic_manager& {
         _cmp_storages.clear();
+        _rel_storages.clear();
         return *this;
     }
 
@@ -465,30 +564,21 @@ private:
     template <typename C>
     using _bare_t = std::remove_const_t<std::remove_reference_t<C>>;
 
-    static constexpr auto _count_true() -> unsigned {
-        return 0U;
-    }
-
-    template <typename T, typename... P>
-    static constexpr auto _count_true(T v, P... p) -> unsigned {
-        return (bool(v) ? 1U : 0U) + _count_true(p...);
-    }
-
     template <typename C>
-    static auto _cmp_name_getter() -> std::string (*)() {
+    static auto _cmp_name_getter() noexcept -> std::string (*)() noexcept {
         return &type_name<C>;
     }
 
     template <typename Data, bool IsR>
-    auto _find_storage() -> storage<Entity, Data, IsR>&;
+    auto _find_storage() noexcept -> storage<Entity, Data, IsR>&;
 
     template <typename C>
-    auto _find_cmp_storage() -> auto& {
+    auto _find_cmp_storage() noexcept -> auto& {
         return _find_storage<C, false>();
     }
 
     template <typename R>
-    auto _find_rel_storage() -> auto& {
+    auto _find_rel_storage() noexcept -> auto& {
         return _find_storage<R, true>();
     }
 
@@ -496,50 +586,61 @@ private:
     void _do_reg_stg_type(
       std::unique_ptr<base_storage<Entity, IsRelation>>&& strg,
       identifier_t cid,
-      std::string (*get_name)()) {
+      std::string (*get_name)() noexcept) {
         assert(bool(strg));
 
-        if(!_get_storages<IsRelation>().emplace(cid, std::move(strg))) {
+        if(not _get_storages<IsRelation>().emplace(cid, std::move(strg))) {
             mgr_handle_cmp_is_reg(get_name());
         }
     }
 
     template <bool IsRelation>
-    void _do_unr_stg_type(identifier_t cid, std::string (*get_name)()) {
+    void _do_unr_stg_type(identifier_t cid, std::string (*get_name)() noexcept) {
         if(_get_storages<IsRelation>().erase(cid) != 1) {
             mgr_handle_cmp_not_reg(get_name());
         }
     }
 
     template <bool IsRelation>
-    auto _does_know_stg_type(identifier_t cid) const -> bool {
-        return _get_storages<IsRelation>().find(cid).is_valid();
+    auto _does_know_stg_type(identifier_t cid) const noexcept -> bool {
+        return _get_storages<IsRelation>().find(cid).has_value();
     }
 
     template <bool IsR, typename Result, typename Func>
-    auto _apply_on_base_stg(Result, const Func&, identifier_t, std::string (*)())
-      const -> Result;
+    auto _apply_on_base_stg(
+      Result,
+      const Func&,
+      identifier_t,
+      std::string (*)() noexcept) const -> Result;
 
     template <typename D, bool IsR, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
 
     template <bool IsR>
-    auto _get_stg_type_caps(identifier_t, std::string (*)()) const
-      -> storage_caps;
+    auto _get_stg_type_caps(identifier_t, std::string (*)() noexcept)
+      const noexcept -> storage_caps;
 
-    auto _does_have_c(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _does_have_c(
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) noexcept -> bool;
 
     auto _does_have_r(
       entity_param,
       entity_param,
       identifier_t,
-      std::string (*)()) -> bool;
+      std::string (*)() noexcept) noexcept -> bool;
 
-    auto _is_hidn(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _is_hidn(
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) noexcept -> bool;
 
-    auto _do_show(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _do_show(entity_param, identifier_t, std::string (*)() noexcept)
+      -> bool;
 
-    auto _do_hide(entity_param, identifier_t, std::string (*)()) -> bool;
+    auto _do_hide(entity_param, identifier_t, std::string (*)() noexcept)
+      -> bool;
 
     template <typename Component>
     auto _do_add_c(entity_param, Component&& component) -> Component*;
@@ -548,19 +649,32 @@ private:
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
       -> Relation*;
 
-    auto _do_add_r(entity_param, entity_param, identifier_t, std::string (*)())
+    auto _do_add_r(
+      entity_param,
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
+
+    auto _do_cpy(
+      entity_param f,
+      entity_param t,
+      identifier_t,
+      std::string (*)() noexcept) -> void*;
+
+    auto _do_swp(
+      entity_param f,
+      entity_param t,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
+
+    auto _do_rem_c(entity_param, identifier_t, std::string (*)() noexcept)
       -> bool;
 
-    auto _do_cpy(entity_param f, entity_param t, identifier_t, std::string (*)())
-      -> void*;
-
-    auto _do_swp(entity_param f, entity_param t, identifier_t, std::string (*)())
-      -> bool;
-
-    auto _do_rem_c(entity_param, identifier_t, std::string (*)()) -> bool;
-
-    auto _do_rem_r(entity_param, entity_param, identifier_t, std::string (*)())
-      -> bool;
+    auto _do_rem_r(
+      entity_param,
+      entity_param,
+      identifier_t,
+      std::string (*)() noexcept) -> bool;
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
@@ -583,7 +697,8 @@ private:
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Data, bool IsR>
-auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
+auto basic_manager<Entity>::_find_storage() noexcept
+  -> storage<Entity, Data, IsR>& {
 
     using S = storage<Entity, Data, IsR>;
     S* pd_storage = nullptr;
@@ -595,8 +710,8 @@ auto basic_manager<Entity>::_find_storage() -> storage<Entity, Data, IsR>& {
             assert(pd_storage);
         }
     }
-    if(!pd_storage) {
-        std::string (*get_name)() = _cmp_name_getter<Data>();
+    if(not pd_storage) {
+        std::string (*get_name)() noexcept = _cmp_name_getter<Data>();
         mgr_handle_cmp_not_reg(get_name());
         unreachable();
     }
@@ -609,7 +724,7 @@ auto basic_manager<Entity>::_apply_on_base_stg(
   Result fallback,
   const Func& func,
   identifier_t cid,
-  std::string (*get_name)()) const -> Result {
+  std::string (*get_name)() noexcept) const -> Result {
     auto& storages = _get_storages<IsRelation>();
 
     if(auto found{storages.find(cid)}) {
@@ -618,7 +733,6 @@ auto basic_manager<Entity>::_apply_on_base_stg(
             return func(bs_storage);
         }
     }
-    mgr_handle_cmp_not_reg(get_name());
     return fallback;
 }
 //------------------------------------------------------------------------------
@@ -644,7 +758,7 @@ template <typename Entity>
 template <bool IsRelation>
 auto basic_manager<Entity>::_get_stg_type_caps(
   identifier_t cid,
-  std::string (*get_name)()) const -> storage_caps {
+  std::string (*get_name)() noexcept) const noexcept -> storage_caps {
     return _apply_on_base_stg<IsRelation>(
       storage_caps(),
       [](auto& b_storage) -> storage_caps { return b_storage->capabilities(); },
@@ -656,7 +770,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_does_have_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->has(ent); },
@@ -669,7 +783,7 @@ auto basic_manager<Entity>::_does_have_r(
   entity_param_t<Entity> subject,
   entity_param_t<Entity> object,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subject, &object](auto& b_storage) -> bool {
@@ -683,10 +797,10 @@ template <typename Entity>
 auto basic_manager<Entity>::_is_hidn(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
       false,
-      [&ent](auto& b_storage) -> bool { return b_storage->hidden(ent); },
+      [&ent](auto& b_storage) -> bool { return b_storage->is_hidden(ent); },
       cid,
       get_name);
 }
@@ -695,7 +809,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_show(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->show(ent); },
@@ -707,7 +821,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_hide(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->hide(ent); },
@@ -744,7 +858,7 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param subject,
   entity_param object,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subject, &object](auto& b_storage) -> bool {
@@ -759,7 +873,7 @@ auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
   identifier_t cid,
-  std::string (*get_name)()) -> void* {
+  std::string (*get_name)() noexcept) -> void* {
     return _apply_on_base_stg<false>(
       static_cast<void*>(nullptr),
       [&from, &to](auto& b_storage) -> void* {
@@ -774,7 +888,7 @@ auto basic_manager<Entity>::_do_swp(
   entity_param_t<Entity> e1,
   entity_param_t<Entity> e2,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&e1, &e2](auto& b_storage) -> bool {
@@ -789,7 +903,7 @@ template <typename Entity>
 auto basic_manager<Entity>::_do_rem_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
       false,
       [&ent](auto& b_storage) -> bool { return b_storage->remove(ent); },
@@ -802,7 +916,7 @@ auto basic_manager<Entity>::_do_rem_r(
   entity_param_t<Entity> subj,
   entity_param_t<Entity> obj,
   identifier_t cid,
-  std::string (*get_name)()) -> bool {
+  std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
       false,
       [&subj, &obj](auto& b_storage) -> bool {
@@ -879,7 +993,7 @@ protected:
       : _storage(strg)
       , _iter(_storage.new_iterator())
       , _curr(_iter.done() ? Entity() : _iter.current()) {
-        assert(std::is_const<C>::value || _storage.capabilities().can_modify());
+        assert(std::is_const<C>::value or _storage.capabilities().can_modify());
     }
 
     ~_manager_for_each_c_m_base() {
@@ -924,10 +1038,10 @@ protected:
     using _manager_for_each_c_m_base<Entity, C>::_current;
 
     void _next_if(entity_param_t<Entity> m) {
-        if(!_done()) {
+        if(not _done()) {
             if(_current() == m) {
                 _iter.next();
-                if(!_done()) {
+                if(not _done()) {
                     _curr = _iter.current();
                 }
             }
@@ -967,7 +1081,7 @@ public:
     }
 
     void apply(entity_param_t<Entity> m, manipulator<CL>&... clm) {
-        if(this->_done() || (m < this->_current())) {
+        if(this->_done() or (m < this->_current())) {
             std::remove_const_t<C> cadd;
             concrete_manipulator<C> cman(nullptr, cadd, false);
             _func(m, clm..., cman);
@@ -1005,7 +1119,7 @@ public:
       , _rest(func, r...) {}
 
     auto done() -> bool {
-        return this->_done() && _rest.done();
+        return this->_done() and _rest.done();
     }
 
     void next_if_min(entity_param_t<Entity> m) {
@@ -1015,7 +1129,7 @@ public:
 
     auto min_entity() -> Entity {
         if(_rest.done()) {
-            assert(!this->_done());
+            assert(not this->_done());
             return this->_current();
         }
 
@@ -1034,7 +1148,7 @@ public:
     void apply(
       [[maybe_unused]] entity_param_t<Entity> m,
       manipulator<CL>&... clm) {
-        if(this->_done() || (m < this->_current())) {
+        if(this->_done() or (m < this->_current())) {
             std::remove_const_t<C> cadd;
             concrete_manipulator<C> cman(nullptr, cadd, false);
             _rest.apply(m, clm..., cman);
@@ -1053,7 +1167,7 @@ public:
 
     void apply() {
         static_assert(sizeof...(CL) == 0);
-        assert(!done());
+        assert(not done());
 
         apply(min_entity());
     }
@@ -1068,7 +1182,7 @@ template <typename... Component, typename Func>
 void basic_manager<Entity>::_call_for_each_c_m_p(const Func& func) {
     _manager_for_each_c_m_p_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
-    while(!hlp.done()) {
+    while(not hlp.done()) {
         hlp.apply();
         hlp.next();
     }
@@ -1091,7 +1205,7 @@ protected:
         if(_current() >= _iter.current()) {
             _iter.next();
         }
-        if(!_iter.done()) {
+        if(not _iter.done()) {
             _curr = _iter.current();
             return true;
         }
@@ -1174,11 +1288,11 @@ public:
       , _rest(func, r...) {}
 
     auto done() -> bool {
-        return this->_done() || _rest.done();
+        return this->_done() or _rest.done();
     }
 
     auto sync_to(entity_param_t<Entity> m) -> bool {
-        return _rest.sync_to(m) && this->_find(m);
+        return _rest.sync_to(m) and this->_find(m);
     }
 
     auto max_entity() -> Entity {
@@ -1193,7 +1307,7 @@ public:
     }
 
     auto next() -> bool {
-        return _rest.next() && this->_next();
+        return _rest.next() and this->_next();
     }
 
     void apply(
@@ -1209,7 +1323,7 @@ public:
 
     void apply() {
         static_assert(sizeof...(CL) == 0);
-        assert(!done());
+        assert(not done());
 
         apply(max_entity());
     }
@@ -1225,12 +1339,12 @@ void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
     _manager_for_each_c_m_r_helper<Entity, Component...> hlp(
       func, _find_cmp_storage<_bare_t<Component>>()...);
     if(hlp.sync()) {
-        while(!hlp.done()) {
+        while(not hlp.done()) {
             hlp.apply();
-            if(!hlp.next()) {
+            if(not hlp.next()) {
                 break;
             }
-            if(!hlp.sync()) {
+            if(not hlp.sync()) {
                 break;
             }
         }
@@ -1239,9 +1353,10 @@ void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
 //------------------------------------------------------------------------------
 template <typename Entity>
 void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
-    for(auto& storage : _cmp_storages) {
-        if(storage != nullptr) {
-            if(storage->caps().can_remove()) {
+    for(auto& entry : _cmp_storages) {
+        auto& storage{std::get<1>(entry)};
+        if(storage) {
+            if(storage->capabilities().can_remove()) {
                 storage->remove(ent);
             }
         }
