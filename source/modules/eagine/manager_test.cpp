@@ -6,9 +6,9 @@
 ///
 
 #include <eagine/testing/unit_begin_ctx.hpp>
+import std;
 import eagine.core;
 import eagine.ecs;
-import std;
 //------------------------------------------------------------------------------
 struct person : eagine::ecs::component<"Person"> {
     person() noexcept = default;

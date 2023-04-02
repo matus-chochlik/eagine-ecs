@@ -11,6 +11,7 @@ module;
 
 export module eagine.ecs:std_map_storage;
 
+import std;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.utility;
@@ -19,7 +20,6 @@ import :manipulator;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-import std;
 
 namespace eagine::ecs {
 

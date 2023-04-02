@@ -11,6 +11,7 @@ module;
 
 export module eagine.ecs:manager;
 
+import std;
 import eagine.core.debug;
 import eagine.core.types;
 import eagine.core.string;
@@ -21,7 +22,6 @@ import :component;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
