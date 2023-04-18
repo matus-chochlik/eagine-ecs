@@ -242,33 +242,32 @@ struct known_decay_modes {
         return _get_id(symbol, list{});
     }
 
-    static auto get_info(const identifier_t mode_id) -> const decay_mode_info* {
+    static auto get_info(const identifier_t mode_id)
+      -> optional_reference<const decay_mode_info> {
         return _get_info(mode_id, list{});
     }
 
     static auto proton_count_diff(const identifier_t mode_id) noexcept -> int {
-        if(const auto i{get_info(mode_id)}) {
-            return extract(i).proton_count_diff;
-        }
-        return 0;
+        return get_info(mode_id)
+          .member(&decay_mode_info::proton_count_diff)
+          .value_or(0);
     }
 
     static auto neutron_count_diff(identifier_t mode_id) noexcept -> int {
-        if(const auto i{get_info(mode_id)}) {
-            return extract(i).neutron_count_diff;
-        }
-        return 0;
+        return get_info(mode_id)
+          .member(&decay_mode_info::neutron_count_diff)
+          .value_or(0);
     }
 
 private:
     static auto _get_info(identifier_t, mp_list<>) noexcept
-      -> const decay_mode_info* {
-        return nullptr;
+      -> optional_reference<const decay_mode_info> {
+        return {};
     }
 
     template <typename H, typename... T>
     static auto _get_info(const identifier_t id, const mp_list<H, T...>)
-      -> const decay_mode_info* {
+      -> optional_reference<const decay_mode_info> {
         if(decay_mode_id<H>::value == id) {
             return &mode_info(H{});
         }

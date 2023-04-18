@@ -209,11 +209,11 @@ public:
         return nullptr;
     }
 
-    auto back() -> decay* {
+    auto back() -> optional_reference<decay> {
         if(not _modes.empty()) {
-            return &std::get<2>(_modes.back());
+            return std::get<2>(_modes.back());
         }
-        return nullptr;
+        return {};
     }
 
     template <typename Function>
@@ -250,7 +250,7 @@ struct get_manipulator<decay_modes, Const> {
             return this->write().add(symbol);
         }
 
-        auto back() -> decay* {
+        auto back() -> optional_reference<decay> {
             return this->write().back();
         }
     };
