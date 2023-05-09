@@ -7,9 +7,9 @@
 ///
 export module eagine.ecs:storage;
 
+import std;
 import eagine.core.types;
 import eagine.core.reflection;
-import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------

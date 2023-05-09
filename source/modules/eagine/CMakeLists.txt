@@ -66,7 +66,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.ecs
-	PP_NAME ECS
 	INTERFACES ecs
 	PARTITIONS
 		entity_traits

@@ -11,6 +11,7 @@ module;
 
 export module eagine.ecs:manager;
 
+import std;
 import eagine.core.debug;
 import eagine.core.types;
 import eagine.core.string;
@@ -21,7 +22,6 @@ import :component;
 import :storage;
 import :cmp_storage;
 import :rel_storage;
-import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
@@ -551,14 +551,14 @@ private:
         return _rel_storages;
     }
 
-    template <bool IsR>
+    template <bool IsRelation>
     auto _get_storages() noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsR>());
+        return _get_storages(std::integral_constant<bool, IsRelation>());
     }
 
-    template <bool IsR>
+    template <bool IsRelation>
     auto _get_storages() const noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsR>());
+        return _get_storages(std::integral_constant<bool, IsRelation>());
     }
 
     template <typename C>
@@ -569,8 +569,8 @@ private:
         return &type_name<C>;
     }
 
-    template <typename Data, bool IsR>
-    auto _find_storage() noexcept -> storage<Entity, Data, IsR>&;
+    template <typename Data, bool IsRelation>
+    auto _find_storage() noexcept -> storage<Entity, Data, IsRelation>&;
 
     template <typename C>
     auto _find_cmp_storage() noexcept -> auto& {
@@ -606,17 +606,17 @@ private:
         return _get_storages<IsRelation>().find(cid).has_value();
     }
 
-    template <bool IsR, typename Result, typename Func>
+    template <bool IsRelation, typename Result, typename Func>
     auto _apply_on_base_stg(
       Result,
       const Func&,
       identifier_t,
       std::string (*)() noexcept) const -> Result;
 
-    template <typename D, bool IsR, typename Result, typename Func>
+    template <typename D, bool IsRelation, typename Result, typename Func>
     auto _apply_on_stg(Result, const Func&) const -> Result;
 
-    template <bool IsR>
+    template <bool IsRelation>
     auto _get_stg_type_caps(identifier_t, std::string (*)() noexcept)
       const noexcept -> storage_caps;
 
@@ -696,14 +696,14 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <typename Data, bool IsR>
+template <typename Data, bool IsRelation>
 auto basic_manager<Entity>::_find_storage() noexcept
-  -> storage<Entity, Data, IsR>& {
+  -> storage<Entity, Data, IsRelation>& {
 
-    using S = storage<Entity, Data, IsR>;
+    using S = storage<Entity, Data, IsRelation>;
     S* pd_storage = nullptr;
 
-    if(auto found{_get_storages<IsR>().find(Data::uid())}) {
+    if(auto found{_get_storages<IsRelation>().find(Data::uid())}) {
         auto& b_storage = extract(found);
         if(b_storage) {
             pd_storage = dynamic_cast<S*>(b_storage.get());

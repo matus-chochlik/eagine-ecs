@@ -11,13 +11,13 @@ module;
 
 export module eagine.ecs:cmp_storage;
 
+import std;
 import eagine.core.types;
 import eagine.core.reflection;
 import eagine.core.utility;
 import :entity_traits;
 import :manipulator;
 import :storage;
-import std;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------

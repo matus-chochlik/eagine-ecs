@@ -34,19 +34,19 @@ public:
         if(path.size() == 2) {
             if(path.back() == "protons") {
                 _elements.ensure<element_protons>(elem).set(
-                  limit_cast<short>(extract(data)));
+                  limit_cast<short>(data.front()));
             } else if(path.back() == "period") {
                 _elements.ensure<element_period>(elem).set(
-                  limit_cast<short>(extract(data)));
+                  limit_cast<short>(data.front()));
             } else if(path.back() == "group") {
                 _elements.ensure<element_group>(elem).set(
-                  limit_cast<short>(extract(data)));
+                  limit_cast<short>(data.front()));
             }
         } else if(path.size() == 4 and path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "neutrons") {
                 _elements.ensure<isotope_neutrons>(isot).set(
-                  limit_cast<short>(extract(data)));
+                  limit_cast<short>(data.front()));
             }
         }
     }
@@ -60,7 +60,7 @@ public:
         if(path.size() == 2) {
             if(path.back() == "atomic_weight") {
                 _elements.ensure<atomic_weight>(elem).set(
-                  limit_cast<float>(extract(data)));
+                  limit_cast<float>(data.front()));
             }
         }
     }
@@ -83,10 +83,11 @@ public:
         } else if(path.size() == 4 and path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "half_life") {
-                using hl_t = std::chrono::duration<float>;
-                if(const auto hl{from_string<hl_t>(extract(data))}) {
-                    _elements.ensure<half_life>(isot).set(extract(hl));
-                }
+                data.and_then(from_string<std::chrono::duration<float>>)
+                  .and_then([&](auto hl) -> noopt {
+                      _elements.ensure<half_life>(isot).set(hl);
+                      return {};
+                  });
             }
         } else if(path.size() == 6 and path[1] == "isotopes") {
             if(path.back() == "latin") {
@@ -99,14 +100,15 @@ public:
         } else if(path.starts_with(_decay_path)) {
             element_symbol isot{path[2]};
             if(path.back() == "mode") {
-                _elements.ensure<decay_modes>(isot).add(extract(data));
+                _elements.ensure<decay_modes>(isot).add(data.front());
             } else if(path.back() == "products") {
-                if(const auto mode{
-                     _elements.ensure<decay_modes>(isot).back()}) {
-                    for(auto prod : data) {
-                        extract(mode).products.push_back(to_string(prod));
-                    }
-                }
+                _elements.ensure<decay_modes>(isot).back().and_then(
+                  [&](auto& mode) -> noopt {
+                      for(auto prod : data) {
+                          mode.products.push_back(to_string(prod));
+                      }
+                      return {};
+                  });
             }
         }
     }
