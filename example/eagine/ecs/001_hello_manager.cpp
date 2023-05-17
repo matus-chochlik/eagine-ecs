@@ -1,4 +1,4 @@
-/// @example eagine/ecs/001_hello.hpp
+/// @example eagine/ecs/001_hello_manager.hpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
@@ -11,7 +11,7 @@ import std;
 
 namespace eagine {
 
-struct object : ecs::component<"Object"> {
+struct subject : ecs::component<"Subject"> {
     std::string name;
 };
 
@@ -24,24 +24,24 @@ auto main(main_ctx& ctx) -> int {
     ctx.log().info("starting");
 
     ecs::basic_manager<identifier_t> mgr;
-    mgr.register_component_storage<ecs::std_map_cmp_storage, object>();
+    mgr.register_component_storage<ecs::std_map_cmp_storage, subject>();
     mgr.register_component_storage<ecs::std_map_cmp_storage, greeting>();
 
     const auto hw = id_v("HelloWorld");
     const auto he = id_v("HelloNtity");
 
     mgr.ensure<greeting>(hw).write().expression = "Hello";
-    mgr.ensure<object>(hw).write().name = "World";
+    mgr.ensure<subject>(hw).write().name = "World";
 
     mgr.copy<greeting>(hw, he);
-    mgr.ensure<object>(he).write().name = "Entity";
+    mgr.ensure<subject>(he).write().name = "Entity";
 
-    mgr.for_each_with<const greeting, const object>(
-      [&](const auto&, auto& grt, auto& obj) {
+    mgr.for_each_with<const greeting, const subject>(
+      [&](const auto&, auto& grt, auto& sub) {
           ctx.cio()
-            .print(identifier{"ECS"}, "${expr}, ${name}")
-            .arg(identifier{"expr"}, grt.read().expression)
-            .arg(identifier{"name"}, obj.read().name);
+            .print("ECS", "${expr}, ${name}")
+            .arg("expr", grt->expression)
+            .arg("name", sub->name);
       });
 
     return 0;

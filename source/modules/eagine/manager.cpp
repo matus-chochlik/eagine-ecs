@@ -253,13 +253,21 @@ public:
           .has(cap);
     }
 
+    /// @brief Indicates if the manager has any knowledge about the specified entity.
+    /// @see has
+    /// @see has_all
+    /// @see forget
+    auto knows(entity_param ent) noexcept -> bool;
+
     /// @brief Removes all information, including components, about the specified entity.
     /// @see has
     /// @see has_all
+    /// @see knows
     void forget(entity_param ent);
 
     /// @brief Indicates if the specified entity has the specified Component.
     /// @see has_all
+    /// @see knows
     /// @see forget
     template <component_data Component>
     [[nodiscard]] auto has(entity_param ent) noexcept -> bool {
@@ -269,6 +277,7 @@ public:
 
     /// @brief Indicates if the specified subject has the specified Relation with object.
     /// @see has_all
+    /// @see knows
     /// @see forget
     template <relation_data Relation>
     [[nodiscard]] auto has(entity_param subject, entity_param object) noexcept
@@ -1349,6 +1358,17 @@ void basic_manager<Entity>::_call_for_each_c_m_r(const Func& func) {
             }
         }
     }
+}
+//------------------------------------------------------------------------------
+template <typename Entity>
+auto basic_manager<Entity>::knows(entity_param_t<Entity> ent) noexcept -> bool {
+    for(auto& entry : _cmp_storages) {
+        auto& storage{std::get<1>(entry)};
+        if(storage and storage->has(ent)) {
+            return true;
+        }
+    }
+    return false;
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
