@@ -39,6 +39,7 @@ function(eagine_example_common EXAMPLE_NAME)
 endfunction()
 
 eagine_example_common(001_hello_manager)
+eagine_example_common(001_hello_object)
 eagine_example_common(002_space_opera)
 
 add_subdirectory(elements)
