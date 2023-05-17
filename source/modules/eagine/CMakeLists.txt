@@ -65,6 +65,15 @@ eagine_add_module(
 )
 
 eagine_add_module(
+	eagine.ecs PARTITION object
+	IMPORTS
+		component manipulator manager
+		eagine.core.types
+		eagine.core.identifier
+		eagine.core.main_ctx
+)
+
+eagine_add_module(
 	eagine.ecs
 	INTERFACES ecs
 	PARTITIONS
@@ -76,6 +85,7 @@ eagine_add_module(
 		rel_storage
 		std_map_storage
 		manager
+		object
 	SOURCES
 )
 
