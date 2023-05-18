@@ -57,42 +57,54 @@ struct get_manipulator<name_surname, Const> {
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
-    ctx.cio().print(identifier{"ECS"}, "starting");
+    ctx.cio().print("ECS", "starting");
 
-    ecs::basic_manager<std::string> sso;
-    sso.register_component_storage<ecs::std_map_cmp_storage, name_surname>();
-    sso.register_relation_storage<ecs::std_map_rel_storage, father>();
-    sso.register_relation_storage<ecs::std_map_rel_storage, mother>();
+    ecs::basic_manager<std::string> space_soap_opera;
+    space_soap_opera
+      .register_component_storage<ecs::std_map_cmp_storage, name_surname>();
+    space_soap_opera
+      .register_relation_storage<ecs::std_map_rel_storage, father>();
+    space_soap_opera
+      .register_relation_storage<ecs::std_map_rel_storage, mother>();
 
-    sso.ensure<name_surname>("force").set_first_name("The").set_family_name(
-      "Force");
-    sso.ensure<name_surname>("luke").set_first_name("Luke").set_family_name(
-      "Skywalker");
-    sso.ensure<name_surname>("leia").set_first_name("Leia").set_family_name(
-      "Organa");
-    sso.ensure<name_surname>("hans").set_first_name("Hans").set_family_name(
-      "Olo");
-    sso.ensure<name_surname>("vader").set_first_name("Anakin").set_family_name(
-      "Skywalker");
-    sso.ensure<name_surname>("padme").set_first_name("Padme").set_family_name(
-      "Amidala");
-    sso.ensure<name_surname>("shmi").set_first_name("Shmi").set_family_name(
-      "Skywalker");
-    sso.ensure<name_surname>("jarjar").set_first_name("Jar-Jar").set_family_name(
-      "Binks");
-    sso.ensure<name_surname>("chewie").set_first_name("Chewbacca");
-    sso.ensure<name_surname>("yoda").set_first_name("Yoda");
-    sso.ensure<name_surname>("kilo").set_first_name("Kylo").set_family_name(
-      "Ren");
+    space_soap_opera.ensure<name_surname>("force")
+      .set_first_name("The")
+      .set_family_name("Force");
+    space_soap_opera.ensure<name_surname>("luke")
+      .set_first_name("Luke")
+      .set_family_name("Skywalker");
+    space_soap_opera.ensure<name_surname>("leia")
+      .set_first_name("Leia")
+      .set_family_name("Organa");
+    space_soap_opera.ensure<name_surname>("hans")
+      .set_first_name("Hans")
+      .set_family_name("Olo");
+    space_soap_opera.ensure<name_surname>("vader")
+      .set_first_name("Anakin")
+      .set_family_name("Skywalker");
+    space_soap_opera.ensure<name_surname>("padme")
+      .set_first_name("Padme")
+      .set_family_name("Amidala");
+    space_soap_opera.ensure<name_surname>("shmi")
+      .set_first_name("Shmi")
+      .set_family_name("Skywalker");
+    space_soap_opera.ensure<name_surname>("jarjar")
+      .set_first_name("Jar-Jar")
+      .set_family_name("Binks");
+    space_soap_opera.ensure<name_surname>("chewie").set_first_name("Chewbacca");
+    space_soap_opera.ensure<name_surname>("yoda").set_first_name("Yoda");
+    space_soap_opera.ensure<name_surname>("kilo")
+      .set_first_name("Kylo")
+      .set_family_name("Ren");
 
-    sso.ensure<father>("luke", "vader");
-    sso.ensure<father>("leia", "vader");
-    sso.ensure<mother>("luke", "padme");
-    sso.ensure<mother>("leia", "padme");
-    sso.ensure<mother>("vader", "shmi");
-    sso.ensure<father>("vader", "force");
-    sso.ensure<mother>("kilo", "leia");
-    sso.ensure<father>("kilo", "hans");
+    space_soap_opera.ensure<father>("luke", "vader");
+    space_soap_opera.ensure<father>("leia", "vader");
+    space_soap_opera.ensure<mother>("luke", "padme");
+    space_soap_opera.ensure<mother>("leia", "padme");
+    space_soap_opera.ensure<mother>("vader", "shmi");
+    space_soap_opera.ensure<father>("vader", "force");
+    space_soap_opera.ensure<mother>("kilo", "leia");
+    space_soap_opera.ensure<father>("kilo", "hans");
 
     return 0;
 }

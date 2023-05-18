@@ -97,11 +97,12 @@ public:
                 _elements.ensure<element_name>(elem).set_english_name(
                   to_string(data.front()));
             }
-        } else if(path.starts_with(_decay_path)) {
+        }
+        if(path.starts_with(_decay_path)) {
             element_symbol isot{path[2]};
             if(path.back() == "mode") {
                 _elements.ensure<decay_modes>(isot).add(data.front());
-            } else if(path.back() == "products") {
+            } else if(path[5] == "products") {
                 _elements.ensure<decay_modes>(isot).back().and_then(
                   [&](auto& mode) -> noopt {
                       for(auto prod : data) {
