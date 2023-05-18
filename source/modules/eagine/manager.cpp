@@ -153,6 +153,12 @@ public:
         return *this;
     }
 
+    template <template <class, class> class Storage, component_data... Components>
+    auto register_component_storages() -> auto& {
+        (void)(..., register_component_storage<Storage, Components>());
+        return *this;
+    }
+
     /// @brief Registers the storage to be used to store instances of Relation type.
     /// @see unregister_relation_type
     /// @see knows_relation_type
@@ -165,6 +171,12 @@ public:
     auto register_relation_storage(P&&... p) -> auto& {
         register_relation_type<Relation>(
           std::make_unique<Storage<Entity, Relation>>(std::forward<P>(p)...));
+        return *this;
+    }
+
+    template <template <class, class> class Storage, relation_data... Relations>
+    auto register_relation_storages() -> auto& {
+        (void)(..., register_relation_storage<Storage, Relations>());
         return *this;
     }
 
@@ -259,7 +271,8 @@ public:
     /// @see forget
     auto knows(entity_param ent) noexcept -> bool;
 
-    /// @brief Removes all information, including components, about the specified entity.
+    /// @brief Removes all information, including components, about the
+    /// specified entity.
     /// @see has
     /// @see has_all
     /// @see knows

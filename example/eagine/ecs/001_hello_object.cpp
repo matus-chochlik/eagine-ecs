@@ -25,17 +25,19 @@ auto main(main_ctx& ctx) -> int {
 
     auto& mgr = enable_ecs(ctx).value();
 
-    mgr.register_component_storage<ecs::std_map_cmp_storage, subject>()
-      .register_component_storage<ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storages<
+      eagine::ecs::std_map_cmp_storage,
+      greeting,
+      subject>();
 
     ecs::object hw{"HelloWorld", ctx};
     ecs::object ho{"HelloObjct", ctx};
 
-    hw.ensure<greeting>().write().expression = "Hello";
-    hw.ensure<subject>().write().name = "World";
+    hw.ensure<greeting>()->expression = "Hello";
+    hw.ensure<subject>()->name = "World";
 
     ho.copy_from<greeting>(hw);
-    ho.ensure<subject>().write().name = "Object";
+    ho.ensure<subject>()->name = "Object";
 
     mgr.for_each_with<const greeting, const subject>(
       [&](const auto&, auto& grt, auto& sub) {
