@@ -34,6 +34,7 @@ eagine_add_module(
 		entity_traits manipulator storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -42,6 +43,7 @@ eagine_add_module(
 		entity_traits manipulator storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -51,6 +53,7 @@ eagine_add_module(
 		storage cmp_storage rel_storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
