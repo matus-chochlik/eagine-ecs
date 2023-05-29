@@ -77,18 +77,6 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.ecs
-	INTERFACES ecs
-	PARTITIONS
-		entity_traits
-		component
-		manipulator
-		storage
-		cmp_storage
-		rel_storage
-		std_map_storage
-		manager
-		object
-	SOURCES
 )
 
 eagine_add_module_tests(
