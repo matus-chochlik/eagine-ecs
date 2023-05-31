@@ -64,6 +64,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.valid_if
 )
 
 eagine_add_module(

@@ -15,6 +15,7 @@ import std;
 import eagine.core.debug;
 import eagine.core.types;
 import eagine.core.string;
+import eagine.core.valid_if;
 import eagine.core.utility;
 import :entity_traits;
 import :manipulator;
@@ -370,8 +371,8 @@ public:
     template <component_data Component>
     auto copy(entity_param from, entity_param to) -> manipulator<Component> {
         return {
-          static_cast<Component*>(
-            _do_cpy(from, to, Component::uid(), _cmp_name_getter<Component>())),
+          _do_cpy<Component>(
+            from, to, Component::uid(), _cmp_name_getter<Component>()),
           false};
     }
 
@@ -380,7 +381,8 @@ public:
         requires(sizeof...(Components) > 1)
     {
         (...,
-         _do_cpy(from, to, Components::uid(), _cmp_name_getter<Components>()));
+         _do_cpy<Components>(
+           from, to, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
@@ -628,15 +630,14 @@ private:
         return _get_storages<IsRelation>().find(cid).has_value();
     }
 
-    template <bool IsRelation, typename Result, typename Func>
+    template <bool IsRelation, typename Func>
     auto _apply_on_base_stg(
-      Result,
       const Func&,
       identifier_t,
-      std::string (*)() noexcept) const -> Result;
+      std::string (*)() noexcept) const;
 
-    template <typename D, bool IsRelation, typename Result, typename Func>
-    auto _apply_on_stg(Result, const Func&) const -> Result;
+    template <typename D, bool IsRelation, typename Func>
+    auto _apply_on_stg(const Func&) const;
 
     template <bool IsRelation>
     auto _get_stg_type_caps(identifier_t, std::string (*)() noexcept)
@@ -665,11 +666,12 @@ private:
       -> bool;
 
     template <typename Component>
-    auto _do_add_c(entity_param, Component&& component) -> Component*;
+    auto _do_add_c(entity_param, Component&& component)
+      -> optional_reference<Component>;
 
     template <typename Relation>
     auto _do_add_r(entity_param, entity_param, Relation&& relation)
-      -> Relation*;
+      -> optional_reference<Relation>;
 
     auto _do_add_r(
       entity_param,
@@ -677,11 +679,12 @@ private:
       identifier_t,
       std::string (*)() noexcept) -> bool;
 
+    template <typename Component>
     auto _do_cpy(
       entity_param f,
       entity_param t,
       identifier_t,
-      std::string (*)() noexcept) -> void*;
+      std::string (*)() noexcept) -> optional_reference<Component>;
 
     auto _do_swp(
       entity_param f,
@@ -723,48 +726,35 @@ auto basic_manager<Entity>::_find_storage() noexcept
   -> storage<Entity, Data, IsRelation>& {
 
     using S = storage<Entity, Data, IsRelation>;
-    S* pd_storage = nullptr;
+    auto found{_get_storages<IsRelation>()
+                 .find(Data::uid())
+                 .and_then([](auto& b_storage) -> optional_reference<S> {
+                     return dynamic_cast<S*>(b_storage.get());
+                 })};
 
-    if(auto found{_get_storages<IsRelation>().find(Data::uid())}) {
-        auto& b_storage = extract(found);
-        if(b_storage) {
-            pd_storage = dynamic_cast<S*>(b_storage.get());
-            assert(pd_storage);
-        }
-    }
-    if(not pd_storage) {
+    if(not found) {
         std::string (*get_name)() noexcept = _cmp_name_getter<Data>();
         mgr_handle_cmp_not_reg(get_name());
         unreachable();
     }
-    return *pd_storage;
+    return *found;
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <bool IsRelation, typename Result, typename Func>
+template <bool IsRelation, typename Func>
 auto basic_manager<Entity>::_apply_on_base_stg(
-  Result fallback,
   const Func& func,
   identifier_t cid,
-  std::string (*get_name)() noexcept) const -> Result {
-    auto& storages = _get_storages<IsRelation>();
+  std::string (*get_name)() noexcept) const {
 
-    if(auto found{storages.find(cid)}) {
-        auto& bs_storage = extract(found);
-        if(bs_storage) {
-            return func(bs_storage);
-        }
-    }
-    return fallback;
+    return _get_storages<IsRelation>().find(cid).and_then(func);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <typename Component, bool IsRelation, typename Result, typename Func>
-auto basic_manager<Entity>::_apply_on_stg(Result fallback, const Func& func)
-  const -> Result {
+template <typename Component, bool IsRelation, typename Func>
+auto basic_manager<Entity>::_apply_on_stg(const Func& func) const {
     return _apply_on_base_stg<IsRelation>(
-      fallback,
-      [&func](auto& b_storage) -> Result {
+      [&func](auto& b_storage) {
           using S = storage<Entity, Component, IsRelation>;
 
           S* ct_storage = dynamic_cast<S*>(b_storage.get());
@@ -782,10 +772,12 @@ auto basic_manager<Entity>::_get_stg_type_caps(
   identifier_t cid,
   std::string (*get_name)() noexcept) const noexcept -> storage_caps {
     return _apply_on_base_stg<IsRelation>(
-      storage_caps(),
-      [](auto& b_storage) -> storage_caps { return b_storage->capabilities(); },
-      cid,
-      get_name);
+             [](auto& b_storage) -> always_valid<storage_caps> {
+                 return b_storage->capabilities();
+             },
+             cid,
+             get_name)
+      .or_default();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -794,10 +786,10 @@ auto basic_manager<Entity>::_does_have_c(
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&ent](auto& b_storage) -> bool { return b_storage->has(ent); },
-      cid,
-      get_name);
+             [&ent](auto& b_storage) -> tribool { return b_storage->has(ent); },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -807,12 +799,12 @@ auto basic_manager<Entity>::_does_have_r(
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<true>(
-      false,
-      [&subject, &object](auto& b_storage) -> bool {
-          return b_storage->has(subject, object);
-      },
-      cid,
-      get_name);
+             [&subject, &object](auto& b_storage) -> tribool {
+                 return b_storage->has(subject, object);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -821,10 +813,12 @@ auto basic_manager<Entity>::_is_hidn(
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&ent](auto& b_storage) -> bool { return b_storage->is_hidden(ent); },
-      cid,
-      get_name);
+             [&ent](auto& b_storage) -> tribool {
+                 return b_storage->is_hidden(ent);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -833,10 +827,12 @@ auto basic_manager<Entity>::_do_show(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&ent](auto& b_storage) -> bool { return b_storage->show(ent); },
-      cid,
-      get_name);
+             [&ent](auto& b_storage) -> tribool {
+                 return b_storage->show(ent);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -845,19 +841,21 @@ auto basic_manager<Entity>::_do_hide(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&ent](auto& b_storage) -> bool { return b_storage->hide(ent); },
-      cid,
-      get_name);
+             [&ent](auto& b_storage) -> tribool {
+                 return b_storage->hide(ent);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component>
 auto basic_manager<Entity>::_do_add_c(
   entity_param_t<Entity> ent,
-  Component&& component) -> Component* {
+  Component&& component) -> optional_reference<Component> {
     return _apply_on_stg<Component, false>(
-      static_cast<Component*>(nullptr), [&ent, &component](auto& c_storage) {
+      [&ent, &component](auto& c_storage) -> optional_reference<Component> {
           return c_storage->store(ent, std::forward<Component>(component));
       });
 }
@@ -867,9 +865,8 @@ template <typename Relation>
 auto basic_manager<Entity>::_do_add_r(
   entity_param subj,
   entity_param obj,
-  Relation&& relation) -> Relation* {
+  Relation&& relation) -> optional_reference<Relation> {
     return _apply_on_stg<Relation, true>(
-      static_cast<Relation*>(nullptr),
       [&subj, &obj, &relation](auto& r_storage) {
           return r_storage->store(subj, obj, std::forward<Relation>(relation));
       });
@@ -882,24 +879,24 @@ auto basic_manager<Entity>::_do_add_r(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
-      false,
-      [&subject, &object](auto& b_storage) -> bool {
-          return b_storage->store(subject, object);
-      },
-      cid,
-      get_name);
+             [&subject, &object](auto& b_storage) -> tribool {
+                 return b_storage->store(subject, object);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
+template <typename Component>
 auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> from,
   entity_param_t<Entity> to,
   identifier_t cid,
-  std::string (*get_name)() noexcept) -> void* {
+  std::string (*get_name)() noexcept) -> optional_reference<Component> {
     return _apply_on_base_stg<false>(
-      static_cast<void*>(nullptr),
-      [&from, &to](auto& b_storage) -> void* {
-          return b_storage->copy(from, to);
+      [&from, &to](auto& b_storage) -> optional_reference<Component> {
+          return static_cast<Component*>(b_storage->copy(from, to));
       },
       cid,
       get_name);
@@ -912,13 +909,13 @@ auto basic_manager<Entity>::_do_swp(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&e1, &e2](auto& b_storage) -> bool {
-          b_storage->swap(e1, e2);
-          return true;
-      },
-      cid,
-      get_name);
+             [&e1, &e2](auto& b_storage) -> tribool {
+                 b_storage->swap(e1, e2);
+                 return true;
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -927,10 +924,12 @@ auto basic_manager<Entity>::_do_rem_c(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<false>(
-      false,
-      [&ent](auto& b_storage) -> bool { return b_storage->remove(ent); },
-      cid,
-      get_name);
+             [&ent](auto& b_storage) -> tribool {
+                 return b_storage->remove(ent);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -940,12 +939,12 @@ auto basic_manager<Entity>::_do_rem_r(
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<true>(
-      false,
-      [&subj, &obj](auto& b_storage) -> bool {
-          return b_storage->remove(subj, obj);
-      },
-      cid,
-      get_name);
+             [&subj, &obj](auto& b_storage) -> tribool {
+                 return b_storage->remove(subj, obj);
+             },
+             cid,
+             get_name)
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -975,17 +974,18 @@ auto basic_manager<Entity>::_call_for_single_c(
   entity_param_t<Entity> ent,
   const Func& func) -> bool {
     return _apply_on_stg<std::remove_const_t<Component>, false>(
-      false, [&func, &ent](auto& c_storage) -> bool {
-          c_storage->for_single(func, ent);
-          return true;
-      });
+             [&func, &ent](auto& c_storage) -> tribool {
+                 c_storage->for_single(func, ent);
+                 return true;
+             })
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Component, typename Func>
 void basic_manager<Entity>::_call_for_each_c(const Func& func) {
     _apply_on_stg<std::remove_const_t<Component>, false>(
-      false, [&func](auto& c_storage) -> bool {
+      [&func](auto& c_storage) -> tribool {
           c_storage->for_each(func);
           return true;
       });
@@ -995,10 +995,11 @@ template <typename Entity>
 template <typename Relation, typename Func>
 void basic_manager<Entity>::_call_for_each_r(const Func& func) {
     _apply_on_stg<std::remove_const_t<Relation>, true>(
-      false, [&func](auto& c_storage) -> bool {
+      [&func](auto& c_storage) -> bool {
           c_storage->for_each(func);
           return true;
-      });
+      })
+      .value_or(false);
 }
 //------------------------------------------------------------------------------
 template <typename Entity, typename C>

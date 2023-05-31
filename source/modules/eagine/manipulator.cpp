@@ -27,50 +27,44 @@ class basic_manipulator<Component, false> {
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(Component* pcmp) noexcept
-      : _ptr{pcmp} {}
+    basic_manipulator(optional_reference<Component> ref) noexcept
+      : _ref{ref} {}
 
     /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
-        return _ptr != nullptr;
+        return _ref.has_value();
     }
 
     /// @brief Gives read access to the referenced component.
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
-        return *_ptr;
+        return *_ref;
     }
 
     /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const noexcept
       -> optional_reference<const T> {
-        if(_ptr != nullptr) {
-            return {*_ptr.*member};
-        }
-        return {nothing};
+        return _ref.member(member);
     }
 
     /// @brief Gives write access to the referenced component.
     [[nodiscard]] auto write() const noexcept -> Component& {
         assert(has_value());
-        return *_ptr;
+        return *_ref;
     }
 
     /// @brief Gives write access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto write(T Component::*member) const noexcept
       -> optional_reference<T> {
-        if(_ptr != nullptr) {
-            return {*_ptr.*member};
-        }
-        return {nothing};
+        return _ref.member(member);
     }
 
     /// @brief Gives write access to the referenced component.
     [[nodiscard]] auto operator->() -> Component* {
         assert(has_value());
-        return _ptr;
+        return _ref.get();
     }
 
     /// @brief Calls a function on the referenced component if any.
@@ -116,11 +110,11 @@ public:
 
 protected:
     void _reset_cmp(Component& cmp) noexcept {
-        _ptr = &cmp;
+        _ref = cmp;
     }
 
 private:
-    Component* _ptr{nullptr};
+    optional_reference<Component> _ref{};
 };
 //------------------------------------------------------------------------------
 /// @brief Implementation of base functionality for read-only manipulators.
@@ -131,34 +125,31 @@ class basic_manipulator<Component, true> {
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(const Component* pcmp) noexcept
-      : _ptr{pcmp} {}
+    basic_manipulator(optional_reference<const Component> ref) noexcept
+      : _ref{ref} {}
 
     /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
-        return _ptr != nullptr;
+        return _ref.has_value();
     }
 
     /// @brief Gives read access to the specified component data member.
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
-        return *_ptr;
+        return *_ref;
     }
 
     /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const
       -> optional_reference<const T> {
-        if(_ptr != nullptr) {
-            return {*_ptr.*member};
-        }
-        return {nothing};
+        return _ref.member(member);
     }
 
     /// @brief Gives read access to the referenced component.
     [[nodiscard]] auto operator->() -> const Component* {
         assert(has_value());
-        return _ptr;
+        return _ref.get();
     }
 
     /// @brief Calls a function on the referenced component if any.
@@ -205,11 +196,11 @@ public:
 
 protected:
     void _reset_cmp(const Component& cmp) noexcept {
-        _ptr = &cmp;
+        _ref = cmp;
     }
 
 private:
-    const Component* _ptr{nullptr};
+    optional_reference<const Component> _ref{};
 };
 //------------------------------------------------------------------------------
 export template <typename Component, bool Const>
@@ -234,22 +225,17 @@ public:
     manipulator(const bool can_rem) noexcept
       : _can_rem{can_rem} {}
 
-    manipulator(Component* pcmp, const bool can_rem) noexcept
-      : _base{pcmp}
+    manipulator(optional_reference<Component> ref, const bool can_rem) noexcept
+      : _base{ref}
       , _can_rem{can_rem} {}
 
-    manipulator(Component& cmp, const bool can_rem) noexcept
-      : _base{&cmp}
-      , _can_rem{can_rem} {}
-
-    manipulator(Component& cmp, _nonconstC& add, const bool can_rem) noexcept
-      : _base(&cmp)
+    manipulator(
+      optional_reference<Component> ref,
+      _nonconstC& add,
+      const bool can_rem) noexcept
+      : _base(ref)
       , _add_place{&add}
       , _can_rem(can_rem) {}
-
-    manipulator(std::nullptr_t, _nonconstC& add, const bool can_rem) noexcept
-      : _add_place{&add}
-      , _can_rem{can_rem} {}
 
     [[nodiscard]] auto can_add_component() const noexcept -> bool {
         return _add_place != nullptr;
