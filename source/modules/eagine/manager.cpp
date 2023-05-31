@@ -995,7 +995,7 @@ template <typename Entity>
 template <typename Relation, typename Func>
 void basic_manager<Entity>::_call_for_each_r(const Func& func) {
     _apply_on_stg<std::remove_const_t<Relation>, true>(
-      [&func](auto& c_storage) -> bool {
+      [&func](auto& c_storage) -> tribool {
           c_storage->for_each(func);
           return true;
       })

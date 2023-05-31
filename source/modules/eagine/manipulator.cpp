@@ -36,6 +36,7 @@ public:
     }
 
     /// @brief Gives read access to the referenced component.
+    /// @pre has_value()
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
         return *_ref;
@@ -49,6 +50,7 @@ public:
     }
 
     /// @brief Gives write access to the referenced component.
+    /// @pre has_value()
     [[nodiscard]] auto write() const noexcept -> Component& {
         assert(has_value());
         return *_ref;
