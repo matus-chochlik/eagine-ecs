@@ -770,13 +770,13 @@ void manager_component_for_each_5(auto& s) {
               test.check(
                 g.read(&greeting::expression)
                   .transform([&](const auto& expr) { return not expr.empty(); })
-                  .value_or(false),
+                  .or_false(),
                 "has greeting");
 
               test.check(
                 p.read(&person::family_name)
                   .transform([&](const auto& name) { return not name.empty(); })
-                  .value_or(false),
+                  .or_false(),
                 "has family name");
 
               test.check(
@@ -784,7 +784,7 @@ void manager_component_for_each_5(auto& s) {
                   .transform([&](const auto& name) {
                       return name == eagine::identifier(e).name().str();
                   })
-                  .value_or(false),
+                  .or_false(),
                 "name match");
           }
       });

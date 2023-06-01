@@ -789,7 +789,7 @@ auto basic_manager<Entity>::_does_have_c(
              [&ent](auto& b_storage) -> tribool { return b_storage->has(ent); },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -804,7 +804,7 @@ auto basic_manager<Entity>::_does_have_r(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -818,7 +818,7 @@ auto basic_manager<Entity>::_is_hidn(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -832,7 +832,7 @@ auto basic_manager<Entity>::_do_show(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -846,7 +846,7 @@ auto basic_manager<Entity>::_do_hide(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -884,7 +884,7 @@ auto basic_manager<Entity>::_do_add_r(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -915,7 +915,7 @@ auto basic_manager<Entity>::_do_swp(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -929,7 +929,7 @@ auto basic_manager<Entity>::_do_rem_c(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -944,7 +944,7 @@ auto basic_manager<Entity>::_do_rem_r(
              },
              cid,
              get_name)
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -978,7 +978,7 @@ auto basic_manager<Entity>::_call_for_single_c(
                  c_storage->for_single(func, ent);
                  return true;
              })
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
@@ -999,7 +999,7 @@ void basic_manager<Entity>::_call_for_each_r(const Func& func) {
           c_storage->for_each(func);
           return true;
       })
-      .value_or(false);
+      .or_false();
 }
 //------------------------------------------------------------------------------
 template <typename Entity, typename C>
