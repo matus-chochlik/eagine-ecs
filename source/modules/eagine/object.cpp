@@ -48,7 +48,7 @@ private:
 auto enable(main_ctx& ctx) -> optional_reference<default_manager> {
     assert(ctx.setters());
     return ctx.setters().and_then([&](auto& setters) {
-        auto ecs_mgr{std::make_shared<default_manager_holder>(ctx)};
+        shared_holder<default_manager_holder> ecs_mgr{default_selector, ctx};
         auto mgr_ref{ecs_mgr->get()};
         setters.inject(std::move(ecs_mgr));
         return mgr_ref;
