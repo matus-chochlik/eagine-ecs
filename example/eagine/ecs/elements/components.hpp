@@ -17,13 +17,10 @@ namespace eagine {
 struct element_name : ecs::component<"Name"> {
     std::string latin;
     std::string english;
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<element_name, Const> {
-    struct type : basic_manipulator<element_name, Const> {
-        using basic_manipulator<element_name, Const>::basic_manipulator;
+
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<element_name, Const> {
+        using ecs::basic_manipulator<element_name, Const>::basic_manipulator;
 
         auto set_english_name(std::string name) -> auto& {
             this->write().english = std::move(name);
@@ -58,108 +55,88 @@ struct get_manipulator<element_name, Const> {
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct element_protons : ecs::component<"Protons"> {
     short number{0};
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<element_protons, Const> {
-    struct type : basic_manipulator<element_protons, Const> {
-        using basic_manipulator<element_protons, Const>::basic_manipulator;
 
-        auto set(const short number) -> auto& {
-            this->write().number = number;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<element_protons, Const> {
+        using ecs::basic_manipulator<element_protons, Const>::basic_manipulator;
+
+        auto set(const short n) -> auto& {
+            this->write().number = n;
             return *this;
         }
 
-        auto has_number(const short number) const -> bool {
-            return this->has_value() ? this->read().number == number : false;
+        auto has_number(const short n) const -> bool {
+            return this->has_value() ? this->read().number == n : false;
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct isotope_neutrons : ecs::component<"Neutrons"> {
     short number{0};
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<isotope_neutrons, Const> {
-    struct type : basic_manipulator<isotope_neutrons, Const> {
-        using basic_manipulator<isotope_neutrons, Const>::basic_manipulator;
 
-        auto set(const short number) -> auto& {
-            this->write().number = number;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<isotope_neutrons, Const> {
+        using ecs::basic_manipulator<isotope_neutrons, Const>::basic_manipulator;
+
+        auto set(const short n) -> auto& {
+            this->write().number = n;
             return *this;
         }
 
-        auto has_number(const short number) const -> bool {
-            return this->has_value() ? this->read().number == number : false;
+        auto has_number(const short n) const -> bool {
+            return this->has_value() ? this->read().number == n : false;
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct element_period : ecs::component<"Period"> {
     short number{0};
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<element_period, Const> {
-    struct type : basic_manipulator<element_period, Const> {
-        using basic_manipulator<element_period, Const>::basic_manipulator;
 
-        auto set(const short number) -> auto& {
-            this->write().number = number;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<element_period, Const> {
+        using ecs::basic_manipulator<element_period, Const>::basic_manipulator;
+
+        auto set(const short n) -> auto& {
+            this->write().number = n;
             return *this;
         }
 
-        auto has_number(const short number) const -> bool {
-            return this->has_value() ? this->read().number == number : false;
+        auto has_number(const short n) const -> bool {
+            return this->has_value() ? this->read().number == n : false;
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct element_group : ecs::component<"Group"> {
     short number{0};
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<element_group, Const> {
-    struct type : basic_manipulator<element_group, Const> {
-        using basic_manipulator<element_group, Const>::basic_manipulator;
 
-        auto set(const short number) -> auto& {
-            this->write().number = number;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<element_group, Const> {
+        using ecs::basic_manipulator<element_group, Const>::basic_manipulator;
+
+        auto set(const short n) -> auto& {
+            this->write().number = n;
             return *this;
         }
 
-        auto has_number(const short number) const -> bool {
-            return this->has_value() ? this->read().number == number : false;
+        auto has_number(const short n) const -> bool {
+            return this->has_value() ? this->read().number == n : false;
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct atomic_weight : ecs::component<"AtomWeight"> {
     float value{0.F};
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<atomic_weight, Const> {
-    struct type : basic_manipulator<atomic_weight, Const> {
-        using basic_manipulator<atomic_weight, Const>::basic_manipulator;
 
-        auto set(const float value) -> auto& {
-            this->write().value = value;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<atomic_weight, Const> {
+        using ecs::basic_manipulator<atomic_weight, Const>::basic_manipulator;
+
+        auto set(const float v) -> auto& {
+            this->write().value = v;
             return *this;
         }
 
@@ -168,17 +145,13 @@ struct get_manipulator<atomic_weight, Const> {
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct half_life : ecs::component<"HalfLife"> {
     std::chrono::duration<float> time_seconds;
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<half_life, Const> {
-    struct type : basic_manipulator<half_life, Const> {
-        using basic_manipulator<half_life, Const>::basic_manipulator;
+
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<half_life, Const> {
+        using ecs::basic_manipulator<half_life, Const>::basic_manipulator;
 
         template <typename R, typename P>
         auto set(const std::chrono::duration<R, P> value) -> auto& {
@@ -187,7 +160,6 @@ struct get_manipulator<half_life, Const> {
         }
     };
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 struct decay {
     std::vector<element_symbol> products;
@@ -236,15 +208,9 @@ public:
         }
     }
 
-private:
-    std::vector<std::tuple<identifier_t, int, decay>> _modes;
-};
-//------------------------------------------------------------------------------
-namespace ecs {
-template <bool Const>
-struct get_manipulator<decay_modes, Const> {
-    struct type : basic_manipulator<decay_modes, Const> {
-        using basic_manipulator<decay_modes, Const>::basic_manipulator;
+    template <bool Const>
+    struct manipulator : ecs::basic_manipulator<decay_modes, Const> {
+        using ecs::basic_manipulator<decay_modes, Const>::basic_manipulator;
 
         auto add(const string_view symbol) -> decay* {
             return this->write().add(symbol);
@@ -254,8 +220,10 @@ struct get_manipulator<decay_modes, Const> {
             return this->write().back();
         }
     };
+
+private:
+    std::vector<std::tuple<identifier_t, int, decay>> _modes;
 };
-} // namespace ecs
 //------------------------------------------------------------------------------
 } // namespace eagine
 

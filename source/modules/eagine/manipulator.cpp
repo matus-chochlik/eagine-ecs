@@ -205,10 +205,26 @@ private:
     optional_reference<const Component> _ref{};
 };
 //------------------------------------------------------------------------------
-export template <typename Component, bool Const>
-struct get_manipulator {
-    using type = basic_manipulator<Component, Const>;
+export template <typename C>
+concept component_with_manipulator = requires(C) {
+    typename C::template manipulator<false>;
+    typename C::template manipulator<true>;
 };
+//------------------------------------------------------------------------------
+template <typename Component, bool isConst, bool hasManipulator>
+struct get_default_manipulator
+  : std::type_identity<basic_manipulator<Component, isConst>> {};
+
+template <typename Component, bool isConst>
+struct get_default_manipulator<Component, isConst, true>
+  : std::type_identity<typename Component::template manipulator<isConst>> {};
+
+export template <typename Component, bool isConst>
+struct get_manipulator
+  : get_default_manipulator<
+      Component,
+      isConst,
+      component_with_manipulator<Component>> {};
 
 export template <typename Component, bool Const>
 using get_manipulator_t = typename get_manipulator<Component, Const>::type;

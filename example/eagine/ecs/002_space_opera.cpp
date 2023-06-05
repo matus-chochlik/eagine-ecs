@@ -14,46 +14,39 @@ namespace eagine {
 struct name_surname : ecs::component<"NameSurnme"> {
     std::string first_name;
     std::string family_name;
+
+    template <bool isConst>
+    struct manipulator : ecs::basic_manipulator<name_surname, isConst> {
+        using ecs::basic_manipulator<name_surname, isConst>::basic_manipulator;
+
+        auto get_first_name() const -> const std::string& {
+            return this->read().first_name;
+        }
+
+        auto set_first_name(std::string s) -> auto& {
+            this->write().first_name.assign(std::move(s));
+            return *this;
+        }
+
+        auto has_family_name(const char* str) const -> bool {
+            return this->has_value() and this->read().family_name == str;
+        }
+
+        auto get_family_name() const -> const std::string& {
+            return this->read().family_name;
+        }
+
+        auto set_family_name(std::string s) -> auto& {
+            this->write().family_name.assign(std::move(s));
+            return *this;
+        }
+    };
 };
 
-template <bool Const>
-struct name_surname_manip : ecs::basic_manipulator<name_surname, Const> {
-    using ecs::basic_manipulator<name_surname, Const>::basic_manipulator;
-
-    auto get_first_name() const -> const std::string& {
-        return this->read().first_name;
-    }
-
-    auto set_first_name(std::string s) -> auto& {
-        this->write().first_name.assign(std::move(s));
-        return *this;
-    }
-
-    auto has_family_name(const char* str) const -> bool {
-        return this->has_value() and this->read().family_name == str;
-    }
-
-    auto get_family_name() const -> const std::string& {
-        return this->read().family_name;
-    }
-
-    auto set_family_name(std::string s) -> auto& {
-        this->write().family_name.assign(std::move(s));
-        return *this;
-    }
-};
+static_assert(ecs::component_with_manipulator<name_surname>);
 
 struct father : ecs::relation<"Father"> {};
 struct mother : ecs::relation<"Mother"> {};
-
-namespace ecs {
-
-template <bool Const>
-struct get_manipulator<name_surname, Const> {
-    using type = name_surname_manip<Const>;
-};
-
-} // namespace ecs
 
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
