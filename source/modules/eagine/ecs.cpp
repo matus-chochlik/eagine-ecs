@@ -15,3 +15,4 @@ export import :cmp_storage;
 export import :rel_storage;
 export import :std_map_storage;
 export import :manager;
+export import :object;

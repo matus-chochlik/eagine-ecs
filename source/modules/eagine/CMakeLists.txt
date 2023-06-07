@@ -18,7 +18,6 @@ eagine_add_module(
 	eagine.ecs PARTITION manipulator
 	IMPORTS
 		eagine.core.types
-		eagine.core.concepts
 )
 
 eagine_add_module(
@@ -34,6 +33,7 @@ eagine_add_module(
 		entity_traits manipulator storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -42,6 +42,7 @@ eagine_add_module(
 		entity_traits manipulator storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -51,6 +52,7 @@ eagine_add_module(
 		storage cmp_storage rel_storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.reflection
 )
 
 eagine_add_module(
@@ -62,21 +64,20 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.string
 		eagine.core.utility
+		eagine.core.valid_if
+)
+
+eagine_add_module(
+	eagine.ecs PARTITION object
+	IMPORTS
+		component manipulator manager
+		eagine.core.types
+		eagine.core.identifier
+		eagine.core.main_ctx
 )
 
 eagine_add_module(
 	eagine.ecs
-	INTERFACES ecs
-	PARTITIONS
-		entity_traits
-		component
-		manipulator
-		storage
-		cmp_storage
-		rel_storage
-		std_map_storage
-		manager
-	SOURCES
 )
 
 eagine_add_module_tests(

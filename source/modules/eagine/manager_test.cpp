@@ -109,10 +109,10 @@ void manager_component_register_2(auto& s) {
     test.check(not mgr.knows_relation_type<father>(), "father 5");
 }
 //------------------------------------------------------------------------------
-// write / has
+// write / knows + has
 //------------------------------------------------------------------------------
 void manager_component_write_has_1(auto& s) {
-    eagitest::case_ test{s, 3, "write/has"};
+    eagitest::case_ test{s, 3, "write/knows+has"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
     mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
@@ -122,12 +122,14 @@ void manager_component_write_has_1(auto& s) {
 
     test.check(not mgr.has<greeting>(hw), "has not greeting");
     test.check(not mgr.has<person>(hw), "has not person");
+    test.check(not mgr.knows(hw), "has not entity");
 
     mgr.ensure<greeting>(hw).write().expression = "Hello";
     mgr.ensure<person>(hw).write().name = "World";
 
     test.check(mgr.has<greeting>(hw), "has greeting");
     test.check(mgr.has<person>(hw), "has person");
+    test.check(mgr.knows(hw), "has entity");
 }
 //------------------------------------------------------------------------------
 // write / get
@@ -768,13 +770,13 @@ void manager_component_for_each_5(auto& s) {
               test.check(
                 g.read(&greeting::expression)
                   .transform([&](const auto& expr) { return not expr.empty(); })
-                  .value_or(false),
+                  .or_false(),
                 "has greeting");
 
               test.check(
                 p.read(&person::family_name)
                   .transform([&](const auto& name) { return not name.empty(); })
-                  .value_or(false),
+                  .or_false(),
                 "has family name");
 
               test.check(
@@ -782,7 +784,7 @@ void manager_component_for_each_5(auto& s) {
                   .transform([&](const auto& name) {
                       return name == eagine::identifier(e).name().str();
                   })
-                  .value_or(false),
+                  .or_false(),
                 "name match");
           }
       });
