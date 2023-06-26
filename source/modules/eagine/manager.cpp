@@ -117,7 +117,7 @@ public:
     /// @see register_relation_storage
     template <component_data Component>
     auto register_component_type(
-      std::unique_ptr<component_storage<Entity, Component>>&& strg) -> auto& {
+      shared_holder<component_storage<Entity, Component>>&& strg) -> auto& {
         _do_reg_stg_type<false>(
           _base_cmp_storage_ptr_t(std::move(strg)),
           Component::uid(),
@@ -131,7 +131,7 @@ public:
     /// @see register_component_storage
     template <relation_data Relation>
     auto register_relation_type(
-      std::unique_ptr<relation_storage<Entity, Relation>>&& strg) -> auto& {
+      shared_holder<relation_storage<Entity, Relation>>&& strg) -> auto& {
         _do_reg_stg_type<true>(
           _base_rel_storage_ptr_t(std::move(strg)),
           Relation::uid(),
@@ -150,7 +150,7 @@ public:
       typename... P>
     auto register_component_storage(P&&... p) -> auto& {
         register_component_type<Component>(
-          std::make_unique<Storage<Entity, Component>>(std::forward<P>(p)...));
+          {hold<Storage<Entity, Component>>, std::forward<P>(p)...});
         return *this;
     }
 
@@ -171,7 +171,7 @@ public:
       typename... P>
     auto register_relation_storage(P&&... p) -> auto& {
         register_relation_type<Relation>(
-          std::make_unique<Storage<Entity, Relation>>(std::forward<P>(p)...));
+          {hold<Storage<Entity, Relation>>, std::forward<P>(p)...});
         return *this;
     }
 
@@ -550,7 +550,7 @@ public:
 
 private:
     using _base_cmp_storage_t = base_component_storage<Entity>;
-    using _base_cmp_storage_ptr_t = std::unique_ptr<_base_cmp_storage_t>;
+    using _base_cmp_storage_ptr_t = shared_holder<_base_cmp_storage_t>;
 
     component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
 
@@ -563,7 +563,7 @@ private:
     }
 
     using _base_rel_storage_t = base_relation_storage<Entity>;
-    using _base_rel_storage_ptr_t = std::unique_ptr<_base_rel_storage_t>;
+    using _base_rel_storage_ptr_t = shared_holder<_base_rel_storage_t>;
 
     component_uid_map<_base_rel_storage_ptr_t> _rel_storages{};
 
@@ -608,7 +608,7 @@ private:
 
     template <bool IsRelation>
     void _do_reg_stg_type(
-      std::unique_ptr<base_storage<Entity, IsRelation>>&& strg,
+      shared_holder<base_storage<Entity, IsRelation>>&& strg,
       identifier_t cid,
       std::string (*get_name)() noexcept) {
         assert(bool(strg));
