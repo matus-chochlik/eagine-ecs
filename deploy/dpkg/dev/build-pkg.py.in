@@ -56,8 +56,7 @@ Package: eagine-ecs-dev
 Version: %s
 Architecture: %s
 Installed-Size: %d
-Depends: cmake,libsystemd-dev,zlib1g-dev
-Suggests: ninja-build
+Depends: eagine-core-dev
 Maintainer: Matus Chochlik <chochlik@gmail.com>
 Description: Collection of various modern C++ utilities.
 """ % (
