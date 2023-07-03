@@ -59,7 +59,7 @@ Architecture: %s
 Installed-Size: %d
 Depends: eagine-core-dev
 Maintainer: Matus Chochlik <chochlik@gmail.com>
-Description: Collection of various modern C++ utilities.
+Description: C++ entity-component system.
 """ % (
     "@PKG_VERSION@",
     "@PKG_ARCH@",
