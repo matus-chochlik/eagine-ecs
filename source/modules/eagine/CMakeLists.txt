@@ -4,11 +4,14 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.ecs PARTITION entity_traits
+	IMPORTS
+		std
 )
 
 eagine_add_module(
 	eagine.ecs PARTITION component
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.container
@@ -17,12 +20,14 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION manipulator
 	IMPORTS
+		std
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.ecs PARTITION storage
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.reflection
 )
@@ -30,7 +35,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION cmp_storage
 	IMPORTS
-		entity_traits manipulator storage
+		std entity_traits
+		manipulator storage
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.reflection
@@ -39,7 +45,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION rel_storage
 	IMPORTS
-		entity_traits manipulator storage
+		std entity_traits
+		manipulator storage
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.reflection
@@ -48,7 +55,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION std_map_storage
 	IMPORTS
-		entity_traits manipulator component
+		std entity_traits
+		manipulator component
 		storage cmp_storage rel_storage
 		eagine.core.types
 		eagine.core.utility
@@ -58,7 +66,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION manager
 	IMPORTS
-		entity_traits manipulator component
+		std entity_traits
+		manipulator component
 		storage cmp_storage rel_storage
 		eagine.core.debug
 		eagine.core.types
@@ -70,7 +79,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION object
 	IMPORTS
-		component manipulator manager
+		std component manipulator manager
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.main_ctx
