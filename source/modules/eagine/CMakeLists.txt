@@ -95,6 +95,7 @@ eagine_add_module_tests(
 		storage
 		manager
 	IMPORTS
+		std
 		eagine.core
 )
 set_tests_properties(build-test.eagine.ecs.manager PROPERTIES COST 10)
