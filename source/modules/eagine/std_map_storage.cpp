@@ -105,11 +105,11 @@ public:
     }
 
     auto has(entity_param e) -> bool override {
-        return _components.find(e) != _components.end();
+        return _components.contains(e);
     }
 
     auto is_hidden(entity_param e) -> bool override {
-        return _hidden.find(e) != _hidden.end();
+        return _hidden.contains(e);
     }
 
     auto is_hidden(iterator_t& i) -> bool override {
@@ -142,36 +142,35 @@ public:
         if(is_hidden(ef)) {
             return nullptr;
         }
-        auto pf = _components.find(ef);
-        if(pf == _components.end()) {
-            return nullptr;
+        if(const auto found{find(_components, ef)}) {
+            return static_cast<void*>(store(et, Component(*found)));
         }
-        return static_cast<void*>(store(et, Component(pf->second)));
+        return nullptr;
     }
 
-    auto swap(entity_param ea, entity_param eb) -> bool override {
-        auto pa = _components.find(ea);
-        auto pb = _components.find(eb);
-        bool ha = is_hidden(ea);
-        bool hb = is_hidden(eb);
+    auto swap(const entity_param ea, const entity_param eb) -> bool override {
+        const auto fa{find(_components, ea)};
+        const auto fb{find(_components, eb)};
+        const bool ha{is_hidden(ea)};
+        const bool hb{is_hidden(eb)};
 
-        if(pa != _components.end() and pb != _components.end()) {
+        if(fa and fb) {
             using std::swap;
-            swap(pa->second, pb->second);
+            swap(*fa, *fb);
             if(ha and not hb) {
                 show(ea);
             }
             if(hb and not ha) {
                 show(eb);
             }
-        } else if(pa != _components.end()) {
-            store(eb, std::move(pa->second));
+        } else if(fa) {
+            store(eb, std::move(*fa));
             remove(ea);
             if(ha) {
                 hide(eb);
             }
-        } else if(pb != _components.end()) {
-            store(ea, std::move(pb->second));
+        } else if(fb) {
+            store(ea, std::move(*fb));
             remove(eb);
             if(hb) {
                 hide(ea);
@@ -406,7 +405,7 @@ public:
     }
 
     auto has(entity_param s, entity_param o) -> bool override {
-        return _relations.find(_pair_t(s, o)) != _relations.end();
+        return _relations.contains(_pair_t(s, o));
     }
 
     auto store(entity_param s, entity_param o) -> bool override {
