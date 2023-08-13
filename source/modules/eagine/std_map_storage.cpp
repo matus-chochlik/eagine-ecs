@@ -207,15 +207,13 @@ public:
     void for_single(
       const callable_ref<void(entity_param, manipulator<const Component>&)> func,
       entity_param e) override {
-        auto p = _components.find(e);
-        if(p != _components.end()) {
+        if(auto found{eagine::find(_components, e)}) {
             if(not is_hidden(e)) {
                 concrete_manipulator<const Component> m(
-                  p->second, true /*can_remove*/
-                );
-                func(p->first, m);
+                  *found, true /*can_remove*/);
+                func(e, m);
                 if(m.remove_requested()) {
-                    _remove(p);
+                    _remove(found);
                 }
             }
         }
@@ -229,8 +227,7 @@ public:
         assert(p != _components.end());
         if(not is_hidden(p->first)) {
             concrete_manipulator<const Component> m(
-              p->second, true /*can_remove*/
-            );
+              p->second, true /*can_remove*/);
             func(p->first, m);
             if(m.remove_requested()) {
                 p = _remove(p);
@@ -241,16 +238,13 @@ public:
     void for_single(
       const callable_ref<void(entity_param, manipulator<Component>&)> func,
       entity_param e) override {
-        auto p = _components.find(e);
-        if(p != _components.end()) {
+        if(auto found{eagine::find(_components, e)}) {
             if(not is_hidden(e)) {
                 // TODO: modify notification
-                concrete_manipulator<Component> m(
-                  p->second, true /*can_remove*/
-                );
-                func(p->first, m);
+                concrete_manipulator<Component> m(*found, true /*can_remove*/);
+                func(e, m);
                 if(m.remove_requested()) {
-                    _remove(p);
+                    _remove(found);
                 }
             }
         }
