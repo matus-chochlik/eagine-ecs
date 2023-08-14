@@ -213,7 +213,7 @@ public:
                   *found, true /*can_remove*/);
                 func(e, m);
                 if(m.remove_requested()) {
-                    _remove(found);
+                    _remove(found.position());
                 }
             }
         }
@@ -244,7 +244,7 @@ public:
                 concrete_manipulator<Component> m(*found, true /*can_remove*/);
                 func(e, m);
                 if(m.remove_requested()) {
-                    _remove(found);
+                    _remove(found.position());
                 }
             }
         }
