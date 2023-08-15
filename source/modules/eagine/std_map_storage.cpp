@@ -427,14 +427,11 @@ public:
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       entity_param subject,
       entity_param object) override {
-        auto po = _relations.find(_pair_t(subject, object));
-        if(po != _relations.end()) {
-            concrete_manipulator<const Relation> m(
-              po->second, true /*can_erase*/
-            );
-            func(po->first.first, po->first.second, m);
+        if(const auto found{find(_relations, _pair_t(subject, object))}) {
+            concrete_manipulator<const Relation> m(*found, true /*can_erase*/);
+            func(subject, object, m);
             if(m.remove_requested()) {
-                _remove(po);
+                _remove(found.position());
             }
         }
     }
@@ -461,15 +458,12 @@ public:
         void(entity_param, entity_param, manipulator<Relation>&)> func,
       entity_param subject,
       entity_param object) override {
-        auto po = _relations.find(_pair_t(subject, object));
-        if(po != _relations.end()) {
+        if(const auto found{find(_relations, _pair_t(subject, object))}) {
             // TODO: modify notification
-            concrete_manipulator<Relation> m(
-              po->second, true /*can_erase*/
-            );
-            func(po->first.first, po->first.second, m);
+            concrete_manipulator<Relation> m(*found, true /*can_erase*/);
+            func(subject, object, m);
             if(m.remove_requested()) {
-                _remove(po);
+                _remove(found.position());
             }
         }
     }
