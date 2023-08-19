@@ -30,8 +30,8 @@ auto main(main_ctx& ctx) -> int {
       greeting,
       subject>();
 
-    ecs::object hw{"HelloWorld", ctx};
-    ecs::object ho{"HelloObjct", ctx};
+    auto hw{ecs::object::make(ctx)};
+    auto ho{ecs::object::make(ctx)};
 
     hw.ensure<greeting>()->expression = "Hello";
     hw.ensure<subject>()->name = "World";

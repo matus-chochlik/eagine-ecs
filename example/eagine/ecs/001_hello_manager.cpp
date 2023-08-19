@@ -23,12 +23,12 @@ auto main(main_ctx& ctx) -> int {
     using namespace eagine;
     ctx.log().info("starting");
 
-    ecs::basic_manager<identifier_t> mgr;
+    ecs::default_manager mgr;
     mgr.register_component_storage<ecs::std_map_cmp_storage, subject>();
     mgr.register_component_storage<ecs::std_map_cmp_storage, greeting>();
 
-    const auto hw = id_v("HelloWorld");
-    const auto he = id_v("HelloNtity");
+    const auto hw{mgr.new_entity()};
+    const auto he{mgr.new_entity()};
 
     mgr.ensure<greeting>(hw)->expression = "Hello";
     mgr.ensure<subject>(hw)->name = "World";

@@ -6,6 +6,7 @@ eagine_add_module(
 	eagine.ecs PARTITION entity_traits
 	IMPORTS
 		std
+		eagine.core.identifier
 )
 
 eagine_add_module(

@@ -489,7 +489,7 @@ public:
     void for_each(
       const callable_ref<void(entity_param, entity_param)> func,
       entity_param subject) override {
-        entity_param object = entity_traits<Entity>::minimum();
+        entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
         while((po != _relations.end()) and (po->first.first == subject)) {
             func(subject, po->first.second);
@@ -509,7 +509,7 @@ public:
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       entity_param subject) override {
         concrete_manipulator<const Relation> m(true /*can_remove*/);
-        entity_param object = entity_traits<Entity>::minimum();
+        entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
         while((po != _relations.end()) and (po->first.first == subject)) {
             m.reset(po->second);
@@ -527,7 +527,7 @@ public:
         void(entity_param, entity_param, manipulator<Relation>&)> func,
       entity_param subject) override {
         concrete_manipulator<Relation> m(true /*can_remove*/);
-        entity_param object = entity_traits<Entity>::minimum();
+        entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
         while((po != _relations.end()) and (po->first.first == subject)) {
             // TODO: modify notification
