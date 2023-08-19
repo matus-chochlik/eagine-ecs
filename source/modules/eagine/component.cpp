@@ -13,9 +13,9 @@ import eagine.core.container;
 export import eagine.core.identifier;
 
 namespace eagine::ecs {
-
+//------------------------------------------------------------------------------
 export enum class data_kind : bool { component = false, relation = true };
-
+//------------------------------------------------------------------------------
 // entity_data
 export template <identifier_value Uid, data_kind Kind>
 struct entity_data {
@@ -35,7 +35,7 @@ struct entity_data {
         return Kind == data_kind::relation;
     }
 };
-
+//------------------------------------------------------------------------------
 // component - base class
 export template <identifier_value Uid>
 using component = entity_data<Uid, data_kind::component>;
@@ -45,7 +45,7 @@ concept component_data = requires(const T& x) {
     { x.is_component() } -> std::convertible_to<bool>;
     bool(x.is_component());
 };
-
+//------------------------------------------------------------------------------
 // relation - base class
 export template <identifier_value Uid>
 using relation = entity_data<Uid, data_kind::relation>;
@@ -55,7 +55,7 @@ concept relation_data = requires(const T& x) {
     { x.is_relation() } -> std::convertible_to<bool>;
     bool(x.is_relation());
 };
-
+//------------------------------------------------------------------------------
 // component_uid_map
 export template <typename T>
 class component_uid_map {
@@ -101,6 +101,6 @@ public:
 private:
     flat_map<identifier_t, T> _storage{};
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine::ecs
 

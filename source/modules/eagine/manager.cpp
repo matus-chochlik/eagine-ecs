@@ -21,8 +21,6 @@ import :entity_traits;
 import :manipulator;
 import :component;
 import :storage;
-import :cmp_storage;
-import :rel_storage;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------

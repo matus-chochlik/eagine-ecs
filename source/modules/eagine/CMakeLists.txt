@@ -28,26 +28,8 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION storage
 	IMPORTS
-		std
-		eagine.core.types
-		eagine.core.reflection
-)
-
-eagine_add_module(
-	eagine.ecs PARTITION cmp_storage
-	IMPORTS
 		std entity_traits
-		manipulator storage
-		eagine.core.types
-		eagine.core.utility
-		eagine.core.reflection
-)
-
-eagine_add_module(
-	eagine.ecs PARTITION rel_storage
-	IMPORTS
-		std entity_traits
-		manipulator storage
+		manipulator
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.reflection
@@ -58,7 +40,7 @@ eagine_add_module(
 	IMPORTS
 		std entity_traits
 		manipulator component
-		storage cmp_storage rel_storage
+		storage
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.reflection
@@ -69,7 +51,7 @@ eagine_add_module(
 	IMPORTS
 		std entity_traits
 		manipulator component
-		storage cmp_storage rel_storage
+		storage
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.string

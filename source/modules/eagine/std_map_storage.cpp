@@ -18,11 +18,9 @@ import eagine.core.utility;
 import :entity_traits;
 import :manipulator;
 import :storage;
-import :cmp_storage;
-import :rel_storage;
 
 namespace eagine::ecs {
-
+//------------------------------------------------------------------------------
 export template <typename Entity, typename Component>
 class std_map_cmp_storage;
 
@@ -83,7 +81,7 @@ private:
 
     friend class std_map_cmp_storage<Entity, Component>;
 };
-
+//------------------------------------------------------------------------------
 export template <typename Entity, typename Component>
 class std_map_cmp_storage : public component_storage<Entity, Component> {
 public:
@@ -310,10 +308,10 @@ public:
     }
 
 private:
+    using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
+
     std::map<Entity, Component> _components{};
     std::set<Entity> _hidden{};
-
-    using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
 
     auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
         assert(dynamic_cast<_map_iter_t*>(i.ptr()));
@@ -330,7 +328,7 @@ private:
         return _components.erase(p);
     }
 };
-
+//------------------------------------------------------------------------------
 export template <typename Entity, typename Relation>
 class std_map_rel_storage;
 
@@ -377,7 +375,7 @@ private:
 
     friend class std_map_rel_storage<Entity, Relation>;
 };
-
+//------------------------------------------------------------------------------
 export template <typename Entity, typename Relation>
 class std_map_rel_storage : public relation_storage<Entity, Relation> {
 public:
@@ -591,6 +589,6 @@ private:
         return _relations.erase(p);
     }
 };
-
+//------------------------------------------------------------------------------
 } // namespace eagine::ecs
 
