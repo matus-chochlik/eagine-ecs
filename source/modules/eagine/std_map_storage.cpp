@@ -308,6 +308,26 @@ public:
         }
     }
 
+    void for_each(
+      const callable_ref<void(manipulator<Component>&)> func) override {
+        concrete_manipulator<Component> m(true /*can_remove*/);
+        auto p = _components.begin();
+        while(p != _components.end()) {
+            if(not is_hidden(p->first)) {
+                // TODO: modify notification
+                m.reset(p->second);
+                func(m);
+                if(m.remove_requested()) {
+                    p = _remove(p);
+                } else {
+                    ++p;
+                }
+            } else {
+                ++p;
+            }
+        }
+    }
+
 private:
     using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
 

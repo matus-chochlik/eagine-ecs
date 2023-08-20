@@ -265,6 +265,8 @@ struct storage<Entity, Component, false> : base_storage<Entity, false> {
 
     virtual void for_each(
       const callable_ref<void(entity_param, manipulator<Component>&)>) = 0;
+
+    virtual void for_each(const callable_ref<void(manipulator<Component>&)>) = 0;
 };
 //------------------------------------------------------------------------------
 //  Relation storage
