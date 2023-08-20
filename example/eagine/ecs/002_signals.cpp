@@ -31,19 +31,17 @@ auto main(main_ctx& ctx) -> int {
     const auto on_forgotten{[&](identifier e) {
         ctx.cio().print("ECS", "Forgotten ${name}").arg("name", e);
     }};
-    mgr.entity_spawned.connect({construct_from, on_forgotten});
+    mgr.entity_forgotten.connect({construct_from, on_forgotten});
 
     std::vector<ecs::object> objects;
 
-    for(int i = 0; i < 1000; ++i) {
+    for(int i = 0; i < 64; ++i) {
         auto obj{ecs::object::spawn(ctx)};
         obj.ensure<subject>()->name = obj.entity().name().str();
         objects.emplace_back(std::move(obj));
     }
 
-    for(auto& obj : objects) {
-        obj.forget();
-    }
+    objects.clear();
 
     return 0;
 }

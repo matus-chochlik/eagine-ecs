@@ -1402,15 +1402,17 @@ auto basic_manager<Entity>::spawn() noexcept -> Entity {
 //------------------------------------------------------------------------------
 template <typename Entity>
 void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
-    for(auto& entry : _cmp_storages) {
-        auto& storage{std::get<1>(entry)};
-        if(storage) {
-            if(storage->capabilities().can_remove()) {
-                storage->remove(ent);
+    if(ent) {
+        for(auto& entry : _cmp_storages) {
+            auto& storage{std::get<1>(entry)};
+            if(storage) {
+                if(storage->capabilities().can_remove()) {
+                    storage->remove(ent);
+                }
             }
         }
+        this->entity_forgotten(ent);
     }
-    this->entity_forgotten(ent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs
