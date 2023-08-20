@@ -82,17 +82,17 @@ public:
         manager().forget(entity());
     }
 
-    [[nodiscard]] static auto make(main_ctx& ctx) noexcept -> object {
+    [[nodiscard]] static auto spawn(main_ctx& ctx) noexcept -> object {
         auto mgr{locate_default_manager(ctx)};
         assert(mgr);
-        return object{mgr->new_entity(), ctx};
+        return object{mgr->spawn(), ctx};
     }
 
-    [[nodiscard]] static auto make(const main_ctx_object& parent) noexcept
+    [[nodiscard]] static auto spawn(const main_ctx_object& parent) noexcept
       -> object {
         auto mgr{default_manager_of(parent)};
         assert(mgr);
-        return object{mgr->new_entity(), parent};
+        return object{mgr->spawn(), parent};
     }
 
     auto entity() const noexcept -> identifier {
@@ -177,6 +177,11 @@ public:
     template <component_data... Components>
     auto remove() noexcept -> object& {
         manager().template remove<Components...>(entity());
+        return *this;
+    }
+
+    auto forget() noexcept -> object& {
+        manager().forget(entity());
         return *this;
     }
 

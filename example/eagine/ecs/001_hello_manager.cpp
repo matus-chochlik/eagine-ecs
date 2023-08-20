@@ -18,7 +18,7 @@ struct subject : ecs::component<"Subject"> {
 struct greeting : ecs::component<"Greeting"> {
     std::string expression;
 };
-
+//------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
     ctx.log().info("starting");
@@ -27,8 +27,8 @@ auto main(main_ctx& ctx) -> int {
     mgr.register_component_storage<ecs::std_map_cmp_storage, subject>();
     mgr.register_component_storage<ecs::std_map_cmp_storage, greeting>();
 
-    const auto hw{mgr.new_entity()};
-    const auto he{mgr.new_entity()};
+    const auto hw{mgr.spawn()};
+    const auto he{mgr.spawn()};
 
     mgr.ensure<greeting>(hw)->expression = "Hello";
     mgr.ensure<subject>(hw)->name = "World";

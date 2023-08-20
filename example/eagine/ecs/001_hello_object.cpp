@@ -18,7 +18,7 @@ struct subject : ecs::component<"Subject"> {
 struct greeting : ecs::component<"Greeting"> {
     std::string expression;
 };
-
+//------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
     ctx.log().info("starting");
@@ -30,8 +30,8 @@ auto main(main_ctx& ctx) -> int {
       greeting,
       subject>();
 
-    auto hw{ecs::object::make(ctx)};
-    auto ho{ecs::object::make(ctx)};
+    auto hw{ecs::object::spawn(ctx)};
+    auto ho{ecs::object::spawn(ctx)};
 
     hw.ensure<greeting>()->expression = "Hello";
     hw.ensure<subject>()->name = "World";

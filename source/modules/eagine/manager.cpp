@@ -101,9 +101,9 @@ private:
 /// @brief Main class, managing entity data. Entities are represented by values of Entity.
 /// @ingroup ecs
 export template <typename Entity>
-class basic_manager {
+class basic_manager : public basic_manager_signals<Entity> {
 public:
-    /// @brief Prefered type to pass immutable entity identifier parameters.
+    /// @brief Preferred type to pass immutable entity identifier parameters.
     using entity_param = entity_param_t<Entity>;
 
     /// @brief Default constructor.
@@ -268,18 +268,13 @@ public:
     /// @see has
     /// @see has_all
     /// @see forget
-    /// @see new_entity
+    /// @see spawn
     auto knows(entity_param ent) noexcept -> bool;
 
     /// @brief Creates a new entity that is not yet known to this manager
     /// @see knows
     /// @see forget
-    auto new_entity() noexcept -> Entity {
-        do {
-            _entity_sequence = entity_traits<Entity>::next(_entity_sequence);
-        } while(knows(_entity_sequence));
-        return _entity_sequence;
-    }
+    auto spawn() noexcept -> Entity;
 
     /// @brief Removes all information, including components, about the
     /// specified entity.
@@ -1397,6 +1392,15 @@ auto basic_manager<Entity>::knows(entity_param_t<Entity> ent) noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
+auto basic_manager<Entity>::spawn() noexcept -> Entity {
+    do {
+        _entity_sequence = entity_traits<Entity>::next(_entity_sequence);
+    } while(knows(_entity_sequence));
+    this->entity_spawned(_entity_sequence);
+    return _entity_sequence;
+}
+//------------------------------------------------------------------------------
+template <typename Entity>
 void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
     for(auto& entry : _cmp_storages) {
         auto& storage{std::get<1>(entry)};
@@ -1406,6 +1410,7 @@ void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
             }
         }
     }
+    this->entity_forgotten(ent);
 }
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs

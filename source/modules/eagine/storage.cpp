@@ -20,6 +20,8 @@ import :manipulator;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
+//  Capabilities
+//------------------------------------------------------------------------------
 export enum class storage_cap_bit : unsigned short {
     hide = 1U << 0U,
     copy = 1U << 1U,
@@ -85,6 +87,16 @@ public:
 export auto all_storage_caps() noexcept -> storage_caps {
     return {static_cast<storage_cap_bit>((1U << 6U) - 1U)};
 }
+//------------------------------------------------------------------------------
+// Signals
+//------------------------------------------------------------------------------
+export template <typename Entity>
+struct basic_manager_signals {
+    signal<void(entity_param_t<Entity>) noexcept> entity_spawned;
+    signal<void(entity_param_t<Entity>) noexcept> entity_forgotten;
+};
+//------------------------------------------------------------------------------
+// Interfaces
 //------------------------------------------------------------------------------
 export template <typename Entity, bool IsRelation>
 struct storage_iterator_intf;
@@ -203,6 +215,7 @@ private:
 export template <typename Entity>
 struct base_storage<Entity, false> : interface<base_storage<Entity, false>> {
     using entity_param = entity_param_t<Entity>;
+    using signals_t = basic_manager_signals<Entity>;
     using iterator_t = storage_iterator<Entity, false>;
 
     virtual auto capabilities() -> storage_caps = 0;
