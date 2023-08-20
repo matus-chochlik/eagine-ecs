@@ -43,6 +43,7 @@ eagine_add_module(
 		storage
 		eagine.core.types
 		eagine.core.utility
+		eagine.core.container
 		eagine.core.reflection
 )
 

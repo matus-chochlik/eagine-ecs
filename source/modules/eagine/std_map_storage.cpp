@@ -13,8 +13,9 @@ export module eagine.ecs:std_map_storage;
 
 import std;
 import eagine.core.types;
-import eagine.core.reflection;
 import eagine.core.utility;
+import eagine.core.container;
+import eagine.core.reflection;
 import :entity_traits;
 import :manipulator;
 import :storage;
@@ -95,11 +96,11 @@ public:
     }
 
     auto new_iterator() -> iterator_t override {
-        return iterator_t(new _map_iter_t(_components));
+        return iterator_t(_iterators.make(_components));
     }
 
     void delete_iterator(iterator_t&& i) override {
-        delete i.release();
+        _iterators.eat(i.release());
     }
 
     auto has(entity_param e) -> bool override {
@@ -312,6 +313,7 @@ private:
 
     std::map<Entity, Component> _components{};
     std::set<Entity> _hidden{};
+    object_pool<_map_iter_t, 2> _iterators{};
 
     auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
         assert(dynamic_cast<_map_iter_t*>(i.ptr()));
@@ -389,11 +391,11 @@ public:
     }
 
     auto new_iterator() -> iterator_t override {
-        return iterator_t(new _map_iter_t(_relations));
+        return iterator_t(_iterators.make(_relations));
     }
 
     void delete_iterator(iterator_t&& i) override {
-        delete i.release();
+        _iterators.eat(i.release());
     }
 
     auto has(entity_param s, entity_param o) -> bool override {
@@ -575,9 +577,10 @@ public:
 
 private:
     using _pair_t = std::pair<Entity, Entity>;
-    std::map<_pair_t, Relation> _relations;
-
     using _map_iter_t = std_map_rel_storage_iterator<Entity, Relation>;
+
+    std::map<_pair_t, Relation> _relations;
+    object_pool<_map_iter_t, 2> _iterators{};
 
     auto _iter_cast(relation_storage_iterator<Entity>& i) noexcept -> auto& {
         assert(dynamic_cast<_map_iter_t*>(i.ptr()) != nullptr);

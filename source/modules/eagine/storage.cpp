@@ -126,7 +126,7 @@ using relation_storage = storage<Entity, Data, true>;
 //------------------------------------------------------------------------------
 export template <typename Entity>
 struct storage_iterator_intf<Entity, false>
-  : interface<storage_iterator_intf<Entity, false>> {
+  : abstract<storage_iterator_intf<Entity, false>> {
 
     virtual void reset() = 0;
 
@@ -142,6 +142,9 @@ struct storage_iterator_intf<Entity, false>
 export template <typename Entity>
 class storage_iterator<Entity, false> {
 public:
+    storage_iterator(storage_iterator_intf<Entity, false>& i) noexcept
+      : _i{&i} {}
+
     storage_iterator(storage_iterator_intf<Entity, false>* i) noexcept
       : _i{i} {
         assert(_i);
@@ -268,7 +271,7 @@ struct storage<Entity, Component, false> : base_storage<Entity, false> {
 //------------------------------------------------------------------------------
 export template <typename Entity>
 struct storage_iterator_intf<Entity, true>
-  : interface<storage_iterator_intf<Entity, true>> {
+  : abstract<storage_iterator_intf<Entity, true>> {
 
     virtual auto reset() -> void = 0;
 
@@ -284,6 +287,9 @@ struct storage_iterator_intf<Entity, true>
 export template <typename Entity>
 class storage_iterator<Entity, true> {
 public:
+    storage_iterator(storage_iterator_intf<Entity, true>& i) noexcept
+      : _i{&i} {}
+
     storage_iterator(storage_iterator_intf<Entity, true>* i) noexcept
       : _i{i} {
         assert(_i);
