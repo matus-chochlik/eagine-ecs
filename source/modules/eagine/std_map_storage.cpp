@@ -91,7 +91,8 @@ public:
 
     auto capabilities() -> storage_caps override {
         return storage_caps{
-          storage_cap_bit::hide | storage_cap_bit::remove |
+          storage_cap_bit::hide | storage_cap_bit::copy |
+          storage_cap_bit::swap | storage_cap_bit::remove |
           storage_cap_bit::store | storage_cap_bit::modify};
     }
 
