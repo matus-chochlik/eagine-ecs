@@ -41,7 +41,7 @@ class basic_manager;
 export template <typename Entity, typename PL>
 class component_relation;
 
-/// @brief Class that can be used to do cartesian products of various component types.
+/// @brief Class that can be used to do Cartesian products of various component types.
 /// @see ecs
 export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
