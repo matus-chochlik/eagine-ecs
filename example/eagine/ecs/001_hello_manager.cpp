@@ -24,8 +24,8 @@ auto main(main_ctx& ctx) -> int {
     ctx.log().info("starting");
 
     ecs::default_manager mgr;
-    mgr.register_component_storage<ecs::std_map_cmp_storage, subject>();
-    mgr.register_component_storage<ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<ecs::flat_map_cmp_storage, subject>();
+    mgr.register_component_storage<ecs::flat_map_cmp_storage, greeting>();
 
     const auto hw{mgr.spawn()};
     const auto he{mgr.spawn()};

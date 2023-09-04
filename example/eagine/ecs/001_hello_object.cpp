@@ -26,7 +26,7 @@ auto main(main_ctx& ctx) -> int {
     auto& mgr = enable_ecs(ctx).value();
 
     mgr.register_component_storages<
-      eagine::ecs::std_map_cmp_storage,
+      eagine::ecs::flat_map_cmp_storage,
       greeting,
       subject>();
 

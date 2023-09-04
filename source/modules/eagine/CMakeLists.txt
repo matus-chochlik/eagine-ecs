@@ -36,7 +36,7 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION std_map_storage
+	eagine.ecs PARTITION map_storage
 	IMPORTS
 		std entity_traits
 		manipulator component

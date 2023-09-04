@@ -9,7 +9,7 @@ module;
 
 #include <cassert>
 
-export module eagine.ecs:std_map_storage;
+export module eagine.ecs:map_storage;
 
 import std;
 import eagine.core.types;
@@ -22,16 +22,14 @@ import :storage;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
-export template <typename Entity, typename Component>
-class std_map_cmp_storage;
+export template <typename Entity, typename Component, class Map>
+class basic_map_cmp_storage;
 
-export template <typename Entity, typename Component>
-class std_map_cmp_storage_iterator
+export template <typename Entity, typename Component, class Map>
+class basic_map_cmp_storage_iterator
   : public component_storage_iterator_intf<Entity> {
-    using _map_t = std::map<Entity, Component>;
-
 public:
-    std_map_cmp_storage_iterator(_map_t& m) noexcept
+    basic_map_cmp_storage_iterator(Map& m) noexcept
       : _map{&m}
       , _i{m.begin()} {
         assert(_map);
@@ -76,15 +74,16 @@ public:
     }
 
 private:
-    using _iter_t = typename _map_t::iterator;
-    _map_t* _map{nullptr};
+    using _iter_t = typename Map::iterator;
+    Map* _map{nullptr};
     _iter_t _i;
 
-    friend class std_map_cmp_storage<Entity, Component>;
+    friend class basic_map_cmp_storage<Entity, Component, Map>;
 };
 //------------------------------------------------------------------------------
-export template <typename Entity, typename Component>
-class std_map_cmp_storage : public component_storage<Entity, Component> {
+export template <typename Entity, typename Component, class Map>
+class basic_map_cmp_storage : public component_storage<Entity, Component> {
+
 public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = component_storage_iterator<Entity>;
@@ -330,10 +329,10 @@ public:
     }
 
 private:
-    using _map_iter_t = std_map_cmp_storage_iterator<Entity, Component>;
+    using _map_iter_t = basic_map_cmp_storage_iterator<Entity, Component, Map>;
 
-    std::map<Entity, Component> _components{};
-    std::set<Entity> _hidden{};
+    Map _components{};
+    flat_set<Entity> _hidden{};
     object_pool<_map_iter_t, 2> _iterators{};
 
     auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
@@ -345,24 +344,23 @@ private:
         return _iter_cast(i)._i->first;
     }
 
-    auto _remove(typename std::map<Entity, Component>::iterator p) {
+    auto _remove(typename Map::iterator p) {
         assert(p != _components.end());
         _hidden.erase(p->first);
         return _components.erase(p);
     }
 };
 //------------------------------------------------------------------------------
-export template <typename Entity, typename Relation>
-class std_map_rel_storage;
+export template <typename Entity, typename Relation, class Map>
+class basic_map_rel_storage;
 
-export template <typename Entity, typename Relation>
-class std_map_rel_storage_iterator
+export template <typename Entity, typename Relation, class Map>
+class basic_map_rel_storage_iterator
   : public relation_storage_iterator_intf<Entity> {
     using _pair_t = std::pair<Entity, Entity>;
-    using _map_t = std::map<_pair_t, Relation>;
 
 public:
-    std_map_rel_storage_iterator(_map_t& m) noexcept
+    basic_map_rel_storage_iterator(Map& m) noexcept
       : _map{&m}
       , _i(m.begin()) {
         assert(_map);
@@ -392,15 +390,18 @@ public:
     }
 
 private:
-    using _iter_t = typename _map_t::iterator;
-    _map_t* _map{nullptr};
+    using _iter_t = typename Map::iterator;
+    Map* _map{nullptr};
     _iter_t _i;
 
-    friend class std_map_rel_storage<Entity, Relation>;
+    friend class basic_map_rel_storage<Entity, Relation, Map>;
 };
 //------------------------------------------------------------------------------
-export template <typename Entity, typename Relation>
-class std_map_rel_storage : public relation_storage<Entity, Relation> {
+export template <typename Entity, typename Relation, class Map>
+class basic_map_rel_storage : public relation_storage<Entity, Relation> {
+    using _pair_t = std::pair<Entity, Entity>;
+    using _map_iter_t = basic_map_rel_storage_iterator<Entity, Relation, Map>;
+
 public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = relation_storage_iterator<Entity>;
@@ -597,10 +598,7 @@ public:
     }
 
 private:
-    using _pair_t = std::pair<Entity, Entity>;
-    using _map_iter_t = std_map_rel_storage_iterator<Entity, Relation>;
-
-    std::map<_pair_t, Relation> _relations;
+    Map _relations;
     object_pool<_map_iter_t, 2> _iterators{};
 
     auto _iter_cast(relation_storage_iterator<Entity>& i) noexcept -> auto& {
@@ -608,11 +606,31 @@ private:
         return *static_cast<_map_iter_t*>(i.ptr());
     }
 
-    auto _remove(typename std::map<_pair_t, Relation>::iterator p) {
+    auto _remove(typename Map::iterator p) {
         assert(p != _relations.end());
         return _relations.erase(p);
     }
 };
+//------------------------------------------------------------------------------
+export template <typename Entity, typename Component>
+using std_map_cmp_storage =
+  basic_map_cmp_storage<Entity, Component, std::map<Entity, Component>>;
+
+export template <typename Entity, typename Relation>
+using std_map_rel_storage = basic_map_rel_storage<
+  Entity,
+  Relation,
+  std::map<std::pair<Entity, Entity>, Relation>>;
+//------------------------------------------------------------------------------
+export template <typename Entity, typename Component>
+using flat_map_cmp_storage =
+  basic_map_cmp_storage<Entity, Component, flat_map<Entity, Component>>;
+
+export template <typename Entity, typename Relation>
+using flat_map_rel_storage = basic_map_rel_storage<
+  Entity,
+  Relation,
+  flat_map<std::pair<Entity, Entity>, Relation>>;
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs
 

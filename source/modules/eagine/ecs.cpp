@@ -11,6 +11,6 @@ export import :entity_traits;
 export import :component;
 export import :manipulator;
 export import :storage;
-export import :std_map_storage;
+export import :map_storage;
 export import :manager;
 export import :object;
