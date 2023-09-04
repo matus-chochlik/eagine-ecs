@@ -77,9 +77,11 @@ eagine_add_module_tests(
 	eagine.ecs
 	UNITS
 		storage
-		manager
+		manager_std_map
+		manager_flat_map
 	IMPORTS
 		std
 		eagine.core
 )
-set_tests_properties(build-test.eagine.ecs.manager PROPERTIES COST 10)
+set_tests_properties(build-test.eagine.ecs.manager_std_map  PROPERTIES COST 10)
+set_tests_properties(build-test.eagine.ecs.manager_flat_map PROPERTIES COST 10)
