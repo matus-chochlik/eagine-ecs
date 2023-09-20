@@ -35,22 +35,22 @@ public:
         assert(_map);
     }
 
-    void reset() override {
+    void reset() final {
         assert(_map);
         _i = _map->begin();
     }
 
-    auto done() -> bool override {
+    auto done() -> bool final {
         assert(_map);
         return _i == _map->end();
     }
 
-    void next() override {
+    void next() final {
         assert(not done());
         ++_i;
     }
 
-    auto find(entity_param_t<Entity> e) -> bool override {
+    auto find(entity_param_t<Entity> e) -> bool final {
         if(done()) {
             return false;
         }
@@ -69,7 +69,7 @@ public:
         return false;
     }
 
-    auto current() -> Entity override {
+    auto current() -> Entity final {
         return _i->first;
     }
 
@@ -88,35 +88,35 @@ public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = component_storage_iterator<Entity>;
 
-    auto capabilities() -> storage_caps override {
+    auto capabilities() -> storage_caps final {
         return storage_caps{
           storage_cap_bit::hide | storage_cap_bit::copy |
           storage_cap_bit::swap | storage_cap_bit::remove |
           storage_cap_bit::store | storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t override {
+    auto new_iterator() -> iterator_t final {
         return iterator_t(_iterators.make(_components));
     }
 
-    void delete_iterator(iterator_t&& i) override {
+    void delete_iterator(iterator_t&& i) final {
         _iterators.eat(i.release());
     }
 
-    auto has(entity_param e) -> bool override {
+    auto has(entity_param e) -> bool final {
         return _components.contains(e);
     }
 
-    auto is_hidden(entity_param e) -> bool override {
+    auto is_hidden(entity_param e) -> bool final {
         return _hidden.contains(e);
     }
 
-    auto is_hidden(iterator_t& i) -> bool override {
+    auto is_hidden(iterator_t& i) -> bool final {
         assert(not i.done());
         return is_hidden(_iter_entity(i));
     }
 
-    auto hide(entity_param e) -> bool override {
+    auto hide(entity_param e) -> bool final {
         if(has(e)) {
             _hidden.insert(e);
             return true;
@@ -124,20 +124,20 @@ public:
         return false;
     }
 
-    void hide(iterator_t& i) override {
+    void hide(iterator_t& i) final {
         assert(not i.done());
         _hidden.insert(_iter_entity(i));
     }
 
-    auto show(entity_param e) -> bool override {
+    auto show(entity_param e) -> bool final {
         return _hidden.erase(e) > 0;
     }
 
-    auto show(iterator_t& i) -> bool override {
+    auto show(iterator_t& i) -> bool final {
         return _hidden.erase(_iter_entity(i)) > 0;
     }
 
-    auto copy(entity_param ef, entity_param et) -> void* override {
+    auto copy(entity_param ef, entity_param et) -> void* final {
         if(is_hidden(ef)) {
             return nullptr;
         }
@@ -147,7 +147,7 @@ public:
         return nullptr;
     }
 
-    auto swap(const entity_param ea, const entity_param eb) -> bool override {
+    auto swap(const entity_param ea, const entity_param eb) -> bool final {
         const auto fa{find(_components, ea)};
         const auto fb{find(_components, eb)};
         const bool ha{is_hidden(ea)};
@@ -178,25 +178,25 @@ public:
         return true;
     }
 
-    auto remove(entity_param e) -> bool override {
+    auto remove(entity_param e) -> bool final {
         _hidden.erase(e);
         return _components.erase(e) > 0;
     }
 
-    void remove(iterator_t& i) override {
+    void remove(iterator_t& i) final {
         assert(not i.done());
         _hidden.erase(_iter_entity(i));
         _iter_cast(i)._i = _components.erase(_iter_cast(i)._i);
     }
 
-    auto store(entity_param e, Component&& c) -> Component* override {
+    auto store(entity_param e, Component&& c) -> Component* final {
         _hidden.erase(e);
         const auto pos = _components.emplace(e, std::move(c)).first;
         return &pos->second;
     }
 
     auto store(iterator_t& i, entity_param e, Component&& c)
-      -> Component* override {
+      -> Component* final {
         _hidden.erase(e);
         auto& pos = _iter_cast(i)._i;
         pos = _components.emplace_hint(pos, e, std::move(c));
@@ -205,7 +205,7 @@ public:
 
     void for_single(
       const callable_ref<void(entity_param, manipulator<const Component>&)> func,
-      entity_param e) override {
+      entity_param e) final {
         if(auto found{eagine::find(_components, e)}) {
             if(not is_hidden(e)) {
                 concrete_manipulator<const Component> m(
@@ -220,7 +220,7 @@ public:
 
     void for_single(
       const callable_ref<void(entity_param, manipulator<const Component>&)> func,
-      iterator_t& i) override {
+      iterator_t& i) final {
         assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
@@ -236,7 +236,7 @@ public:
 
     void for_single(
       const callable_ref<void(entity_param, manipulator<Component>&)> func,
-      entity_param e) override {
+      entity_param e) final {
         if(auto found{eagine::find(_components, e)}) {
             if(not is_hidden(e)) {
                 // TODO: modify notification
@@ -251,7 +251,7 @@ public:
 
     void for_single(
       const callable_ref<void(entity_param, manipulator<Component>&)> func,
-      iterator_t& i) override {
+      iterator_t& i) final {
         assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
@@ -269,7 +269,7 @@ public:
 
     void for_each(
       const callable_ref<void(entity_param, manipulator<const Component>&)>
-        func) override {
+        func) final {
         concrete_manipulator<const Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
@@ -289,7 +289,7 @@ public:
 
     void for_each(
       const callable_ref<void(entity_param, manipulator<Component>&)> func)
-      override {
+      final {
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
@@ -308,8 +308,7 @@ public:
         }
     }
 
-    void for_each(
-      const callable_ref<void(manipulator<Component>&)> func) override {
+    void for_each(const callable_ref<void(manipulator<Component>&)> func) final {
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
@@ -366,26 +365,26 @@ public:
         assert(_map);
     }
 
-    void reset() override {
+    void reset() final {
         assert(_map);
         _i = _map->begin();
     }
 
-    auto done() -> bool override {
+    auto done() -> bool final {
         assert(_map);
         return _i == _map->end();
     }
 
-    void next() override {
+    void next() final {
         assert(not done());
         ++_i;
     }
 
-    auto subject() -> Entity override {
+    auto subject() -> Entity final {
         return _i->first.first;
     }
 
-    auto object() -> Entity override {
+    auto object() -> Entity final {
         return _i->first.second;
     }
 
@@ -406,40 +405,40 @@ public:
     using entity_param = entity_param_t<Entity>;
     using iterator_t = relation_storage_iterator<Entity>;
 
-    auto capabilities() -> storage_caps override {
+    auto capabilities() -> storage_caps final {
         return storage_caps{
           storage_cap_bit::remove | storage_cap_bit::store |
           storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t override {
+    auto new_iterator() -> iterator_t final {
         return iterator_t(_iterators.make(_relations));
     }
 
-    void delete_iterator(iterator_t&& i) override {
+    void delete_iterator(iterator_t&& i) final {
         _iterators.eat(i.release());
     }
 
-    auto has(entity_param s, entity_param o) -> bool override {
+    auto has(entity_param s, entity_param o) -> bool final {
         return _relations.contains(_pair_t(s, o));
     }
 
-    auto store(entity_param s, entity_param o) -> bool override {
+    auto store(entity_param s, entity_param o) -> bool final {
         _relations.emplace(_pair_t(s, o), Relation());
         return true;
     }
 
     auto store(entity_param s, entity_param o, Relation&& r)
-      -> Relation* override {
+      -> Relation* final {
         const auto pos = _relations.emplace(_pair_t(s, o), std::move(r)).first;
         return &pos->second;
     }
 
-    auto remove(entity_param s, entity_param o) -> bool override {
+    auto remove(entity_param s, entity_param o) -> bool final {
         return _relations.erase(_pair_t(s, o)) > 0;
     }
 
-    void remove(iterator_t& i) override {
+    void remove(iterator_t& i) final {
         assert(not i.done());
         _iter_cast(i)._i = _relations.erase(_iter_cast(i)._i);
     }
@@ -448,7 +447,7 @@ public:
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
       entity_param subject,
-      entity_param object) override {
+      entity_param object) final {
         if(const auto found{find(_relations, _pair_t(subject, object))}) {
             concrete_manipulator<const Relation> m(*found, true /*can_erase*/);
             func(subject, object, m);
@@ -461,7 +460,7 @@ public:
     void for_single(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
-      iterator_t& i) override {
+      iterator_t& i) final {
         assert(not i.done());
         auto& po = _iter_cast(i)._i;
         assert(po != _relations.end());
@@ -479,7 +478,7 @@ public:
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)> func,
       entity_param subject,
-      entity_param object) override {
+      entity_param object) final {
         if(const auto found{find(_relations, _pair_t(subject, object))}) {
             // TODO: modify notification
             concrete_manipulator<Relation> m(*found, true /*can_erase*/);
@@ -493,7 +492,7 @@ public:
     void for_single(
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)> func,
-      iterator_t& i) override {
+      iterator_t& i) final {
         assert(not i.done());
         auto& po = _iter_cast(i)._i;
         assert(po != _relations.end());
@@ -510,7 +509,7 @@ public:
 
     void for_each(
       const callable_ref<void(entity_param, entity_param)> func,
-      entity_param subject) override {
+      entity_param subject) final {
         entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
         while((po != _relations.end()) and (po->first.first == subject)) {
@@ -520,7 +519,7 @@ public:
     }
 
     void for_each(
-      const callable_ref<void(entity_param, entity_param)> func) override {
+      const callable_ref<void(entity_param, entity_param)> func) final {
         for(auto& p : _relations) {
             func(p.first.first, p.first.second);
         }
@@ -529,7 +528,7 @@ public:
     void for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func,
-      entity_param subject) override {
+      entity_param subject) final {
         concrete_manipulator<const Relation> m(true /*can_remove*/);
         entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
@@ -547,7 +546,7 @@ public:
     void for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)> func,
-      entity_param subject) override {
+      entity_param subject) final {
         concrete_manipulator<Relation> m(true /*can_remove*/);
         entity_param object = entity_traits<Entity>::first();
         auto po = _relations.lower_bound(_pair_t(subject, object));
@@ -566,7 +565,7 @@ public:
     void for_each(
       const callable_ref<
         void(entity_param, entity_param, manipulator<const Relation>&)> func)
-      override {
+      final {
         concrete_manipulator<const Relation> m(true /*can_remove*/);
         auto po = _relations.begin();
         while(po != _relations.end()) {
@@ -580,9 +579,9 @@ public:
         }
     }
 
-    void for_each(const callable_ref<
-                  void(entity_param, entity_param, manipulator<Relation>&)>
-                    func) override {
+    void for_each(
+      const callable_ref<
+        void(entity_param, entity_param, manipulator<Relation>&)> func) final {
         concrete_manipulator<Relation> m(true /*can_remove*/);
         auto po = _relations.begin();
         while(po != _relations.end()) {
