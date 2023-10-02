@@ -27,6 +27,7 @@ function(eagine_example_common EXAMPLE_NAME)
 	eagine_add_exe_analysis(eagine-${EXAMPLE_NAME})
 	eagine_target_modules(
 		eagine-${EXAMPLE_NAME}
+		std
 		eagine.core
 		eagine.ecs
 	)
@@ -40,6 +41,7 @@ endfunction()
 
 eagine_example_common(001_hello_manager)
 eagine_example_common(001_hello_object)
-eagine_example_common(002_space_opera)
+eagine_example_common(002_signals)
+eagine_example_common(003_space_opera)
 
 add_subdirectory(elements)

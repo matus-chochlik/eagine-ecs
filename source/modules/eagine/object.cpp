@@ -22,7 +22,7 @@ import :manager;
 namespace eagine {
 namespace ecs {
 //------------------------------------------------------------------------------
-export using default_manager = basic_manager<identifier_t>;
+export using default_manager = basic_manager<identifier>;
 //------------------------------------------------------------------------------
 /// @brief Class providing access to default ECS manager instance.
 /// @ingroup main_context
@@ -82,8 +82,21 @@ public:
         manager().forget(entity());
     }
 
-    auto entity() const noexcept -> identifier_t {
-        return object_id().value();
+    [[nodiscard]] static auto spawn(main_ctx& ctx) noexcept -> object {
+        auto mgr{locate_default_manager(ctx)};
+        assert(mgr);
+        return object{mgr->spawn(), ctx};
+    }
+
+    [[nodiscard]] static auto spawn(const main_ctx_object& parent) noexcept
+      -> object {
+        auto mgr{default_manager_of(parent)};
+        assert(mgr);
+        return object{mgr->spawn(), parent};
+    }
+
+    auto entity() const noexcept -> identifier {
+        return object_id();
     }
 
     auto manager() const noexcept -> default_manager& {
@@ -130,7 +143,7 @@ public:
     }
 
     template <component_data Component>
-    auto copy_from(identifier_t from) -> manipulator<Component> {
+    auto copy_from(identifier from) -> manipulator<Component> {
         return manager().template copy<Component>(from, entity());
     }
 
@@ -140,7 +153,7 @@ public:
     }
 
     template <component_data Component>
-    auto swap_with(identifier_t that) -> manipulator<Component> {
+    auto swap_with(identifier that) -> manipulator<Component> {
         return manager().template swap<Component>(entity(), that);
     }
 
@@ -164,6 +177,11 @@ public:
     template <component_data... Components>
     auto remove() noexcept -> object& {
         manager().template remove<Components...>(entity());
+        return *this;
+    }
+
+    auto forget() noexcept -> object& {
+        manager().forget(entity());
         return *this;
     }
 

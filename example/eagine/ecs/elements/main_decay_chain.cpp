@@ -71,7 +71,7 @@ static void decay_of(
                 }
                 done.insert(isot);
 
-                if(done.find(prod) == done.end()) {
+                if(not done.contains(prod)) {
                     decay_of(elements, prod, branch, done);
                 }
             }

@@ -1,4 +1,4 @@
-/// @example eagine/ecs/002_space_opera.hpp
+/// @example eagine/ecs/003_space_opera.hpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
@@ -10,7 +10,7 @@ import eagine.ecs;
 import std;
 
 namespace eagine {
-
+//------------------------------------------------------------------------------
 struct name_surname : ecs::component<"NameSurnme"> {
     std::string first_name;
     std::string family_name;
@@ -42,12 +42,11 @@ struct name_surname : ecs::component<"NameSurnme"> {
         }
     };
 };
-
 static_assert(ecs::component_with_manipulator<name_surname>);
-
+//------------------------------------------------------------------------------
 struct father : ecs::relation<"Father"> {};
 struct mother : ecs::relation<"Mother"> {};
-
+//------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
     ctx.cio().print("ECS", "starting");

@@ -1,4 +1,4 @@
-/// @example eagine/ecs/001_hello_object.hpp
+/// @example eagine/ecs/002_signals.hpp
 ///
 /// Copyright Matus Chochlik.
 /// Distributed under the Boost Software License, Version 1.0.
@@ -14,10 +14,6 @@ namespace eagine {
 struct subject : ecs::component<"Subject"> {
     std::string name;
 };
-
-struct greeting : ecs::component<"Greeting"> {
-    std::string expression;
-};
 //------------------------------------------------------------------------------
 auto main(main_ctx& ctx) -> int {
     using namespace eagine;
@@ -25,27 +21,27 @@ auto main(main_ctx& ctx) -> int {
 
     auto& mgr = enable_ecs(ctx).value();
 
-    mgr.register_component_storages<
-      eagine::ecs::flat_map_cmp_storage,
-      greeting,
-      subject>();
+    mgr.register_component_storages<eagine::ecs::std_map_cmp_storage, subject>();
 
-    auto hw{ecs::object::spawn(ctx)};
-    auto ho{ecs::object::spawn(ctx)};
+    const auto on_spawned{[&](identifier e) {
+        ctx.cio().print("ECS", "Spawned ${name}").arg("name", e);
+    }};
+    mgr.entity_spawned.connect({construct_from, on_spawned});
 
-    hw.ensure<greeting>()->expression = "Hello";
-    hw.ensure<subject>()->name = "World";
+    const auto on_forgotten{[&](identifier e) {
+        ctx.cio().print("ECS", "Forgotten ${name}").arg("name", e);
+    }};
+    mgr.entity_forgotten.connect({construct_from, on_forgotten});
 
-    ho.copy_from<greeting>(hw);
-    ho.ensure<subject>()->name = "Object";
+    std::vector<ecs::object> objects;
 
-    mgr.for_each_with<const greeting, const subject>(
-      [&](const auto&, auto& grt, auto& sub) {
-          ctx.cio()
-            .print("ECS", "${expr}, ${name}")
-            .arg("expr", grt->expression)
-            .arg("name", sub->name);
-      });
+    for(int i = 0; i < 64; ++i) {
+        auto obj{ecs::object::spawn(ctx)};
+        obj.ensure<subject>()->name = obj.entity().name().str();
+        objects.emplace_back(std::move(obj));
+    }
+
+    objects.clear();
 
     return 0;
 }

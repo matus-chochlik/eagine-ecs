@@ -21,8 +21,6 @@ import :entity_traits;
 import :manipulator;
 import :component;
 import :storage;
-import :cmp_storage;
-import :rel_storage;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
@@ -43,7 +41,7 @@ class basic_manager;
 export template <typename Entity, typename PL>
 class component_relation;
 
-/// @brief Class that can be used to do cartesian products of various component types.
+/// @brief Class that can be used to do Cartesian products of various component types.
 /// @see ecs
 export template <typename Entity, typename... PL>
 class component_relation<Entity, mp_list<PL...>> {
@@ -103,9 +101,9 @@ private:
 /// @brief Main class, managing entity data. Entities are represented by values of Entity.
 /// @ingroup ecs
 export template <typename Entity>
-class basic_manager {
+class basic_manager : public basic_manager_signals<Entity> {
 public:
-    /// @brief Prefered type to pass immutable entity identifier parameters.
+    /// @brief Preferred type to pass immutable entity identifier parameters.
     using entity_param = entity_param_t<Entity>;
 
     /// @brief Default constructor.
@@ -270,7 +268,13 @@ public:
     /// @see has
     /// @see has_all
     /// @see forget
+    /// @see spawn
     auto knows(entity_param ent) noexcept -> bool;
+
+    /// @brief Creates a new entity that is not yet known to this manager
+    /// @see knows
+    /// @see forget
+    auto spawn() noexcept -> Entity;
 
     /// @brief Removes all information, including components, about the
     /// specified entity.
@@ -551,6 +555,8 @@ public:
 private:
     using _base_cmp_storage_t = base_component_storage<Entity>;
     using _base_cmp_storage_ptr_t = shared_holder<_base_cmp_storage_t>;
+
+    Entity _entity_sequence{entity_traits<Entity>::first()};
 
     component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
 
@@ -1386,14 +1392,26 @@ auto basic_manager<Entity>::knows(entity_param_t<Entity> ent) noexcept -> bool {
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
+auto basic_manager<Entity>::spawn() noexcept -> Entity {
+    do {
+        _entity_sequence = entity_traits<Entity>::next(_entity_sequence);
+    } while(knows(_entity_sequence));
+    this->entity_spawned(_entity_sequence);
+    return _entity_sequence;
+}
+//------------------------------------------------------------------------------
+template <typename Entity>
 void basic_manager<Entity>::forget(entity_param_t<Entity> ent) {
-    for(auto& entry : _cmp_storages) {
-        auto& storage{std::get<1>(entry)};
-        if(storage) {
-            if(storage->capabilities().can_remove()) {
-                storage->remove(ent);
+    if(ent) {
+        for(auto& entry : _cmp_storages) {
+            auto& storage{std::get<1>(entry)};
+            if(storage) {
+                if(storage->capabilities().can_remove()) {
+                    storage->remove(ent);
+                }
             }
         }
+        this->entity_forgotten(ent);
     }
 }
 //------------------------------------------------------------------------------

@@ -15,6 +15,7 @@ eagine_embed_target_resources(
 )
 eagine_target_modules(
 	eagine-ecs-elements-common
+	std
 	eagine.core
 	eagine.ecs
 )

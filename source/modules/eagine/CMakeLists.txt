@@ -4,11 +4,15 @@
 #  http://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
 	eagine.ecs PARTITION entity_traits
+	IMPORTS
+		std
+		eagine.core.identifier
 )
 
 eagine_add_module(
 	eagine.ecs PARTITION component
 	IMPORTS
+		std
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.container
@@ -17,49 +21,38 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION manipulator
 	IMPORTS
+		std
 		eagine.core.types
 )
 
 eagine_add_module(
 	eagine.ecs PARTITION storage
 	IMPORTS
-		eagine.core.types
-		eagine.core.reflection
-)
-
-eagine_add_module(
-	eagine.ecs PARTITION cmp_storage
-	IMPORTS
-		entity_traits manipulator storage
+		std entity_traits
+		manipulator
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.reflection
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION rel_storage
+	eagine.ecs PARTITION map_storage
 	IMPORTS
-		entity_traits manipulator storage
+		std entity_traits
+		manipulator component
+		storage
 		eagine.core.types
 		eagine.core.utility
-		eagine.core.reflection
-)
-
-eagine_add_module(
-	eagine.ecs PARTITION std_map_storage
-	IMPORTS
-		entity_traits manipulator component
-		storage cmp_storage rel_storage
-		eagine.core.types
-		eagine.core.utility
+		eagine.core.container
 		eagine.core.reflection
 )
 
 eagine_add_module(
 	eagine.ecs PARTITION manager
 	IMPORTS
-		entity_traits manipulator component
-		storage cmp_storage rel_storage
+		std entity_traits
+		manipulator component
+		storage
 		eagine.core.debug
 		eagine.core.types
 		eagine.core.string
@@ -70,7 +63,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION object
 	IMPORTS
-		component manipulator manager
+		std component manipulator manager
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.main_ctx
@@ -84,8 +77,11 @@ eagine_add_module_tests(
 	eagine.ecs
 	UNITS
 		storage
-		manager
+		manager_std_map
+		manager_flat_map
 	IMPORTS
+		std
 		eagine.core
 )
-set_tests_properties(build-test.eagine.ecs.manager PROPERTIES COST 10)
+set_tests_properties(build-test.eagine.ecs.manager_std_map  PROPERTIES COST 10)
+set_tests_properties(build-test.eagine.ecs.manager_flat_map PROPERTIES COST 10)
