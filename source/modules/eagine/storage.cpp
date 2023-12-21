@@ -98,47 +98,50 @@ struct basic_manager_signals {
 //------------------------------------------------------------------------------
 // Interfaces
 //------------------------------------------------------------------------------
-export template <typename Entity, bool IsRelation>
+export template <typename Entity, data_kind>
 struct storage_iterator_intf;
 
 export template <typename Entity>
-using component_storage_iterator_intf = storage_iterator_intf<Entity, false>;
+using component_storage_iterator_intf =
+  storage_iterator_intf<Entity, data_kind::component>;
 
 export template <typename Entity>
-using relation_storage_iterator_intf = storage_iterator_intf<Entity, true>;
+using relation_storage_iterator_intf =
+  storage_iterator_intf<Entity, data_kind::relation>;
 
-export template <typename Entity, bool IsRelation>
+export template <typename Entity, data_kind>
 class storage_iterator;
 
 export template <typename Entity>
-using component_storage_iterator = storage_iterator<Entity, false>;
+using component_storage_iterator =
+  storage_iterator<Entity, data_kind::component>;
 
 export template <typename Entity>
-using relation_storage_iterator = storage_iterator<Entity, true>;
+using relation_storage_iterator = storage_iterator<Entity, data_kind::relation>;
 
-export template <typename Entity, bool IsRelation>
+export template <typename Entity, data_kind>
 struct base_storage;
 
 export template <typename Entity>
-using base_component_storage = base_storage<Entity, false>;
+using base_component_storage = base_storage<Entity, data_kind::component>;
 
 export template <typename Entity>
-using base_relation_storage = base_storage<Entity, true>;
+using base_relation_storage = base_storage<Entity, data_kind::relation>;
 
-export template <typename Entity, typename Data, bool IsRelation>
+export template <typename Entity, typename Data, data_kind>
 struct storage;
 
 export template <typename Entity, typename Data>
-using component_storage = storage<Entity, Data, false>;
+using component_storage = storage<Entity, Data, data_kind::component>;
 
 export template <typename Entity, typename Data>
-using relation_storage = storage<Entity, Data, true>;
+using relation_storage = storage<Entity, Data, data_kind::relation>;
 //------------------------------------------------------------------------------
 //  Component storage
 //------------------------------------------------------------------------------
 export template <typename Entity>
-struct storage_iterator_intf<Entity, false>
-  : abstract<storage_iterator_intf<Entity, false>> {
+struct storage_iterator_intf<Entity, data_kind::component>
+  : abstract<storage_iterator_intf<Entity, data_kind::component>> {
 
     virtual void reset() = 0;
 
@@ -152,12 +155,14 @@ struct storage_iterator_intf<Entity, false>
 };
 //------------------------------------------------------------------------------
 export template <typename Entity>
-class storage_iterator<Entity, false> {
+class storage_iterator<Entity, data_kind::component> {
 public:
-    storage_iterator(storage_iterator_intf<Entity, false>& i) noexcept
+    storage_iterator(
+      storage_iterator_intf<Entity, data_kind::component>& i) noexcept
       : _i{&i} {}
 
-    storage_iterator(storage_iterator_intf<Entity, false>* i) noexcept
+    storage_iterator(
+      storage_iterator_intf<Entity, data_kind::component>* i) noexcept
       : _i{i} {
         assert(_i);
     }
@@ -173,16 +178,18 @@ public:
         assert(_i == nullptr);
     }
 
-    auto release() -> storage_iterator_intf<Entity, false>* {
+    auto release() -> storage_iterator_intf<Entity, data_kind::component>* {
         return std::exchange(_i, nullptr);
     }
 
-    auto ptr() noexcept -> storage_iterator_intf<Entity, false>* {
+    auto ptr() noexcept
+      -> storage_iterator_intf<Entity, data_kind::component>* {
         assert(_i);
         return _i;
     }
 
-    auto get() noexcept -> storage_iterator_intf<Entity, false>& {
+    auto get() noexcept
+      -> storage_iterator_intf<Entity, data_kind::component>& {
         assert(_i);
         return *_i;
     }
@@ -209,14 +216,15 @@ public:
     }
 
 private:
-    storage_iterator_intf<Entity, false>* _i{nullptr};
+    storage_iterator_intf<Entity, data_kind::component>* _i{nullptr};
 };
 //------------------------------------------------------------------------------
 export template <typename Entity>
-struct base_storage<Entity, false> : interface<base_storage<Entity, false>> {
+struct base_storage<Entity, data_kind::component>
+  : interface<base_storage<Entity, data_kind::component>> {
     using entity_param = entity_param_t<Entity>;
     using signals_t = basic_manager_signals<Entity>;
-    using iterator_t = storage_iterator<Entity, false>;
+    using iterator_t = storage_iterator<Entity, data_kind::component>;
 
     virtual auto capabilities() -> storage_caps = 0;
 
@@ -248,9 +256,10 @@ struct base_storage<Entity, false> : interface<base_storage<Entity, false>> {
 };
 //------------------------------------------------------------------------------
 export template <typename Entity, typename Component>
-struct storage<Entity, Component, false> : base_storage<Entity, false> {
+struct storage<Entity, Component, data_kind::component>
+  : base_storage<Entity, data_kind::component> {
     using entity_param = entity_param_t<Entity>;
-    using iterator_t = storage_iterator<Entity, false>;
+    using iterator_t = storage_iterator<Entity, data_kind::component>;
 
     virtual auto store(entity_param, Component&&) -> Component* = 0;
 
@@ -285,8 +294,8 @@ struct storage<Entity, Component, false> : base_storage<Entity, false> {
 //  Relation storage
 //------------------------------------------------------------------------------
 export template <typename Entity>
-struct storage_iterator_intf<Entity, true>
-  : abstract<storage_iterator_intf<Entity, true>> {
+struct storage_iterator_intf<Entity, data_kind::relation>
+  : abstract<storage_iterator_intf<Entity, data_kind::relation>> {
 
     virtual auto reset() -> void = 0;
 
@@ -300,12 +309,14 @@ struct storage_iterator_intf<Entity, true>
 };
 //------------------------------------------------------------------------------
 export template <typename Entity>
-class storage_iterator<Entity, true> {
+class storage_iterator<Entity, data_kind::relation> {
 public:
-    storage_iterator(storage_iterator_intf<Entity, true>& i) noexcept
+    storage_iterator(
+      storage_iterator_intf<Entity, data_kind::relation>& i) noexcept
       : _i{&i} {}
 
-    storage_iterator(storage_iterator_intf<Entity, true>* i) noexcept
+    storage_iterator(
+      storage_iterator_intf<Entity, data_kind::relation>* i) noexcept
       : _i{i} {
         assert(_i);
     }
@@ -321,16 +332,16 @@ public:
         assert(_i == nullptr);
     }
 
-    auto release() -> storage_iterator_intf<Entity, true>* {
+    auto release() -> storage_iterator_intf<Entity, data_kind::relation>* {
         return std::exchange(_i, nullptr);
     }
 
-    auto ptr() noexcept -> storage_iterator_intf<Entity, true>* {
+    auto ptr() noexcept -> storage_iterator_intf<Entity, data_kind::relation>* {
         assert(_i);
         return _i;
     }
 
-    auto get() noexcept -> storage_iterator_intf<Entity, true>& {
+    auto get() noexcept -> storage_iterator_intf<Entity, data_kind::relation>& {
         assert(_i);
         return *_i;
     }
@@ -356,13 +367,14 @@ public:
     }
 
 private:
-    storage_iterator_intf<Entity, true>* _i{nullptr};
+    storage_iterator_intf<Entity, data_kind::relation>* _i{nullptr};
 };
 //------------------------------------------------------------------------------
 export template <typename Entity>
-struct base_storage<Entity, true> : interface<base_storage<Entity, true>> {
+struct base_storage<Entity, data_kind::relation>
+  : interface<base_storage<Entity, data_kind::relation>> {
     using entity_param = entity_param_t<Entity>;
-    using iterator_t = storage_iterator<Entity, true>;
+    using iterator_t = storage_iterator<Entity, data_kind::relation>;
 
     virtual auto capabilities() -> storage_caps = 0;
 
@@ -386,11 +398,12 @@ struct base_storage<Entity, true> : interface<base_storage<Entity, true>> {
 };
 //------------------------------------------------------------------------------
 export template <typename Entity, typename Relation>
-struct storage<Entity, Relation, true> : base_storage<Entity, true> {
+struct storage<Entity, Relation, data_kind::relation>
+  : base_storage<Entity, data_kind::relation> {
     using entity_param = entity_param_t<Entity>;
-    using iterator_t = storage_iterator<Entity, true>;
+    using iterator_t = storage_iterator<Entity, data_kind::relation>;
 
-    using base_storage<Entity, true>::store;
+    using base_storage<Entity, data_kind::relation>::store;
 
     virtual auto store(entity_param subject, entity_param object, Relation&&)
       -> Relation* = 0;
@@ -417,7 +430,7 @@ struct storage<Entity, Relation, true> : base_storage<Entity, true> {
         void(entity_param, entity_param, manipulator<Relation>&)>,
       iterator_t&) = 0;
 
-    using base_storage<Entity, true>::for_each;
+    using base_storage<Entity, data_kind::relation>::for_each;
 
     virtual void for_each(
       const callable_ref<

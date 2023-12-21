@@ -11,10 +11,9 @@ import std;
 import eagine.core.types;
 import eagine.core.container;
 export import eagine.core.identifier;
+import :entity_traits;
 
 namespace eagine::ecs {
-//------------------------------------------------------------------------------
-export enum class data_kind : bool { component = false, relation = true };
 //------------------------------------------------------------------------------
 // entity_data
 export template <identifier_value Uid, data_kind Kind>
