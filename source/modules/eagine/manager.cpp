@@ -116,7 +116,7 @@ public:
     template <component_data Component>
     auto register_component_type(
       shared_holder<component_storage<Entity, Component>>&& strg) -> auto& {
-        _do_reg_stg_type<false>(
+        _do_reg_stg_type<data_kind::component>(
           _base_cmp_storage_ptr_t(std::move(strg)),
           Component::uid(),
           _cmp_name_getter<Component>());
@@ -130,7 +130,7 @@ public:
     template <relation_data Relation>
     auto register_relation_type(
       shared_holder<relation_storage<Entity, Relation>>&& strg) -> auto& {
-        _do_reg_stg_type<true>(
+        _do_reg_stg_type<data_kind::relation>(
           _base_rel_storage_ptr_t(std::move(strg)),
           Relation::uid(),
           _cmp_name_getter<Relation>());
@@ -185,7 +185,7 @@ public:
     /// @see unregister_relation_type
     template <component_data Component>
     auto unregister_component_type() -> auto& {
-        _do_unr_stg_type<false>(
+        _do_unr_stg_type<data_kind::component>(
           Component::uid(), _cmp_name_getter<Component>());
         return *this;
     }
@@ -196,7 +196,8 @@ public:
     /// @see unregister_component_type
     template <relation_data Relation>
     auto unregister_relation_type() -> auto& {
-        _do_unr_stg_type<true>(Relation::uid(), _cmp_name_getter<Relation>());
+        _do_unr_stg_type<data_kind::relation>(
+          Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
@@ -207,7 +208,7 @@ public:
     /// @see knows_relation_type
     template <component_data Component>
     auto knows_component_type() const -> bool {
-        return _does_know_stg_type<false>(Component::uid());
+        return _does_know_stg_type<data_kind::component>(Component::uid());
     }
 
     /// @brief Indicates if the specified Relation type can be used with this manager.
@@ -217,7 +218,7 @@ public:
     /// @see knows_component_type
     template <relation_data Relation>
     [[nodiscard]] auto knows_relation_type() const -> bool {
-        return _does_know_stg_type<true>(Relation::uid());
+        return _does_know_stg_type<data_kind::relation>(Relation::uid());
     }
 
     /// @brief Returns an object specifying Component storage capabilities.
@@ -226,7 +227,7 @@ public:
     /// @see knows_component_type
     template <component_data Component>
     [[nodiscard]] auto component_storage_caps() const -> storage_caps {
-        return _get_stg_type_caps<false>(
+        return _get_stg_type_caps<data_kind::component>(
           Component::uid(), _cmp_name_getter<Component>());
     }
 
@@ -560,11 +561,14 @@ private:
 
     component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
 
-    auto _get_storages(std::false_type) noexcept -> auto& {
+    auto _get_storages(
+      std::integral_constant<data_kind, data_kind::component>) noexcept
+      -> auto& {
         return _cmp_storages;
     }
 
-    auto _get_storages(std::false_type) const noexcept -> auto& {
+    auto _get_storages(std::integral_constant<data_kind, data_kind::component>)
+      const noexcept -> auto& {
         return _cmp_storages;
     }
 
@@ -573,11 +577,14 @@ private:
 
     component_uid_map<_base_rel_storage_ptr_t> _rel_storages{};
 
-    auto _get_storages(std::true_type) noexcept -> auto& {
+    auto _get_storages(
+      std::integral_constant<data_kind, data_kind::relation>) noexcept
+      -> auto& {
         return _rel_storages;
     }
 
-    auto _get_storages(std::true_type) const noexcept -> auto& {
+    auto _get_storages(std::integral_constant<data_kind, data_kind::relation>)
+      const noexcept -> auto& {
         return _rel_storages;
     }
 
@@ -604,12 +611,12 @@ private:
 
     template <typename C>
     auto _find_cmp_storage() noexcept -> auto& {
-        return _find_storage<C, false>();
+        return _find_storage<C, data_kind::component>();
     }
 
     template <typename R>
     auto _find_rel_storage() noexcept -> auto& {
-        return _find_storage<R, true>();
+        return _find_storage<R, data_kind::relation>();
     }
 
     template <data_kind kind>
