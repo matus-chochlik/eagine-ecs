@@ -12,6 +12,8 @@ import eagine.core.identifier;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
+export enum class data_kind : bool { component = false, relation = true };
+//------------------------------------------------------------------------------
 export template <typename Entity>
 struct entity_traits {
     using parameter_type = const Entity;

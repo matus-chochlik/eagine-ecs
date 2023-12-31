@@ -12,7 +12,7 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs PARTITION component
 	IMPORTS
-		std
+		std entity_traits
 		eagine.core.types
 		eagine.core.identifier
 		eagine.core.container

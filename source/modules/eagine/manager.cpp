@@ -116,7 +116,7 @@ public:
     template <component_data Component>
     auto register_component_type(
       shared_holder<component_storage<Entity, Component>>&& strg) -> auto& {
-        _do_reg_stg_type<false>(
+        _do_reg_stg_type<data_kind::component>(
           _base_cmp_storage_ptr_t(std::move(strg)),
           Component::uid(),
           _cmp_name_getter<Component>());
@@ -130,7 +130,7 @@ public:
     template <relation_data Relation>
     auto register_relation_type(
       shared_holder<relation_storage<Entity, Relation>>&& strg) -> auto& {
-        _do_reg_stg_type<true>(
+        _do_reg_stg_type<data_kind::relation>(
           _base_rel_storage_ptr_t(std::move(strg)),
           Relation::uid(),
           _cmp_name_getter<Relation>());
@@ -185,7 +185,7 @@ public:
     /// @see unregister_relation_type
     template <component_data Component>
     auto unregister_component_type() -> auto& {
-        _do_unr_stg_type<false>(
+        _do_unr_stg_type<data_kind::component>(
           Component::uid(), _cmp_name_getter<Component>());
         return *this;
     }
@@ -196,7 +196,8 @@ public:
     /// @see unregister_component_type
     template <relation_data Relation>
     auto unregister_relation_type() -> auto& {
-        _do_unr_stg_type<true>(Relation::uid(), _cmp_name_getter<Relation>());
+        _do_unr_stg_type<data_kind::relation>(
+          Relation::uid(), _cmp_name_getter<Relation>());
         return *this;
     }
 
@@ -207,7 +208,7 @@ public:
     /// @see knows_relation_type
     template <component_data Component>
     auto knows_component_type() const -> bool {
-        return _does_know_stg_type<false>(Component::uid());
+        return _does_know_stg_type<data_kind::component>(Component::uid());
     }
 
     /// @brief Indicates if the specified Relation type can be used with this manager.
@@ -217,7 +218,7 @@ public:
     /// @see knows_component_type
     template <relation_data Relation>
     [[nodiscard]] auto knows_relation_type() const -> bool {
-        return _does_know_stg_type<true>(Relation::uid());
+        return _does_know_stg_type<data_kind::relation>(Relation::uid());
     }
 
     /// @brief Returns an object specifying Component storage capabilities.
@@ -226,7 +227,7 @@ public:
     /// @see knows_component_type
     template <component_data Component>
     [[nodiscard]] auto component_storage_caps() const -> storage_caps {
-        return _get_stg_type_caps<false>(
+        return _get_stg_type_caps<data_kind::component>(
           Component::uid(), _cmp_name_getter<Component>());
     }
 
@@ -560,11 +561,14 @@ private:
 
     component_uid_map<_base_cmp_storage_ptr_t> _cmp_storages{};
 
-    auto _get_storages(std::false_type) noexcept -> auto& {
+    auto _get_storages(
+      std::integral_constant<data_kind, data_kind::component>) noexcept
+      -> auto& {
         return _cmp_storages;
     }
 
-    auto _get_storages(std::false_type) const noexcept -> auto& {
+    auto _get_storages(std::integral_constant<data_kind, data_kind::component>)
+      const noexcept -> auto& {
         return _cmp_storages;
     }
 
@@ -573,22 +577,25 @@ private:
 
     component_uid_map<_base_rel_storage_ptr_t> _rel_storages{};
 
-    auto _get_storages(std::true_type) noexcept -> auto& {
+    auto _get_storages(
+      std::integral_constant<data_kind, data_kind::relation>) noexcept
+      -> auto& {
         return _rel_storages;
     }
 
-    auto _get_storages(std::true_type) const noexcept -> auto& {
+    auto _get_storages(std::integral_constant<data_kind, data_kind::relation>)
+      const noexcept -> auto& {
         return _rel_storages;
     }
 
-    template <bool IsRelation>
+    template <data_kind kind>
     auto _get_storages() noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsRelation>());
+        return _get_storages(std::integral_constant<data_kind, kind>());
     }
 
-    template <bool IsRelation>
+    template <data_kind kind>
     auto _get_storages() const noexcept -> auto& {
-        return _get_storages(std::integral_constant<bool, IsRelation>());
+        return _get_storages(std::integral_constant<data_kind, kind>());
     }
 
     template <typename C>
@@ -599,53 +606,53 @@ private:
         return &type_name<C>;
     }
 
-    template <typename Data, bool IsRelation>
-    auto _find_storage() noexcept -> storage<Entity, Data, IsRelation>&;
+    template <typename Data, data_kind kind>
+    auto _find_storage() noexcept -> storage<Entity, Data, kind>&;
 
     template <typename C>
     auto _find_cmp_storage() noexcept -> auto& {
-        return _find_storage<C, false>();
+        return _find_storage<C, data_kind::component>();
     }
 
     template <typename R>
     auto _find_rel_storage() noexcept -> auto& {
-        return _find_storage<R, true>();
+        return _find_storage<R, data_kind::relation>();
     }
 
-    template <bool IsRelation>
+    template <data_kind kind>
     void _do_reg_stg_type(
-      shared_holder<base_storage<Entity, IsRelation>>&& strg,
+      shared_holder<base_storage<Entity, kind>>&& strg,
       identifier_t cid,
       std::string (*get_name)() noexcept) {
         assert(bool(strg));
 
-        if(not _get_storages<IsRelation>().emplace(cid, std::move(strg))) {
+        if(not _get_storages<kind>().emplace(cid, std::move(strg))) {
             mgr_handle_cmp_is_reg(get_name());
         }
     }
 
-    template <bool IsRelation>
+    template <data_kind kind>
     void _do_unr_stg_type(identifier_t cid, std::string (*get_name)() noexcept) {
-        if(_get_storages<IsRelation>().erase(cid) != 1) {
+        if(_get_storages<kind>().erase(cid) != 1) {
             mgr_handle_cmp_not_reg(get_name());
         }
     }
 
-    template <bool IsRelation>
+    template <data_kind kind>
     auto _does_know_stg_type(identifier_t cid) const noexcept -> bool {
-        return _get_storages<IsRelation>().find(cid).has_value();
+        return _get_storages<kind>().find(cid).has_value();
     }
 
-    template <bool IsRelation, typename Func>
+    template <data_kind, typename Func>
     auto _apply_on_base_stg(
       const Func&,
       identifier_t,
       std::string (*)() noexcept) const;
 
-    template <typename D, bool IsRelation, typename Func>
+    template <typename D, data_kind, typename Func>
     auto _apply_on_stg(const Func&) const;
 
-    template <bool IsRelation>
+    template <data_kind>
     auto _get_stg_type_caps(identifier_t, std::string (*)() noexcept)
       const noexcept -> storage_caps;
 
@@ -727,12 +734,12 @@ private:
 };
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <typename Data, bool IsRelation>
+template <typename Data, data_kind kind>
 auto basic_manager<Entity>::_find_storage() noexcept
-  -> storage<Entity, Data, IsRelation>& {
+  -> storage<Entity, Data, kind>& {
 
-    using S = storage<Entity, Data, IsRelation>;
-    auto found{_get_storages<IsRelation>()
+    using S = storage<Entity, Data, kind>;
+    auto found{_get_storages<kind>()
                  .find(Data::uid())
                  .and_then([](auto& b_storage) -> optional_reference<S> {
                      return dynamic_cast<S*>(b_storage.get());
@@ -747,21 +754,21 @@ auto basic_manager<Entity>::_find_storage() noexcept
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <bool IsRelation, typename Func>
+template <data_kind kind, typename Func>
 auto basic_manager<Entity>::_apply_on_base_stg(
   const Func& func,
   identifier_t cid,
   std::string (*get_name)() noexcept) const {
 
-    return _get_storages<IsRelation>().find(cid).and_then(func);
+    return _get_storages<kind>().find(cid).and_then(func);
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <typename Component, bool IsRelation, typename Func>
+template <typename Component, data_kind kind, typename Func>
 auto basic_manager<Entity>::_apply_on_stg(const Func& func) const {
-    return _apply_on_base_stg<IsRelation>(
+    return _apply_on_base_stg<kind>(
       [&func](auto& b_storage) {
-          using S = storage<Entity, Component, IsRelation>;
+          using S = storage<Entity, Component, kind>;
 
           S* ct_storage = dynamic_cast<S*>(b_storage.get());
           assert(ct_storage);
@@ -773,11 +780,11 @@ auto basic_manager<Entity>::_apply_on_stg(const Func& func) const {
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-template <bool IsRelation>
+template <data_kind kind>
 auto basic_manager<Entity>::_get_stg_type_caps(
   identifier_t cid,
   std::string (*get_name)() noexcept) const noexcept -> storage_caps {
-    return _apply_on_base_stg<IsRelation>(
+    return _apply_on_base_stg<kind>(
              [](auto& b_storage) -> always_valid<storage_caps> {
                  return b_storage->capabilities();
              },
@@ -791,7 +798,7 @@ auto basic_manager<Entity>::_does_have_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&ent](auto& b_storage) -> tribool { return b_storage->has(ent); },
              cid,
              get_name)
@@ -804,7 +811,7 @@ auto basic_manager<Entity>::_does_have_r(
   entity_param_t<Entity> object,
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
-    return _apply_on_base_stg<true>(
+    return _apply_on_base_stg<data_kind::relation>(
              [&subject, &object](auto& b_storage) -> tribool {
                  return b_storage->has(subject, object);
              },
@@ -818,7 +825,7 @@ auto basic_manager<Entity>::_is_hidn(
   entity_param_t<Entity> ent,
   identifier_t cid,
   std::string (*get_name)() noexcept) noexcept -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&ent](auto& b_storage) -> tribool {
                  return b_storage->is_hidden(ent);
              },
@@ -832,7 +839,7 @@ auto basic_manager<Entity>::_do_show(
   entity_param_t<Entity> ent,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&ent](auto& b_storage) -> tribool {
                  return b_storage->show(ent);
              },
@@ -846,7 +853,7 @@ auto basic_manager<Entity>::_do_hide(
   entity_param_t<Entity> ent,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&ent](auto& b_storage) -> tribool {
                  return b_storage->hide(ent);
              },
@@ -860,7 +867,7 @@ template <typename Component>
 auto basic_manager<Entity>::_do_add_c(
   entity_param_t<Entity> ent,
   Component&& component) -> optional_reference<Component> {
-    return _apply_on_stg<Component, false>(
+    return _apply_on_stg<Component, data_kind::component>(
       [&ent, &component](auto& c_storage) -> optional_reference<Component> {
           return c_storage->store(ent, std::forward<Component>(component));
       });
@@ -872,7 +879,7 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param subj,
   entity_param obj,
   Relation&& relation) -> optional_reference<Relation> {
-    return _apply_on_stg<Relation, true>(
+    return _apply_on_stg<Relation, data_kind::relation>(
       [&subj, &obj, &relation](auto& r_storage) {
           return r_storage->store(subj, obj, std::forward<Relation>(relation));
       });
@@ -884,7 +891,7 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param object,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<true>(
+    return _apply_on_base_stg<data_kind::relation>(
              [&subject, &object](auto& b_storage) -> tribool {
                  return b_storage->store(subject, object);
              },
@@ -900,7 +907,7 @@ auto basic_manager<Entity>::_do_cpy(
   entity_param_t<Entity> to,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> optional_reference<Component> {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
       [&from, &to](auto& b_storage) -> optional_reference<Component> {
           return static_cast<Component*>(b_storage->copy(from, to));
       },
@@ -914,7 +921,7 @@ auto basic_manager<Entity>::_do_swp(
   entity_param_t<Entity> e2,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&e1, &e2](auto& b_storage) -> tribool {
                  b_storage->swap(e1, e2);
                  return true;
@@ -929,7 +936,7 @@ auto basic_manager<Entity>::_do_rem_c(
   entity_param_t<Entity> ent,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<false>(
+    return _apply_on_base_stg<data_kind::component>(
              [&ent](auto& b_storage) -> tribool {
                  return b_storage->remove(ent);
              },
@@ -944,7 +951,7 @@ auto basic_manager<Entity>::_do_rem_r(
   entity_param_t<Entity> obj,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
-    return _apply_on_base_stg<true>(
+    return _apply_on_base_stg<data_kind::relation>(
              [&subj, &obj](auto& b_storage) -> tribool {
                  return b_storage->remove(subj, obj);
              },
@@ -979,7 +986,7 @@ template <typename Component, typename Func>
 auto basic_manager<Entity>::_call_for_single_c(
   entity_param_t<Entity> ent,
   const Func& func) -> bool {
-    return _apply_on_stg<std::remove_const_t<Component>, false>(
+    return _apply_on_stg<std::remove_const_t<Component>, data_kind::component>(
              [&func, &ent](auto& c_storage) -> tribool {
                  c_storage->for_single(func, ent);
                  return true;
@@ -990,7 +997,7 @@ auto basic_manager<Entity>::_call_for_single_c(
 template <typename Entity>
 template <typename Component, typename Func>
 void basic_manager<Entity>::_call_for_each_c(const Func& func) {
-    _apply_on_stg<std::remove_const_t<Component>, false>(
+    _apply_on_stg<std::remove_const_t<Component>, data_kind::component>(
       [&func](auto& c_storage) -> tribool {
           c_storage->for_each(func);
           return true;
@@ -1000,7 +1007,7 @@ void basic_manager<Entity>::_call_for_each_c(const Func& func) {
 template <typename Entity>
 template <typename Relation, typename Func>
 void basic_manager<Entity>::_call_for_each_r(const Func& func) {
-    _apply_on_stg<std::remove_const_t<Relation>, true>(
+    _apply_on_stg<std::remove_const_t<Relation>, data_kind::relation>(
       [&func](auto& c_storage) -> tribool {
           c_storage->for_each(func);
           return true;
