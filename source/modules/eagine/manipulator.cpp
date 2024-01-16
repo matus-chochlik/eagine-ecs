@@ -27,46 +27,46 @@ class basic_manipulator<Component, false> {
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(optional_reference<Component> ref) noexcept
-      : _ref{ref} {}
+    basic_manipulator(optional_reference<Component> write_ref) noexcept
+      : _write_ref{write_ref} {}
 
     /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
-        return _ref.has_value();
+        return _write_ref.has_value();
     }
 
     /// @brief Gives read access to the referenced component.
     /// @pre has_value()
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
-        return *_ref;
+        return *_write_ref;
     }
 
     /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const noexcept
       -> optional_reference<const T> {
-        return _ref.member(member);
+        return _write_ref.member(member);
     }
 
     /// @brief Gives write access to the referenced component.
     /// @pre has_value()
     [[nodiscard]] auto write() const noexcept -> Component& {
         assert(has_value());
-        return *_ref;
+        return *_write_ref;
     }
 
     /// @brief Gives write access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto write(T Component::*member) const noexcept
       -> optional_reference<T> {
-        return _ref.member(member);
+        return _write_ref.member(member);
     }
 
     /// @brief Gives write access to the referenced component.
     [[nodiscard]] auto operator->() -> Component* {
         assert(has_value());
-        return _ref.get();
+        return _write_ref.get();
     }
 
     /// @brief Calls a function on the referenced component if any.
@@ -81,7 +81,7 @@ public:
               std::remove_pointer_t<R>>;
             if(has_value()) {
                 return optional_reference<P>{
-                  std::invoke(std::forward<F>(function), this->value())};
+                  std::invoke(std::forward<F>(function), this->write())};
             } else {
                 return optional_reference<P>{nothing};
             }
@@ -89,7 +89,7 @@ public:
             using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value())};
+                  std::invoke(std::forward<F>(function), this->write())};
             } else {
                 return std::optional<V>{};
             }
@@ -104,7 +104,7 @@ public:
     [[nodiscard]] auto and_then(F&& function) {
         using R = std::remove_cvref_t<std::invoke_result_t<F, Component&>>;
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), this->write());
         } else {
             return R{};
         }
@@ -112,11 +112,11 @@ public:
 
 protected:
     void _reset_cmp(Component& cmp) noexcept {
-        _ref = cmp;
+        _write_ref = cmp;
     }
 
 private:
-    optional_reference<Component> _ref{};
+    optional_reference<Component> _write_ref{};
 };
 //------------------------------------------------------------------------------
 /// @brief Implementation of base functionality for read-only manipulators.
@@ -127,31 +127,31 @@ class basic_manipulator<Component, true> {
 public:
     basic_manipulator() noexcept = default;
 
-    basic_manipulator(optional_reference<const Component> ref) noexcept
-      : _ref{ref} {}
+    basic_manipulator(optional_reference<const Component> read_ref) noexcept
+      : _read_ref{read_ref} {}
 
     /// @brief Indicates if this manipulator has a value and can read or write.
     [[nodiscard]] auto has_value() const noexcept -> bool {
-        return _ref.has_value();
+        return _read_ref.has_value();
     }
 
     /// @brief Gives read access to the specified component data member.
     [[nodiscard]] auto read() const noexcept -> const Component& {
         assert(has_value());
-        return *_ref;
+        return *_read_ref;
     }
 
     /// @brief Gives read access to the specified component data member.
     template <typename T>
     [[nodiscard]] auto read(T Component::*const member) const
       -> optional_reference<const T> {
-        return _ref.member(member);
+        return _read_ref.member(member);
     }
 
     /// @brief Gives read access to the referenced component.
     [[nodiscard]] auto operator->() -> const Component* {
         assert(has_value());
-        return _ref.get();
+        return _read_ref.get();
     }
 
     /// @brief Calls a function on the referenced component if any.
@@ -166,7 +166,7 @@ public:
               std::remove_pointer_t<R>>;
             if(has_value()) {
                 return optional_reference<P>{
-                  std::invoke(std::forward<F>(function), this->value())};
+                  std::invoke(std::forward<F>(function), this->read())};
             } else {
                 return optional_reference<P>{nothing};
             }
@@ -174,7 +174,7 @@ public:
             using V = std::remove_cvref_t<R>;
             if(has_value()) {
                 return std::optional<V>{
-                  std::invoke(std::forward<F>(function), this->value())};
+                  std::invoke(std::forward<F>(function), this->read())};
             } else {
                 return std::optional<V>{};
             }
@@ -190,7 +190,7 @@ public:
         using R =
           std::remove_cvref_t<std::invoke_result_t<F, const Component&>>;
         if(has_value()) {
-            return std::invoke(std::forward<F>(function), this->value());
+            return std::invoke(std::forward<F>(function), this->read());
         } else {
             return R{};
         }
@@ -198,11 +198,11 @@ public:
 
 protected:
     void _reset_cmp(const Component& cmp) noexcept {
-        _ref = cmp;
+        _read_ref = cmp;
     }
 
 private:
-    optional_reference<const Component> _ref{};
+    optional_reference<const Component> _read_ref{};
 };
 //------------------------------------------------------------------------------
 export template <typename C>
@@ -240,20 +240,22 @@ class manipulator
 public:
     manipulator() noexcept = default;
 
-    manipulator(const bool can_rem) noexcept
-      : _can_rem{can_rem} {}
+    manipulator(const bool can_remove) noexcept
+      : _can_remove{can_remove} {}
 
-    manipulator(optional_reference<Component> ref, const bool can_rem) noexcept
+    manipulator(
+      optional_reference<Component> ref,
+      const bool can_remove) noexcept
       : _base{ref}
-      , _can_rem{can_rem} {}
+      , _can_remove{can_remove} {}
 
     manipulator(
       optional_reference<Component> ref,
       _nonconstC& add,
-      const bool can_rem) noexcept
+      const bool can_remove) noexcept
       : _base(ref)
       , _add_place{&add}
-      , _can_rem(can_rem) {}
+      , _can_remove(can_remove) {}
 
     [[nodiscard]] auto can_add_component() const noexcept -> bool {
         return _add_place != nullptr;
@@ -267,8 +269,8 @@ public:
         _added = true;
     }
 
-    [[nodiscard]] auto can_remove() const noexcept -> bool {
-        return _can_rem and this->has_value();
+    [[nodiscard]] auto can_removeove() const noexcept -> bool {
+        return _can_remove and this->has_value();
     }
 
     void remove() noexcept {
@@ -276,7 +278,7 @@ public:
     }
 
 protected:
-    const bool _can_rem{false};
+    const bool _can_remove{false};
     bool _removed{false};
     bool _added{false};
 
