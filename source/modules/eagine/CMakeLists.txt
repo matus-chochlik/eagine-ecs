@@ -7,6 +7,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.identifier
+		eagine.core.reflection
 )
 
 eagine_add_module(

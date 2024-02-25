@@ -9,10 +9,19 @@ export module eagine.ecs:entity_traits;
 
 import std;
 import eagine.core.identifier;
+import eagine.core.reflection;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
 export enum class data_kind : bool { component = false, relation = true };
+//------------------------------------------------------------------------------
+export template <typename Selector>
+constexpr auto enumerator_mapping(
+  std::type_identity<data_kind>,
+  Selector) noexcept {
+    return enumerator_map_type<data_kind, 2>{
+      {{"component", data_kind::component}, {"relation", data_kind::relation}}};
+}
 //------------------------------------------------------------------------------
 export template <typename Entity>
 struct entity_traits {
