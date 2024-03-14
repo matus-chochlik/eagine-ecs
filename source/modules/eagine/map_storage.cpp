@@ -631,5 +631,20 @@ using flat_map_rel_storage = basic_map_rel_storage<
   Relation,
   flat_map<std::pair<Entity, Entity>, Relation>>;
 //------------------------------------------------------------------------------
+export template <typename Entity, typename Component>
+using chunk_map_cmp_storage = basic_map_cmp_storage<
+  Entity,
+  Component,
+  chunk_map<Entity, Component, 4096 / sizeof(std::pair<Entity, Component>)>>;
+
+export template <typename Entity, typename Relation>
+using chunk_map_rel_storage = basic_map_rel_storage<
+  Entity,
+  Relation,
+  chunk_map<
+    std::pair<Entity, Entity>,
+    Relation,
+    4096 / sizeof(std::pair<Entity, Relation>)>>;
+//------------------------------------------------------------------------------
 } // namespace eagine::ecs
 
