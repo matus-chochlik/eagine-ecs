@@ -95,7 +95,9 @@ public:
           storage_cap_bit::store | storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t final {
+    void swap_buffers() final {}
+
+    auto new_iterator(storage_buffer) -> iterator_t final {
         return iterator_t(_iterators.make(_components));
     }
 
@@ -411,7 +413,9 @@ public:
           storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t final {
+    void swap_buffers() final {}
+
+    auto new_iterator(storage_buffer) -> iterator_t final {
         return iterator_t(_iterators.make(_relations));
     }
 

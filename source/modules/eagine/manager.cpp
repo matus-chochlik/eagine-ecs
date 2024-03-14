@@ -1024,10 +1024,14 @@ protected:
     component_storage_iterator<Entity> _iter;
     Entity _curr;
 
+    static constexpr auto _storage_buffer() noexcept {
+        return storage_buffer_from_constness(std::is_const_v<C>);
+    }
+
     _manager_for_each_c_m_base(
       component_storage<Entity, std::remove_const_t<C>>& strg)
       : _storage(strg)
-      , _iter(_storage.new_iterator())
+      , _iter(_storage.new_iterator(_storage_buffer()))
       , _curr(_iter.done() ? Entity() : _iter.current()) {
         assert(std::is_const<C>::value or _storage.capabilities().can_modify());
     }
