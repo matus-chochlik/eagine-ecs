@@ -91,7 +91,7 @@ public:
     auto capabilities() -> storage_caps final {
         return storage_caps{
           storage_cap_bit::hide | storage_cap_bit::copy |
-          storage_cap_bit::swap | storage_cap_bit::remove |
+          storage_cap_bit::exchange | storage_cap_bit::remove |
           storage_cap_bit::store | storage_cap_bit::modify};
     }
 
@@ -147,7 +147,7 @@ public:
         return nullptr;
     }
 
-    auto swap(const entity_param ea, const entity_param eb) -> bool final {
+    auto exchange(const entity_param ea, const entity_param eb) -> bool final {
         const auto fa{find(_components, ea)};
         const auto fb{find(_components, eb)};
         const bool ha{is_hidden(ea)};

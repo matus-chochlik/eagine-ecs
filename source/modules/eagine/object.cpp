@@ -153,13 +153,13 @@ public:
     }
 
     template <component_data Component>
-    auto swap_with(identifier that) -> manipulator<Component> {
-        return manager().template swap<Component>(entity(), that);
+    auto exchange_with(identifier that) -> manipulator<Component> {
+        return manager().template exchange<Component>(entity(), that);
     }
 
     template <component_data Component>
-    auto swap_with(const object& that) -> manipulator<Component> {
-        return swap_with<Component>(that.entity());
+    auto exchange_with(const object& that) -> manipulator<Component> {
+        return exchange_with<Component>(that.entity());
     }
 
     template <component_data Component, typename Function>

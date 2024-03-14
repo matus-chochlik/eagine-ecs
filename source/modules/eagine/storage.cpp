@@ -25,7 +25,7 @@ namespace eagine::ecs {
 export enum class storage_cap_bit : unsigned short {
     hide = 1U << 0U,
     copy = 1U << 1U,
-    swap = 1U << 2U,
+    exchange = 1U << 2U,
     store = 1U << 3U,
     remove = 1U << 4U,
     modify = 1U << 5U
@@ -38,7 +38,7 @@ constexpr auto enumerator_mapping(
     return enumerator_map_type<storage_cap_bit, 6>{
       {{"hide", storage_cap_bit::hide},
        {"copy", storage_cap_bit::copy},
-       {"swap", storage_cap_bit::swap},
+       {"exchange", storage_cap_bit::exchange},
        {"store", storage_cap_bit::store},
        {"remove", storage_cap_bit::remove},
        {"modify", storage_cap_bit::modify}}};
@@ -67,7 +67,7 @@ public:
         return has(storage_cap_bit::hide);
     }
 
-    [[nodiscard]] auto can_swap() const noexcept -> bool {
+    [[nodiscard]] auto can_exchange() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
 
@@ -248,7 +248,7 @@ struct base_storage<Entity, data_kind::component>
 
     virtual auto copy(entity_param from, entity_param to) -> void* = 0;
 
-    virtual auto swap(entity_param a, entity_param b) -> bool = 0;
+    virtual auto exchange(entity_param a, entity_param b) -> bool = 0;
 
     virtual auto remove(entity_param) -> bool = 0;
 
