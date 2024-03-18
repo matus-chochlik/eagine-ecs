@@ -392,9 +392,9 @@ public:
     }
 
     template <component_data... Components>
-    auto swap(entity_param e1, entity_param e2) -> auto& {
+    auto exchange(entity_param e1, entity_param e2) -> auto& {
         (...,
-         _do_swp(e1, e2, Components::uid(), _cmp_name_getter<Components>()));
+         _do_xchg(e1, e2, Components::uid(), _cmp_name_getter<Components>()));
         return *this;
     }
 
@@ -699,7 +699,7 @@ private:
       identifier_t,
       std::string (*)() noexcept) -> optional_reference<Component>;
 
-    auto _do_swp(
+    auto _do_xchg(
       entity_param f,
       entity_param t,
       identifier_t,
@@ -916,14 +916,14 @@ auto basic_manager<Entity>::_do_cpy(
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
-auto basic_manager<Entity>::_do_swp(
+auto basic_manager<Entity>::_do_xchg(
   entity_param_t<Entity> e1,
   entity_param_t<Entity> e2,
   identifier_t cid,
   std::string (*get_name)() noexcept) -> bool {
     return _apply_on_base_stg<data_kind::component>(
              [&e1, &e2](auto& b_storage) -> tribool {
-                 b_storage->swap(e1, e2);
+                 b_storage->exchange(e1, e2);
                  return true;
              },
              cid,
@@ -1024,10 +1024,14 @@ protected:
     component_storage_iterator<Entity> _iter;
     Entity _curr;
 
+    static constexpr auto _storage_buffer() noexcept {
+        return storage_buffer_from_constness(std::is_const_v<C>);
+    }
+
     _manager_for_each_c_m_base(
       component_storage<Entity, std::remove_const_t<C>>& strg)
       : _storage(strg)
-      , _iter(_storage.new_iterator())
+      , _iter(_storage.new_iterator(_storage_buffer()))
       , _curr(_iter.done() ? Entity() : _iter.current()) {
         assert(std::is_const<C>::value or _storage.capabilities().can_modify());
     }

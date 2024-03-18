@@ -20,25 +20,41 @@ import :manipulator;
 
 namespace eagine::ecs {
 //------------------------------------------------------------------------------
+//  Storage buffer
+//------------------------------------------------------------------------------
+export enum class storage_buffer : bool {
+    next = false,
+    current = true,
+    write = false,
+    read = true
+};
+//------------------------------------------------------------------------------
+constexpr auto storage_buffer_from_constness(bool is_const) noexcept
+  -> storage_buffer {
+    return static_cast<storage_buffer>(is_const);
+}
+//------------------------------------------------------------------------------
 //  Capabilities
 //------------------------------------------------------------------------------
 export enum class storage_cap_bit : unsigned short {
-    hide = 1U << 0U,
-    copy = 1U << 1U,
-    swap = 1U << 2U,
-    store = 1U << 3U,
-    remove = 1U << 4U,
-    modify = 1U << 5U
+    double_buffer = 1U << 0U,
+    hide = 1U << 1U,
+    copy = 1U << 2U,
+    exchange = 1U << 3U,
+    store = 1U << 4U,
+    remove = 1U << 5U,
+    modify = 1U << 6U
 };
 //------------------------------------------------------------------------------
 export template <typename Selector>
 constexpr auto enumerator_mapping(
   const std::type_identity<storage_cap_bit>,
   const Selector) noexcept {
-    return enumerator_map_type<storage_cap_bit, 6>{
-      {{"hide", storage_cap_bit::hide},
+    return enumerator_map_type<storage_cap_bit, 7>{
+      {{"double_buffer", storage_cap_bit::double_buffer},
+       {"hide", storage_cap_bit::hide},
        {"copy", storage_cap_bit::copy},
-       {"swap", storage_cap_bit::swap},
+       {"exchange", storage_cap_bit::exchange},
        {"store", storage_cap_bit::store},
        {"remove", storage_cap_bit::remove},
        {"modify", storage_cap_bit::modify}}};
@@ -59,6 +75,10 @@ public:
     storage_caps(const bitfield<storage_cap_bit> base)
       : _base{base} {}
 
+    [[nodiscard]] auto can_swap_buffers() const noexcept -> bool {
+        return has(storage_cap_bit::double_buffer);
+    }
+
     [[nodiscard]] auto can_hide() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
@@ -67,7 +87,7 @@ public:
         return has(storage_cap_bit::hide);
     }
 
-    [[nodiscard]] auto can_swap() const noexcept -> bool {
+    [[nodiscard]] auto can_exchange() const noexcept -> bool {
         return has(storage_cap_bit::hide);
     }
 
@@ -85,7 +105,7 @@ public:
 };
 //------------------------------------------------------------------------------
 export auto all_storage_caps() noexcept -> storage_caps {
-    return {static_cast<storage_cap_bit>((1U << 6U) - 1U)};
+    return {static_cast<storage_cap_bit>((1U << 7U) - 1U)};
 }
 //------------------------------------------------------------------------------
 // Signals
@@ -228,7 +248,9 @@ struct base_storage<Entity, data_kind::component>
 
     virtual auto capabilities() -> storage_caps = 0;
 
-    virtual auto new_iterator() -> iterator_t = 0;
+    virtual void swap_buffers() = 0;
+
+    virtual auto new_iterator(storage_buffer) -> iterator_t = 0;
 
     virtual void delete_iterator(iterator_t&&) = 0;
 
@@ -248,7 +270,7 @@ struct base_storage<Entity, data_kind::component>
 
     virtual auto copy(entity_param from, entity_param to) -> void* = 0;
 
-    virtual auto swap(entity_param a, entity_param b) -> bool = 0;
+    virtual auto exchange(entity_param a, entity_param b) -> bool = 0;
 
     virtual auto remove(entity_param) -> bool = 0;
 
@@ -378,7 +400,9 @@ struct base_storage<Entity, data_kind::relation>
 
     virtual auto capabilities() -> storage_caps = 0;
 
-    virtual auto new_iterator() -> iterator_t = 0;
+    virtual void swap_buffers() = 0;
+
+    virtual auto new_iterator(storage_buffer) -> iterator_t = 0;
 
     virtual void delete_iterator(iterator_t&&) = 0;
 

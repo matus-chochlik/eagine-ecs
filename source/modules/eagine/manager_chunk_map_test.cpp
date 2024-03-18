@@ -64,11 +64,12 @@ void manager_component_register_1(auto& s) {
 
     test.check(not mgr.knows_component_type<person>(), "person 1");
     test.check(not mgr.knows_component_type<greeting>(), "greeting 1");
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     test.check(mgr.knows_component_type<person>(), "person 2");
     test.check(not mgr.knows_component_type<greeting>(), "greeting 2");
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     test.check(mgr.knows_component_type<person>(), "person 3");
     test.check(mgr.knows_component_type<greeting>(), "greeting 3");
@@ -91,11 +92,11 @@ void manager_component_register_2(auto& s) {
 
     test.check(not mgr.knows_relation_type<mother>(), "mother 1");
     test.check(not mgr.knows_relation_type<father>(), "father 1");
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, mother>();
 
     test.check(mgr.knows_relation_type<mother>(), "mother 2");
     test.check(not mgr.knows_relation_type<father>(), "father 2");
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, father>();
 
     test.check(mgr.knows_relation_type<mother>(), "mother 3");
     test.check(mgr.knows_relation_type<father>(), "father 3");
@@ -115,8 +116,9 @@ void manager_component_write_has_1(auto& s) {
     eagitest::case_ test{s, 3, "write/knows+has"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     const auto hw = eagine::id_v("HelloWorld");
 
@@ -138,8 +140,9 @@ void manager_component_write_get_1(auto& s) {
     eagitest::case_ test{s, 4, "write/get"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     const std::string na{"N/A"};
     const auto hw = eagine::id_v("Hello");
@@ -162,8 +165,9 @@ void manager_component_write_read_1(auto& s) {
     eagitest::case_ test{s, 5, "write/read"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     const auto hw = eagine::id_v("Hello");
 
@@ -180,7 +184,7 @@ void manager_component_manipulator_1(auto& s) {
     eagitest::case_ test{s, 6, "manipulator"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     const std::string na{"N/A"};
     const auto johnny = eagine::id_v("Johnny");
@@ -212,8 +216,9 @@ void manager_component_add_has_name_1(auto& s) {
     eagitest::case_ test{s, 7, "add/get"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add(id_v("john"), person("John", "Doe"));
     mgr.add(id_v("john"), greeting("Hi"));
@@ -236,8 +241,9 @@ void manager_component_add_remove_1(auto& s) {
     eagitest::case_ test{s, 8, "add/remove"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add(id_v("john"), person("John", "Doe"));
     mgr.add(id_v("jane"), person("Jane", "Doe"), greeting("Hi"));
@@ -276,8 +282,9 @@ void manager_component_add_forget_1(auto& s) {
     eagitest::case_ test{s, 9, "add/forget"};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add(id_v("john"), greeting("Hi"));
     mgr.add(id_v("john"), person("John", "Doe"));
@@ -312,8 +319,9 @@ void manager_component_add_copy_1(auto& s) {
     eagitest::case_ test{s, 10, "add/copy"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add("john1", person("John", "Doe"));
 
@@ -366,8 +374,9 @@ void manager_component_add_exchange_1(auto& s) {
     eagitest::case_ test{s, 11, "add/exchange 1"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add("john1", person("John", "Doe"), greeting("Hi"));
     mgr.add("john2", person("John", "Roe"), greeting("Hey"));
@@ -406,8 +415,9 @@ void manager_component_add_exchange_2(auto& s) {
     eagitest::case_ test{s, 12, "add/exchange 2"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add("john1", greeting("Hi"));
     mgr.add("john2", person("John", "Roe"));
@@ -492,7 +502,7 @@ void manager_component_for_each_1(auto& s) {
     std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     const auto add = [&](auto eid, std::string name, std::string family_name) {
         names[eid] = {name, family_name};
@@ -532,8 +542,9 @@ void manager_component_for_each_2(auto& s) {
     std::map<eagine::identifier_t, std::tuple<std::string, std::string>> names;
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     std::map<std::string, std::string> greetings;
 
@@ -590,8 +601,9 @@ void manager_component_for_each_3(auto& s) {
     eagitest::track both{test, 2, 1};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     mgr.add(id_v("John"), person("John", "Doe"));
     mgr.add(id_v("Jane"), person("Jane", "Doe"), greeting("Hi"));
@@ -663,8 +675,9 @@ void manager_component_for_each_4(auto& s) {
     eagitest::track both{test, 2, 1};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     mgr.add(id_v("John"), person("John", "Doe"));
     mgr.add(id_v("Jane"), person("Jane", "Doe"), greeting("Hi"));
@@ -723,8 +736,9 @@ void manager_component_for_each_5(auto& s) {
     eagitest::track both{test, 2, 1};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
 
     mgr.add(id_v("John"), person("John", "Doe"));
     mgr.add(id_v("Jane"), person("Jane", "Doe"), greeting("Hi"));
@@ -796,8 +810,9 @@ void manager_component_has_1(auto& s) {
     eagitest::case_ test{s, 19, "has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add("john", person("John", "Doe"));
     mgr.add("jane", person("Jane", "Doe"), greeting("Hi"));
@@ -829,8 +844,9 @@ void manager_component_show_hide_1(auto& s) {
     eagitest::track trck{test, 0, 2};
 
     eagine::ecs::basic_manager<eagine::identifier_t> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, greeting>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr
+      .register_component_storage<eagine::ecs::chunk_map_cmp_storage, greeting>();
 
     mgr.add(id_v("john"), person("John", "Doe"), greeting("Hi"));
     mgr.add(id_v("jane"), person("Jane", "Doe"), greeting("Hello"));
@@ -941,9 +957,9 @@ void manager_component_relation_has_1(auto& s) {
     eagitest::case_ test{s, 21, "relation/has"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, mother>();
 
     mgr.ensure<person>("force").set("The", "Force");
     mgr.ensure<person>("luke").set("Luke", "Skywalker");
@@ -1009,9 +1025,9 @@ void manager_component_remove_relation_1(auto& s) {
     eagitest::case_ test{s, 22, "remove relation"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, mother>();
 
     mgr.ensure<person>("force").set("The", "Force");
     mgr.ensure<person>("luke").set("Luke", "Skywalker");
@@ -1085,9 +1101,9 @@ void manager_component_clear_1(auto& s) {
     eagitest::case_ test{s, 23, "clear"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, mother>();
 
     mgr.ensure<person>("force").set("The", "Force");
     mgr.ensure<person>("luke").set("Luke", "Skywalker");
@@ -1160,9 +1176,9 @@ void manager_component_select_cross_1(auto& s) {
     eagitest::case_ test{s, 24, "select/cross"};
 
     eagine::ecs::basic_manager<std::string> mgr;
-    mgr.register_component_storage<eagine::ecs::std_map_cmp_storage, person>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, father>();
-    mgr.register_relation_storage<eagine::ecs::std_map_rel_storage, mother>();
+    mgr.register_component_storage<eagine::ecs::chunk_map_cmp_storage, person>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, father>();
+    mgr.register_relation_storage<eagine::ecs::chunk_map_rel_storage, mother>();
 
     const auto run_tests =
       [&](int same, int diff, int reld, std::string_view label) {

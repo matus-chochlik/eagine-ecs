@@ -80,6 +80,7 @@ eagine_add_module_tests(
 		storage
 		manager_std_map
 		manager_flat_map
+		manager_chunk_map
 	IMPORTS
 		std
 		eagine.core

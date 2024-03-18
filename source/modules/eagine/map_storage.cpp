@@ -91,11 +91,13 @@ public:
     auto capabilities() -> storage_caps final {
         return storage_caps{
           storage_cap_bit::hide | storage_cap_bit::copy |
-          storage_cap_bit::swap | storage_cap_bit::remove |
+          storage_cap_bit::exchange | storage_cap_bit::remove |
           storage_cap_bit::store | storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t final {
+    void swap_buffers() final {}
+
+    auto new_iterator(storage_buffer) -> iterator_t final {
         return iterator_t(_iterators.make(_components));
     }
 
@@ -147,7 +149,7 @@ public:
         return nullptr;
     }
 
-    auto swap(const entity_param ea, const entity_param eb) -> bool final {
+    auto exchange(const entity_param ea, const entity_param eb) -> bool final {
         const auto fa{find(_components, ea)};
         const auto fb{find(_components, eb)};
         const bool ha{is_hidden(ea)};
@@ -411,7 +413,9 @@ public:
           storage_cap_bit::modify};
     }
 
-    auto new_iterator() -> iterator_t final {
+    void swap_buffers() final {}
+
+    auto new_iterator(storage_buffer) -> iterator_t final {
         return iterator_t(_iterators.make(_relations));
     }
 
@@ -630,6 +634,21 @@ using flat_map_rel_storage = basic_map_rel_storage<
   Entity,
   Relation,
   flat_map<std::pair<Entity, Entity>, Relation>>;
+//------------------------------------------------------------------------------
+export template <typename Entity, typename Component>
+using chunk_map_cmp_storage = basic_map_cmp_storage<
+  Entity,
+  Component,
+  chunk_map<Entity, Component, 4096 / sizeof(std::pair<Entity, Component>)>>;
+
+export template <typename Entity, typename Relation>
+using chunk_map_rel_storage = basic_map_rel_storage<
+  Entity,
+  Relation,
+  chunk_map<
+    std::pair<Entity, Entity>,
+    Relation,
+    4096 / sizeof(std::pair<Entity, Relation>)>>;
 //------------------------------------------------------------------------------
 } // namespace eagine::ecs
 
