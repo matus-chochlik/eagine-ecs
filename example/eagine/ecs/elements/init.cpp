@@ -83,7 +83,7 @@ public:
         } else if(path.size() == 4 and path[1] == "isotopes") {
             element_symbol isot{path[2]};
             if(path.back() == "half_life") {
-                data.and_then(from_string<std::chrono::duration<float>>)
+                data.and_then(from_string<std::chrono::duration<float>>(_1))
                   .and_then([&](auto hl) -> noopt {
                       _elements.ensure<half_life>(isot).set(hl);
                       return {};

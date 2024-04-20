@@ -18,7 +18,8 @@ import eagine.core.utility;
 import :entity_traits;
 import :manipulator;
 
-namespace eagine::ecs {
+namespace eagine {
+namespace ecs {
 //------------------------------------------------------------------------------
 //  Storage buffer
 //------------------------------------------------------------------------------
@@ -45,20 +46,6 @@ export enum class storage_cap_bit : unsigned short {
     remove = 1U << 5U,
     modify = 1U << 6U
 };
-//------------------------------------------------------------------------------
-export template <typename Selector>
-constexpr auto enumerator_mapping(
-  const std::type_identity<storage_cap_bit>,
-  const Selector) noexcept {
-    return enumerator_map_type<storage_cap_bit, 7>{
-      {{"double_buffer", storage_cap_bit::double_buffer},
-       {"hide", storage_cap_bit::hide},
-       {"copy", storage_cap_bit::copy},
-       {"exchange", storage_cap_bit::exchange},
-       {"store", storage_cap_bit::store},
-       {"remove", storage_cap_bit::remove},
-       {"modify", storage_cap_bit::modify}}};
-}
 //------------------------------------------------------------------------------
 export [[nodiscard]] auto operator|(
   const storage_cap_bit a,
@@ -474,6 +461,22 @@ struct storage<Entity, Relation, data_kind::relation>
       const callable_ref<
         void(entity_param, entity_param, manipulator<Relation>&)>) = 0;
 };
+} // namespace ecs
 //------------------------------------------------------------------------------
-} // namespace eagine::ecs
+export template <>
+struct enumerator_traits<ecs::storage_cap_bit> {
+    static constexpr auto mapping() noexcept {
+        using ecs::storage_cap_bit;
+        return enumerator_map_type<storage_cap_bit, 7>{
+          {{"double_buffer", storage_cap_bit::double_buffer},
+           {"hide", storage_cap_bit::hide},
+           {"copy", storage_cap_bit::copy},
+           {"exchange", storage_cap_bit::exchange},
+           {"store", storage_cap_bit::store},
+           {"remove", storage_cap_bit::remove},
+           {"modify", storage_cap_bit::modify}}};
+    }
+};
+//------------------------------------------------------------------------------
+} // namespace eagine
 
