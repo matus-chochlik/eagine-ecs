@@ -3,7 +3,9 @@
 # See accompanying file LICENSE_1_0.txt or copy at
 # https://www.boost.org/LICENSE_1_0.txt
 eagine_add_module(
-	eagine.ecs PARTITION entity_traits
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION entity_traits
 	IMPORTS
 		std
 		eagine.core.identifier
@@ -11,7 +13,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION component
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION component
 	IMPORTS
 		std entity_traits
 		eagine.core.types
@@ -20,14 +24,18 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION manipulator
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION manipulator
 	IMPORTS
 		std
 		eagine.core.types
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION storage
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION storage
 	IMPORTS
 		std entity_traits
 		manipulator
@@ -37,7 +45,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION map_storage
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION map_storage
 	IMPORTS
 		std entity_traits
 		manipulator component
@@ -49,7 +59,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION manager
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION manager
 	IMPORTS
 		std entity_traits
 		manipulator component
@@ -62,7 +74,9 @@ eagine_add_module(
 )
 
 eagine_add_module(
-	eagine.ecs PARTITION object
+	eagine.ecs
+	COMPONENT ecs-dev
+	PARTITION object
 	IMPORTS
 		std component manipulator manager
 		eagine.core.types
@@ -72,6 +86,7 @@ eagine_add_module(
 
 eagine_add_module(
 	eagine.ecs
+	COMPONENT ecs-dev
 )
 
 eagine_add_module_tests(
@@ -85,5 +100,10 @@ eagine_add_module_tests(
 		std
 		eagine.core
 )
+
 set_tests_properties(build-test.eagine.ecs.manager_std_map  PROPERTIES COST 10)
 set_tests_properties(build-test.eagine.ecs.manager_flat_map PROPERTIES COST 10)
+
+eagine_add_license(ecs-dev)
+eagine_add_debian_changelog(ecs-dev)
+
