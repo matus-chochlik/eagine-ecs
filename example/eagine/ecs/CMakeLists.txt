@@ -12,8 +12,8 @@ set_target_properties(
 function(eagine_install_example TARGET_NAME)
 	install(
 		TARGETS ${TARGET_NAME}
-		DESTINATION share/eagine/example/ecs
-	)
+		COMPONENT ecs-examples
+		DESTINATION share/eagine/example/ecs)
 endfunction()
 
 function(eagine_example_common EXAMPLE_NAME)
