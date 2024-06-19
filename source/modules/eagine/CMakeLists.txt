@@ -107,3 +107,15 @@ set_tests_properties(build-test.eagine.ecs.manager_flat_map PROPERTIES COST 10)
 eagine_add_license(ecs-dev)
 eagine_add_debian_changelog(ecs-dev)
 
+eagine_add_package_property(
+	ecs-dev
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "eagine-core-dev (>= @EAGINE_VERSION@)")
+
+eagine_add_package_property(
+	ecs-dev
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "C++ entity-component system.")
+
