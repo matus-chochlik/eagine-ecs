@@ -45,3 +45,8 @@ eagine_example_common(002_signals)
 eagine_example_common(003_space_opera)
 
 add_subdirectory(elements)
+
+eagine_add_license(ecs-examples)
+eagine_add_debian_changelog(ecs-examples)
+
+
