@@ -52,3 +52,15 @@ endmacro()
 eagine_ecs_example(basic)
 eagine_ecs_example(decay_chain)
 
+eagine_add_package_property(
+	ecs-examples
+	GENERATOR DEBIAN
+	VARIABLE PACKAGE_DEPENDS
+	VALUE "\${CXX_RUNTIME_PKGS},\${EAGINE_CORE_RUNTIME_PKGS}")
+
+eagine_add_package_property(
+	ecs-examples
+	GENERATOR DEBIAN
+	VARIABLE DESCRIPTION
+	VALUE "EAGine ECS examples.")
+

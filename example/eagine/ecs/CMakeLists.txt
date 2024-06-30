@@ -12,8 +12,8 @@ set_target_properties(
 function(eagine_install_example TARGET_NAME)
 	install(
 		TARGETS ${TARGET_NAME}
-		DESTINATION share/eagine/example/ecs
-	)
+		COMPONENT ecs-examples
+		DESTINATION share/eagine/example/ecs)
 endfunction()
 
 function(eagine_example_common EXAMPLE_NAME)
@@ -45,3 +45,8 @@ eagine_example_common(002_signals)
 eagine_example_common(003_space_opera)
 
 add_subdirectory(elements)
+
+eagine_add_license(ecs-examples)
+eagine_add_debian_changelog(ecs-examples)
+
+
