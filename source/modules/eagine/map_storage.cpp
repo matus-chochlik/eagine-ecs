@@ -143,11 +143,6 @@ public:
         return false;
     }
 
-    auto show(iterator_t& i) -> bool final {
-        assert(not i.done());
-        return true;
-    }
-
     auto copy(entity_param ef, entity_param et) -> void* final {
         if(const auto found{find(_components, ef)}) {
             return static_cast<void*>(store(et, Component(*found)));
