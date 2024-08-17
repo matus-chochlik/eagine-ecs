@@ -119,8 +119,9 @@ public:
     }
 
     auto hide(entity_param e) -> bool final {
-        if(has(e)) {
-            _hidden.insert(e);
+        if(auto found{find(_components, e)}) {
+            _hidden.emplace(found.release());
+            _components.erase(found.position());
             return true;
         }
         return false;
@@ -128,21 +129,26 @@ public:
 
     void hide(iterator_t& i) final {
         assert(not i.done());
-        _hidden.insert(_iter_entity(i));
+        auto pos{_iter_cast(i)._i};
+        _hidden.emplace(std::move(*pos));
+        _components.erase(pos);
     }
 
     auto show(entity_param e) -> bool final {
-        return _hidden.erase(e) > 0;
+        if(auto found{find(_hidden, e)}) {
+            _components.emplace(found.release());
+            _hidden.erase(found.position());
+            return true;
+        }
+        return false;
     }
 
     auto show(iterator_t& i) -> bool final {
-        return _hidden.erase(_iter_entity(i)) > 0;
+        assert(not i.done());
+        return true;
     }
 
     auto copy(entity_param ef, entity_param et) -> void* final {
-        if(is_hidden(ef)) {
-            return nullptr;
-        }
         if(const auto found{find(_components, ef)}) {
             return static_cast<void*>(store(et, Component(*found)));
         }
@@ -152,30 +158,16 @@ public:
     auto exchange(const entity_param ea, const entity_param eb) -> bool final {
         const auto fa{find(_components, ea)};
         const auto fb{find(_components, eb)};
-        const bool ha{is_hidden(ea)};
-        const bool hb{is_hidden(eb)};
 
         if(fa and fb) {
             using std::swap;
             swap(*fa, *fb);
-            if(ha and not hb) {
-                show(ea);
-            }
-            if(hb and not ha) {
-                show(eb);
-            }
         } else if(fa) {
             store(eb, std::move(*fa));
             remove(ea);
-            if(ha) {
-                hide(eb);
-            }
         } else if(fb) {
             store(ea, std::move(*fb));
             remove(eb);
-            if(hb) {
-                hide(ea);
-            }
         }
         return true;
     }
@@ -193,14 +185,14 @@ public:
 
     auto store(entity_param e, Component&& c) -> Component* final {
         _hidden.erase(e);
-        const auto pos = _components.emplace(e, std::move(c)).first;
+        const auto pos{_components.emplace(e, std::move(c)).first};
         return &pos->second;
     }
 
     auto store(iterator_t& i, entity_param e, Component&& c)
       -> Component* final {
         _hidden.erase(e);
-        auto& pos = _iter_cast(i)._i;
+        auto& pos{_iter_cast(i)._i};
         pos = _components.emplace_hint(pos, e, std::move(c));
         return &pos->second;
     }
@@ -209,13 +201,11 @@ public:
       const callable_ref<void(entity_param, manipulator<const Component>&)> func,
       entity_param e) final {
         if(auto found{eagine::find(_components, e)}) {
-            if(not is_hidden(e)) {
-                concrete_manipulator<const Component> m(
-                  *found, true /*can_remove*/);
-                func(e, m);
-                if(m.remove_requested()) {
-                    _remove(found.position());
-                }
+            concrete_manipulator<const Component> m(
+              *found, true /*can_remove*/);
+            func(e, m);
+            if(m.remove_requested()) {
+                _remove(found.position());
             }
         }
     }
@@ -226,13 +216,10 @@ public:
         assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
-        if(not is_hidden(p->first)) {
-            concrete_manipulator<const Component> m(
-              p->second, true /*can_remove*/);
-            func(p->first, m);
-            if(m.remove_requested()) {
-                p = _remove(p);
-            }
+        concrete_manipulator<const Component> m(p->second, true /*can_remove*/);
+        func(p->first, m);
+        if(m.remove_requested()) {
+            p = _remove(p);
         }
     }
 
@@ -240,13 +227,11 @@ public:
       const callable_ref<void(entity_param, manipulator<Component>&)> func,
       entity_param e) final {
         if(auto found{eagine::find(_components, e)}) {
-            if(not is_hidden(e)) {
-                // TODO: modify notification
-                concrete_manipulator<Component> m(*found, true /*can_remove*/);
-                func(e, m);
-                if(m.remove_requested()) {
-                    _remove(found.position());
-                }
+            // TODO: modify notification
+            concrete_manipulator<Component> m(*found, true /*can_remove*/);
+            func(e, m);
+            if(m.remove_requested()) {
+                _remove(found.position());
             }
         }
     }
@@ -257,15 +242,13 @@ public:
         assert(not i.done());
         auto& p = _iter_cast(i)._i;
         assert(p != _components.end());
-        if(not is_hidden(p->first)) {
-            // TODO: modify notification
-            concrete_manipulator<Component> m(
-              p->second, true /*can_remove*/
-            );
-            func(p->first, m);
-            if(m.remove_requested()) {
-                p = _remove(p);
-            }
+        // TODO: modify notification
+        concrete_manipulator<Component> m(
+          p->second, true /*can_remove*/
+        );
+        func(p->first, m);
+        if(m.remove_requested()) {
+            p = _remove(p);
         }
     }
 
@@ -275,14 +258,10 @@ public:
         concrete_manipulator<const Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
-            if(not is_hidden(p->first)) {
-                m.reset(p->second);
-                func(p->first, m);
-                if(m.remove_requested()) {
-                    p = _remove(p);
-                } else {
-                    ++p;
-                }
+            m.reset(p->second);
+            func(p->first, m);
+            if(m.remove_requested()) {
+                p = _remove(p);
             } else {
                 ++p;
             }
@@ -295,15 +274,11 @@ public:
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
-            if(not is_hidden(p->first)) {
-                // TODO: modify notification
-                m.reset(p->second);
-                func(p->first, m);
-                if(m.remove_requested()) {
-                    p = _remove(p);
-                } else {
-                    ++p;
-                }
+            // TODO: modify notification
+            m.reset(p->second);
+            func(p->first, m);
+            if(m.remove_requested()) {
+                p = _remove(p);
             } else {
                 ++p;
             }
@@ -314,15 +289,11 @@ public:
         concrete_manipulator<Component> m(true /*can_remove*/);
         auto p = _components.begin();
         while(p != _components.end()) {
-            if(not is_hidden(p->first)) {
-                // TODO: modify notification
-                m.reset(p->second);
-                func(m);
-                if(m.remove_requested()) {
-                    p = _remove(p);
-                } else {
-                    ++p;
-                }
+            // TODO: modify notification
+            m.reset(p->second);
+            func(m);
+            if(m.remove_requested()) {
+                p = _remove(p);
             } else {
                 ++p;
             }
@@ -333,7 +304,7 @@ private:
     using _map_iter_t = basic_map_cmp_storage_iterator<Entity, Component, Map>;
 
     Map _components{};
-    flat_set<Entity> _hidden{};
+    Map _hidden{};
     object_pool<_map_iter_t, 2> _iterators{};
 
     auto _iter_cast(component_storage_iterator<Entity>& i) noexcept -> auto& {
@@ -363,7 +334,7 @@ class basic_map_rel_storage_iterator
 public:
     basic_map_rel_storage_iterator(Map& m) noexcept
       : _map{&m}
-      , _i(m.begin()) {
+      , _i{m.begin()} {
         assert(_map);
     }
 
