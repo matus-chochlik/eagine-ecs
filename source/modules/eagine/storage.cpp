@@ -253,8 +253,6 @@ struct base_storage<Entity, data_kind::component>
 
     virtual auto show(entity_param) -> bool = 0;
 
-    virtual auto show(iterator_t&) -> bool = 0;
-
     virtual auto copy(entity_param from, entity_param to) -> void* = 0;
 
     virtual auto exchange(entity_param a, entity_param b) -> bool = 0;
