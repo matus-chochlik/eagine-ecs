@@ -18,26 +18,26 @@ struct mass : ecs::component<"mass"> {
 };
 //------------------------------------------------------------------------------
 struct position : ecs::component<"position"> {
-    tagged_quantity<math::tvec<float, 3>, units::meter> vec{};
+    tagged_quantity<math::vector<float, 3>, units::meter> vec{};
 };
 //------------------------------------------------------------------------------
 struct velocity : ecs::component<"velocity"> {
     tagged_quantity<
-      math::tvec<float, 3>,
+      math::vector<float, 3>,
       decltype(units::meter() / units::second())>
       vec{};
 };
 //------------------------------------------------------------------------------
 struct all_forces : ecs::component<"allForces"> {
-    tagged_quantity<math::tvec<float, 3>, units::newton> vec{};
+    tagged_quantity<math::vector<float, 3>, units::newton> vec{};
 };
 //------------------------------------------------------------------------------
 struct attraction : ecs::component<"attraction"> {
-    tagged_quantity<math::tvec<float, 3>, units::newton> vec{};
+    tagged_quantity<math::vector<float, 3>, units::newton> vec{};
 };
 //------------------------------------------------------------------------------
 struct repulsion : ecs::component<"repulsion"> {
-    tagged_quantity<math::tvec<float, 3>, units::newton> vec{};
+    tagged_quantity<math::vector<float, 3>, units::newton> vec{};
 };
 //------------------------------------------------------------------------------
 // relations
