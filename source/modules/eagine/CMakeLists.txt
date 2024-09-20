@@ -87,6 +87,11 @@ eagine_add_module(
 eagine_add_module(
 	eagine.ecs
 	COMPONENT ecs-dev
+	SOURCES
+		object
+	IMPORTS
+		std
+		eagine.core
 )
 
 eagine_add_module_tests(

@@ -30,12 +30,9 @@ class default_manager_holder
   : public main_ctx_service_impl<default_manager_holder>
   , public main_ctx_object {
 public:
-    default_manager_holder(main_ctx_parent parent) noexcept
-      : main_ctx_object{"ECSManager", parent} {}
+    default_manager_holder(main_ctx_parent parent) noexcept;
 
-    static constexpr auto static_type_id() noexcept -> identifier {
-        return "ECSManager";
-    }
+    static auto static_type_id() noexcept -> identifier;
 
     auto get() noexcept -> optional_reference<default_manager> {
         return _manager;
@@ -45,15 +42,7 @@ private:
     default_manager _manager{};
 };
 //------------------------------------------------------------------------------
-auto enable(main_ctx& ctx) -> optional_reference<default_manager> {
-    assert(ctx.setters());
-    return ctx.setters().and_then([&](auto& setters) {
-        shared_holder<default_manager_holder> ecs_mgr{default_selector, ctx};
-        auto mgr_ref{ecs_mgr->get()};
-        setters.inject(std::move(ecs_mgr));
-        return mgr_ref;
-    });
-}
+auto enable(main_ctx& ctx) -> optional_reference<default_manager>;
 
 export auto locate_default_manager(main_ctx& ctx) noexcept
   -> optional_reference<default_manager> {
