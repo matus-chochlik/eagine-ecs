@@ -58,37 +58,23 @@ auto default_manager_of(const main_ctx_object& user) noexcept
 //------------------------------------------------------------------------------
 export class object : public main_ctx_object {
 public:
-    object(identifier id, main_ctx_parent parent) noexcept
-      : main_ctx_object{id, parent} {
-        assert(not manager().knows(entity()));
-    }
-
+    object(identifier id, main_ctx_parent parent) noexcept;
     object(object&&) noexcept = default;
     object(const object&) = delete;
     auto operator=(object&&) noexcept -> object& = default;
     auto operator=(const object&) = delete;
-    ~object() noexcept {
-        manager().forget(entity());
-    }
+    ~object() noexcept;
 
-    [[nodiscard]] static auto spawn(main_ctx& ctx) noexcept -> object {
-        auto mgr{locate_default_manager(ctx)};
-        assert(mgr);
-        return object{mgr->spawn(), ctx};
-    }
+    [[nodiscard]] static auto spawn(main_ctx& ctx) noexcept -> object;
 
     [[nodiscard]] static auto spawn(const main_ctx_object& parent) noexcept
-      -> object {
-        auto mgr{default_manager_of(parent)};
-        assert(mgr);
-        return object{mgr->spawn(), parent};
-    }
+      -> object;
 
-    auto entity() const noexcept -> identifier {
+    [[nodiscard]] auto entity() const noexcept -> identifier {
         return object_id();
     }
 
-    auto manager() const noexcept -> default_manager& {
+    [[nodiscard]] auto manager() const noexcept -> default_manager& {
         // TODO: optimization: static variable - pointer
         return *_locate_manager();
     }
@@ -169,10 +155,7 @@ public:
         return *this;
     }
 
-    auto forget() noexcept -> object& {
-        manager().forget(entity());
-        return *this;
-    }
+    auto forget() noexcept -> object&;
 
 private:
     auto _locate_manager() const noexcept
