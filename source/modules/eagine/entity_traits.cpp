@@ -78,7 +78,7 @@ struct entity_traits<basic_identifier_value<M, B, C, T, V>> {
 
     [[nodiscard]] static constexpr auto next(parameter_type i) noexcept
       -> value_type {
-        return increment(i.identifier()).value();
+        return increment(i);
     }
 };
 //------------------------------------------------------------------------------
