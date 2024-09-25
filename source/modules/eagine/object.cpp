@@ -5,10 +5,6 @@
 /// See accompanying file LICENSE_1_0.txt or copy at
 /// https://www.boost.org/LICENSE_1_0.txt
 ///
-module;
-
-#include <cassert>
-
 export module eagine.ecs:object;
 
 import std;
@@ -22,7 +18,7 @@ import :manager;
 namespace eagine {
 namespace ecs {
 //------------------------------------------------------------------------------
-export using default_manager = basic_manager<identifier>;
+export using default_manager = basic_manager<identifier_value>;
 //------------------------------------------------------------------------------
 /// @brief Class providing access to default ECS manager instance.
 /// @ingroup main_context
@@ -42,12 +38,14 @@ private:
     default_manager _manager{};
 };
 //------------------------------------------------------------------------------
-auto enable(main_ctx& ctx) -> optional_reference<default_manager>;
-
 export auto locate_default_manager(main_ctx& ctx) noexcept
   -> optional_reference<default_manager> {
     return ctx.locate<default_manager_holder>().and_then(
       [](auto& holder) { return holder.get(); });
+}
+
+auto locate_default_manager() noexcept -> optional_reference<default_manager> {
+    return locate_default_manager(main_ctx::get());
 }
 
 auto default_manager_of(const main_ctx_object& user) noexcept
@@ -56,9 +54,11 @@ auto default_manager_of(const main_ctx_object& user) noexcept
       [](auto& holder) { return holder.get(); });
 }
 //------------------------------------------------------------------------------
-export class object : public main_ctx_object {
+export class object {
 public:
-    object(identifier id, main_ctx_parent parent) noexcept;
+    using entity_type = identifier_value;
+
+    object(identifier_value id) noexcept;
     object(object&&) noexcept = default;
     object(const object&) = delete;
     auto operator=(object&&) noexcept -> object& = default;
@@ -70,8 +70,8 @@ public:
     [[nodiscard]] static auto spawn(const main_ctx_object& parent) noexcept
       -> object;
 
-    [[nodiscard]] auto entity() const noexcept -> identifier {
-        return object_id();
+    [[nodiscard]] auto entity() const noexcept -> identifier_value {
+        return _id;
     }
 
     [[nodiscard]] auto manager() const noexcept -> default_manager& {
@@ -118,7 +118,7 @@ public:
     }
 
     template <component_data Component>
-    auto copy_from(identifier from) -> manipulator<Component> {
+    auto copy_from(identifier_value from) -> manipulator<Component> {
         return manager().template copy<Component>(from, entity());
     }
 
@@ -128,7 +128,7 @@ public:
     }
 
     template <component_data Component>
-    auto exchange_with(identifier that) -> manipulator<Component> {
+    auto exchange_with(identifier_value that) -> manipulator<Component> {
         return manager().template exchange<Component>(entity(), that);
     }
 
@@ -160,15 +160,14 @@ public:
 private:
     auto _locate_manager() const noexcept
       -> optional_reference<default_manager> {
-        return default_manager_of(*this);
+        return locate_default_manager();
     }
+
+    identifier_value _id;
 };
 //------------------------------------------------------------------------------
 } // namespace ecs
 //------------------------------------------------------------------------------
-export auto enable_ecs(main_ctx& ctx)
-  -> optional_reference<ecs::default_manager> {
-    return ecs::enable(ctx);
-}
+export auto enable_ecs(main_ctx&) -> optional_reference<ecs::default_manager>;
 //------------------------------------------------------------------------------
 } // namespace eagine

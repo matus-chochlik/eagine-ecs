@@ -23,12 +23,12 @@ auto main(main_ctx& ctx) -> int {
 
     mgr.register_component_storages<eagine::ecs::std_map_cmp_storage, subject>();
 
-    const auto on_spawned{[&](identifier e) {
+    const auto on_spawned{[&](identifier_value e) {
         ctx.cio().print("ECS", "Spawned ${name}").arg("name", e);
     }};
     mgr.entity_spawned.connect({construct_from, on_spawned});
 
-    const auto on_forgotten{[&](identifier e) {
+    const auto on_forgotten{[&](identifier_value e) {
         ctx.cio().print("ECS", "Forgotten ${name}").arg("name", e);
     }};
     mgr.entity_forgotten.connect({construct_from, on_forgotten});

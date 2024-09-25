@@ -14,7 +14,8 @@ module eagine.ecs;
 import std;
 import eagine.core;
 
-namespace eagine::ecs {
+namespace eagine {
+namespace ecs {
 //------------------------------------------------------------------------------
 // default_manager_holder
 //------------------------------------------------------------------------------
@@ -40,17 +41,17 @@ auto enable(main_ctx& ctx) -> optional_reference<default_manager> {
 auto object::spawn(main_ctx& ctx) noexcept -> object {
     auto mgr{locate_default_manager(ctx)};
     assert(mgr);
-    return object{mgr->spawn(), ctx};
+    return object{mgr->spawn()};
 }
 //------------------------------------------------------------------------------
 auto object::spawn(const main_ctx_object& parent) noexcept -> object {
     auto mgr{default_manager_of(parent)};
     assert(mgr);
-    return object{mgr->spawn(), parent};
+    return object{mgr->spawn()};
 }
 //------------------------------------------------------------------------------
-object::object(identifier id, main_ctx_parent parent) noexcept
-  : main_ctx_object{id, parent} {
+object::object(identifier_value id) noexcept
+  : _id{id} {
     assert(not manager().knows(entity()));
 }
 //------------------------------------------------------------------------------
@@ -63,4 +64,10 @@ auto object::forget() noexcept -> object& {
     return *this;
 }
 //------------------------------------------------------------------------------
-} // namespace eagine::ecs
+} // namespace ecs
+//------------------------------------------------------------------------------
+auto enable_ecs(main_ctx& ctx) -> optional_reference<ecs::default_manager> {
+    return ecs::enable(ctx);
+}
+//------------------------------------------------------------------------------
+} // namespace eagine
