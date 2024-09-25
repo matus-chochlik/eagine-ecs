@@ -149,13 +149,86 @@ void object_spawn_ensure_has(eagitest::ctx_suite& s) {
     }
 }
 //------------------------------------------------------------------------------
+void object_spawn_ensure_remove(eagitest::ctx_suite& s) {
+    eagitest::case_ test{s, 4, "spawn & ensure & remove"};
+    eagitest::track trck{test, 0, 4};
+
+    auto& m{enable_ecs(s.context()).value()};
+
+    m.register_component_storages<eagine::ecs::flat_map_cmp_storage, greeting>();
+
+    std::vector<eagine::ecs::object> objects;
+
+    const std::size_t count{1024Z};
+    objects.reserve(count);
+
+    while(objects.size() < count) {
+        objects.emplace_back(eagine::ecs::object::spawn(s.context()));
+
+        auto& obj{objects.back()};
+        obj.ensure<greeting>()->expression = "Ahoy";
+
+        trck.checkpoint(1);
+    }
+
+    for(auto& obj : objects) {
+        test.check(obj.has<greeting>(), "has");
+        trck.checkpoint(2);
+    }
+
+    for(auto& obj : objects) {
+        obj.remove<greeting>();
+        trck.checkpoint(3);
+    }
+
+    for(auto& obj : objects) {
+        test.check(not obj.has<greeting>(), "has not");
+        trck.checkpoint(4);
+    }
+}
+//------------------------------------------------------------------------------
+void object_spawn_hide_show(eagitest::ctx_suite& s) {
+    eagitest::case_ test{s, 5, "spawn & hide & show"};
+    eagitest::track trck{test, 0, 2};
+
+    auto& m{enable_ecs(s.context()).value()};
+
+    m.register_component_storages<eagine::ecs::flat_map_cmp_storage, greeting>();
+
+    std::vector<eagine::ecs::object> objects;
+
+    const std::size_t count{1024Z};
+    objects.reserve(count);
+
+    while(objects.size() < count) {
+        objects.emplace_back(eagine::ecs::object::spawn(s.context()));
+
+        auto& obj{objects.back()};
+        obj.ensure<greeting>()->expression = "Hey";
+
+        trck.checkpoint(1);
+    }
+
+    for(auto& obj : objects) {
+        test.check(not obj.is_hidden<greeting>(), "is visible");
+        obj.hide<greeting>();
+        test.check(obj.is_hidden<greeting>(), "is hidden");
+        obj.show<greeting>();
+        test.check(not obj.is_hidden<greeting>(), "is shown");
+
+        trck.checkpoint(2);
+    }
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "object", 3};
+    eagitest::ctx_suite test{ctx, "object", 5};
     test.once(object_create_destroy);
     test.once(object_spawn_destroy);
     test.once(object_spawn_ensure_has);
+    test.once(object_spawn_ensure_remove);
+    test.once(object_spawn_hide_show);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

@@ -75,8 +75,7 @@ public:
     }
 
     [[nodiscard]] auto manager() const noexcept -> default_manager& {
-        // TODO: optimization: static variable - pointer
-        return *_locate_manager();
+        return *locate_default_manager();
     }
 
     template <component_data Component>
@@ -158,11 +157,6 @@ public:
     auto forget() noexcept -> object&;
 
 private:
-    auto _locate_manager() const noexcept
-      -> optional_reference<default_manager> {
-        return locate_default_manager();
-    }
-
     identifier_value _id;
 };
 //------------------------------------------------------------------------------
