@@ -90,6 +90,7 @@ eagine_add_module_tests(
 	eagine.ecs
 	UNITS
 		storage
+		object
 		manager_std_map
 		manager_flat_map
 		manager_flat_map_idv
