@@ -127,12 +127,13 @@ public:
     }
 
     template <component_data Component>
-    auto exchange_with(identifier_value that) -> manipulator<Component> {
-        return manager().template exchange<Component>(entity(), that);
+    auto exchange_with(identifier_value that) -> object& {
+        manager().template exchange<Component>(entity(), that);
+        return *this;
     }
 
     template <component_data Component>
-    auto exchange_with(const object& that) -> manipulator<Component> {
+    auto exchange_with(const object& that) -> object& {
         return exchange_with<Component>(that.entity());
     }
 
