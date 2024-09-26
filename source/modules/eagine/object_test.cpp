@@ -424,10 +424,93 @@ void object_spawn_add_write_read(eagitest::ctx_suite& s) {
     }
 }
 //------------------------------------------------------------------------------
+void object_spawn_add_read_by(eagitest::ctx_suite& s) {
+    eagitest::case_ test{s, 11, "spawn & add & read_by"};
+
+    using eagine::ecs::object;
+
+    auto& m{enable_ecs(s.context()).value()};
+
+    m.register_component_storages<
+      eagine::ecs::flat_map_cmp_storage,
+      person,
+      greeting>();
+
+    struct derived : object {
+        using object::object;
+
+        auto is_proper_greeting(reader<greeting>& g, reader<person>& p) const {
+            return g->expression == "Hello" and p.has_name("John", "Doe");
+        }
+
+        auto check_proper_greeting() const -> bool {
+            return read_by(&derived::is_proper_greeting).value_or(false);
+        }
+    };
+
+    derived johndoe{"JohnDoe"};
+
+    johndoe.add(greeting("Hello"));
+    johndoe.ensure<person>().set("John", "Doe");
+
+    test.check(johndoe.check_proper_greeting(), "ok");
+
+    derived billroe{"BillRoe"};
+
+    billroe.add(greeting("Howdy"));
+    billroe.ensure<person>().set("Bill", "Roe");
+
+    test.check(not billroe.check_proper_greeting(), "not ok");
+}
+//------------------------------------------------------------------------------
+void object_spawn_ensure_write_by(eagitest::ctx_suite& s) {
+    eagitest::case_ test{s, 12, "spawn & ensure & write_by"};
+    eagitest::track trck{test, 0, 2};
+
+    using eagine::ecs::object;
+
+    auto& m{enable_ecs(s.context()).value()};
+
+    m.register_component_storages<
+      eagine::ecs::flat_map_cmp_storage,
+      person,
+      greeting>();
+
+    struct derived : object {
+        using object::object;
+
+        void setup(writer<greeting>& g, writer<person>& p) {
+            g->expression = "Hi";
+            p.set("Jane", "Doe");
+        }
+    };
+
+    derived janedoe{"JaneDoe"};
+
+    janedoe.ensure<greeting>();
+    janedoe.ensure<person>();
+
+    janedoe.write_by(&derived::setup);
+
+    janedoe.read<greeting>(
+      [&test, &trck](
+        eagine::ecs::object::entity_type, object::reader<greeting>& g) {
+          test.check(g->expression == "Hi", "has greeting");
+          trck.checkpoint(1);
+      });
+
+    janedoe.read<person>(
+      [&test, &trck](
+        eagine::ecs::object::entity_type, object::reader<person>& p) {
+          test.check(p.has_name("Jane", "Doe"), "has name");
+          trck.checkpoint(2);
+      });
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "object", 10};
+    eagitest::ctx_suite test{ctx, "object", 12};
     test.once(object_create_destroy);
     test.once(object_spawn_destroy);
     test.once(object_spawn_ensure_has);
@@ -438,6 +521,8 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(object_spawn_add_copy_from);
     test.once(object_spawn_add_exchange_with);
     test.once(object_spawn_add_write_read);
+    test.once(object_spawn_add_read_by);
+    test.once(object_spawn_ensure_write_by);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------
