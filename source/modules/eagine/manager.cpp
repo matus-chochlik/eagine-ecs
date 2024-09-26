@@ -729,18 +729,18 @@ private:
       std::string (*)() noexcept) -> bool;
 
     template <typename Func, typename... M>
-    auto _call_for_single_c_p(
+    void _call_for_single_c_p(
       mp_list<>,
       const Func& func,
       entity_param_t<Entity> ent,
-      manipulator<M>&... m) -> bool;
+      manipulator<M>&... m);
 
     template <typename Func, typename C, typename... Cs, typename... M>
-    auto _call_for_single_c_p(
+    void _call_for_single_c_p(
       mp_list<C, Cs...>,
       const Func& func,
       entity_param_t<Entity> ent,
-      manipulator<M>&... m) -> bool;
+      manipulator<M>&... m);
 
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
@@ -1011,36 +1011,33 @@ auto basic_manager<Entity>::_do_get_c(
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Func, typename... M>
-auto basic_manager<Entity>::_call_for_single_c_p(
+void basic_manager<Entity>::_call_for_single_c_p(
   mp_list<>,
   const Func& func,
   entity_param_t<Entity> ent,
-  manipulator<M>&... m) -> bool {
+  manipulator<M>&... m) {
     func(ent, m...);
-    return true;
 }
 //------------------------------------------------------------------------------
 template <typename Entity>
 template <typename Func, typename C, typename... Cs, typename... M>
-auto basic_manager<Entity>::_call_for_single_c_p(
+void basic_manager<Entity>::_call_for_single_c_p(
   mp_list<C, Cs...>,
   const Func& func,
   entity_param_t<Entity> ent,
-  manipulator<M>&... m) -> bool {
-    return _apply_on_stg<std::remove_const_t<C>, data_kind::component>(
-             [&, this](auto& c_storage) -> tribool {
-                 const auto hlpr{
-                   [&, this](entity_param_t<Entity> e, manipulator<C>& n) {
-                       return _call_for_single_c_p(
-                         mp_list<Cs...>{}, func, e, m..., n);
-                   }};
-                 c_storage->for_single(
-                   callable_ref<void(entity_param, manipulator<C>&)>{
-                     construct_from, hlpr},
-                   ent);
-                 return true;
-             })
-      .or_false();
+  manipulator<M>&... m) {
+    _apply_on_stg<std::remove_const_t<C>, data_kind::component>(
+      [&, this](auto& c_storage) -> tribool {
+          const auto hlpr{
+            [&, this](entity_param_t<Entity> e, manipulator<C>& n) {
+                _call_for_single_c_p(mp_list<Cs...>{}, func, e, m..., n);
+            }};
+          c_storage->for_single(
+            callable_ref<void(entity_param, manipulator<C>&)>{
+              construct_from, hlpr},
+            ent);
+          return true;
+      });
 }
 //------------------------------------------------------------------------------
 template <typename Entity>

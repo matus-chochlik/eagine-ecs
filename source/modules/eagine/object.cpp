@@ -89,7 +89,7 @@ export class object {
           self->entity(),
           [self, mem_fn, &result](
             const entity_type, manipulator<Components>&... m) {
-              result = std::invoke(mem_fn, _cast_to<Self>(self), m...);
+              result = {std::invoke(mem_fn, _cast_to<Self>(self), m...), true};
           });
         return result;
     }
