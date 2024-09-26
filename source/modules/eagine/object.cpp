@@ -66,9 +66,60 @@ auto default_manager_of(const main_ctx_object& user) noexcept
 /// @ingroup ecs
 /// @see default_manager
 export class object {
+
+    template <typename Self, typename This>
+    static auto _cast_to(This* self) noexcept {
+        return static_cast<std::conditional_t<
+          std::is_const_v<This>,
+          std::add_const_t<Self>*,
+          std::remove_const_t<Self>*>>(self);
+    }
+
+    template <
+      typename RV,
+      typename Self,
+      typename This,
+      typename MemFn,
+      typename... Components>
+        requires(sizeof...(Components) > 0Z)
+    static auto _do_read_by(This* self, MemFn mem_fn, mp_list<Components...>)
+      -> optionally_valid<RV> {
+        optionally_valid<RV> result;
+        self->manager().template read<Components...>(
+          self->entity(),
+          [self, mem_fn, &result](
+            const entity_type, manipulator<Components>&... m) {
+              result = std::invoke(mem_fn, _cast_to<Self>(self), m...);
+          });
+        return result;
+    }
+
+    template <
+      typename RV,
+      typename Self,
+      typename This,
+      typename MemFn,
+      typename... Components>
+        requires(sizeof...(Components) > 0Z)
+    static void _do_write_by(This* self, MemFn mem_fn, mp_list<Components...>) {
+        self->manager().template write<Components...>(
+          self->entity(),
+          [self, mem_fn](const entity_type, manipulator<Components>&... m) {
+              std::invoke(mem_fn, _cast_to<Self>(self), m...);
+          });
+    }
+
 public:
     /// @brief Type alias for the default entity type used by the default manager.
     using entity_type = identifier_value;
+
+    /// @brief Template alias for an read-only manipulator of component @c C.
+    template <typename C>
+    using reader = manipulator<std::add_const_t<C>>;
+
+    /// @brief Template alias for an read-write manipulator of component @c C.
+    template <typename C>
+    using writer = manipulator<std::remove_const_t<C>>;
 
     /// @brief Constructor specifying the identifier of the constructed object.
     /// @post this->entity() == id
@@ -197,9 +248,51 @@ public:
     /// @brief Calls specified function on the read manipulator of the @c Component.
     /// @see write
     template <component_data Component, typename Function>
-    auto read(Function&& function) -> auto& {
-        return manager().template read_single<Component>(
+    auto read(Function&& function) const -> const object& {
+        manager().template read_single<Component>(
           entity(), std::forward<Function>(function));
+        return *this;
+    }
+
+    /// @brief Uses the specified member function to examine the specified @c Components.
+    /// @see read
+    /// @see write_by
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto read_by(RV (Self::*mem_fn)(manipulator<Components>&...)) {
+        return _do_read_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto read_by(RV (Self::*mem_fn)(manipulator<Components>&...) const) const {
+        return _do_read_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto read_by(
+      RV (Self::*mem_fn)(manipulator<Components>&...) noexcept) noexcept {
+        return _do_read_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto read_by(RV (Self::*mem_fn)(manipulator<Components>&...)
+                   const noexcept) const noexcept {
+        return _do_read_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
     }
 
     /// @brief Calls specified function on the write manipulator of the @c Component.
@@ -208,6 +301,47 @@ public:
     auto write(Function&& function) -> auto& {
         return manager().template write_single<Component>(
           entity(), std::forward<Function>(function));
+    }
+
+    /// @brief Uses the specified member function to change the specified @c Components.
+    /// @see write
+    /// @see read_by
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto write_by(RV (Self::*mem_fn)(manipulator<Components>&...)) {
+        return _do_write_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto write_by(RV (Self::*mem_fn)(manipulator<Components>&...) const) {
+        return _do_write_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto write_by(
+      RV (Self::*mem_fn)(manipulator<Components>&...) noexcept) noexcept {
+        return _do_write_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
+    }
+
+    template <
+      std::derived_from<object> Self,
+      typename RV,
+      component_data... Components>
+        requires(sizeof...(Components) > 0Z)
+    auto write_by(RV (Self::*mem_fn)(manipulator<Components>&...)
+                    const noexcept) const noexcept {
+        return _do_write_by<RV, Self>(this, mem_fn, mp_list<Components...>{});
     }
 
     /// @brief Removes the specified @c Components from this object.

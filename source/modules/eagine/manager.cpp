@@ -1035,7 +1035,7 @@ auto basic_manager<Entity>::_call_for_single_c_p(
                          mp_list<Cs...>{}, func, e, m..., n);
                    }};
                  c_storage->for_single(
-                   callable_ref<void(entity_param, manipulator<const C>&)>{
+                   callable_ref<void(entity_param, manipulator<C>&)>{
                      construct_from, hlpr},
                    ent);
                  return true;
