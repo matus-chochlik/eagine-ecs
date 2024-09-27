@@ -32,6 +32,12 @@ auto locate_default_manager(main_ctx& ctx) noexcept
       [](auto& holder) { return holder.get(); });
 }
 //------------------------------------------------------------------------------
+auto default_manager_of(const main_ctx_object& user) noexcept
+  -> optional_reference<default_manager> {
+    return user.locate<default_manager_holder>().and_then(
+      [](auto& holder) { return holder.get(); });
+}
+//------------------------------------------------------------------------------
 auto enable(main_ctx& ctx) -> optional_reference<default_manager> {
     assert(ctx.setters());
     return ctx.setters().and_then([&](auto& setters) {
