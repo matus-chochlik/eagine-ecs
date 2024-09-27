@@ -26,6 +26,12 @@ auto default_manager_holder::static_type_id() noexcept -> identifier {
     return "ECSManager";
 }
 //------------------------------------------------------------------------------
+auto locate_default_manager(main_ctx& ctx) noexcept
+  -> optional_reference<default_manager> {
+    return ctx.locate<default_manager_holder>().and_then(
+      [](auto& holder) { return holder.get(); });
+}
+//------------------------------------------------------------------------------
 auto enable(main_ctx& ctx) -> optional_reference<default_manager> {
     assert(ctx.setters());
     return ctx.setters().and_then([&](auto& setters) {

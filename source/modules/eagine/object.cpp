@@ -47,19 +47,10 @@ private:
 /// @brief Function locating the @c default_manager instance from @c main_ctx.
 /// @ingroup ecs
 export auto locate_default_manager(main_ctx& ctx) noexcept
-  -> optional_reference<default_manager> {
-    return ctx.locate<default_manager_holder>().and_then(
-      [](auto& holder) { return holder.get(); });
-}
+  -> optional_reference<default_manager>;
 
 auto locate_default_manager() noexcept -> optional_reference<default_manager> {
     return locate_default_manager(main_ctx::get());
-}
-
-auto default_manager_of(const main_ctx_object& user) noexcept
-  -> optional_reference<default_manager> {
-    return user.locate<default_manager_holder>().and_then(
-      [](auto& holder) { return holder.get(); });
 }
 //------------------------------------------------------------------------------
 /// @brief Wrapper around entity from the @c default_manger
