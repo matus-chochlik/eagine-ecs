@@ -153,6 +153,12 @@ public:
         return manager().template has<Component>(entity());
     }
 
+    /// @brief Indicates if this object has a @c Relation with @c that object.
+    template <relation_data Relation>
+    [[nodiscard]] auto has(const object& that) noexcept -> bool {
+        return manager().template has<Relation>(entity(), that.entity());
+    }
+
     /// @brief Indicates if this object has all the specified @c Components.
     /// @see has
     /// @see add
@@ -194,7 +200,18 @@ public:
     /// @see has_all
     template <component_data... Components>
     auto add(Components&&... components) -> auto& {
-        return manager().add(entity(), std::forward<Components>(components)...);
+        manager().add(entity(), std::forward<Components>(components)...);
+        return *this;
+    }
+
+    /// @brief Adds the specified relation of this object to @c that object.
+    /// @see ensure
+    /// @see has
+    template <relation_data Relation>
+    auto add(const object& that, Relation&& relation = {}) -> auto& {
+        manager().add(
+          entity(), that.entity(), std::forward<Relation>(relation));
+        return *this;
     }
 
     /// @brief Ensures that this object has an instance of the specified @c Component.
@@ -205,6 +222,16 @@ public:
     auto ensure(std::type_identity<Component> tid = {})
       -> manipulator<Component> {
         return manager().ensure(entity(), tid);
+    }
+
+    /// @brief Ensures that this object has an instance of the specified @c Relation.
+    /// @see ensure
+    /// @see has
+    /// @see has_all
+    template <relation_data Relation>
+    auto ensure(const object& that, std::type_identity<Relation> tid = {})
+      -> manipulator<Relation> {
+        return manager().ensure(entity(), that.entity(), tid);
     }
 
     /// @brief Copies the instances of the specified components from another entity.

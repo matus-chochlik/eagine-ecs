@@ -507,10 +507,44 @@ void object_spawn_ensure_write_by(eagitest::ctx_suite& s) {
       });
 }
 //------------------------------------------------------------------------------
+void object_spawn_add_has_relation(eagitest::ctx_suite& s) {
+    eagitest::case_ test{s, 13, "spawn & ensure & has"};
+
+    auto& m{enable_ecs(s.context()).value()};
+
+    m.register_component_storages<eagine::ecs::flat_map_cmp_storage, person>();
+    m.register_relation_storages<
+      eagine::ecs::flat_map_rel_storage,
+      father,
+      mother>();
+
+    auto darth{eagine::ecs::object::spawn(s.context())};
+    darth.ensure<person>().set("Anakin", "Skywalker");
+
+    auto senator{eagine::ecs::object::spawn(s.context())};
+    senator.ensure<person>().set("Padme", "Amidala");
+
+    auto kilo{eagine::ecs::object::spawn(s.context())};
+    kilo.ensure<person>().set("Kylo", "Ren");
+
+    kilo.add(senator, mother{});
+    kilo.add(darth, father{});
+
+    test.check(kilo.has<mother>(senator), "has mother");
+    test.check(not kilo.has<mother>(kilo), "has mother kilo");
+    test.check(not kilo.has<mother>(darth), "has mother darth");
+    test.check(not senator.has<mother>(kilo), "has mother reverse");
+
+    test.check(kilo.has<father>(darth), "has father");
+    test.check(not kilo.has<father>(kilo), "has father kilo");
+    test.check(not kilo.has<father>(senator), "has father senator");
+    test.check(not darth.has<father>(kilo), "has father reverse");
+}
+//------------------------------------------------------------------------------
 // main
 //------------------------------------------------------------------------------
 auto test_main(eagine::test_ctx& ctx) -> int {
-    eagitest::ctx_suite test{ctx, "object", 12};
+    eagitest::ctx_suite test{ctx, "object", 13};
     test.once(object_create_destroy);
     test.once(object_spawn_destroy);
     test.once(object_spawn_ensure_has);
@@ -523,6 +557,7 @@ auto test_main(eagine::test_ctx& ctx) -> int {
     test.once(object_spawn_add_write_read);
     test.once(object_spawn_add_read_by);
     test.once(object_spawn_ensure_write_by);
+    test.once(object_spawn_add_has_relation);
     return test.exit_code();
 }
 //------------------------------------------------------------------------------

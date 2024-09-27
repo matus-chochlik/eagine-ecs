@@ -908,7 +908,8 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param obj,
   Relation&& relation) -> optional_reference<Relation> {
     return _apply_on_stg<Relation, data_kind::relation>(
-      [&subj, &obj, &relation](auto& r_storage) {
+      [&subj, &obj, &relation](
+        auto& r_storage) -> optional_reference<Relation> {
           return r_storage->store(subj, obj, std::forward<Relation>(relation));
       });
 }
