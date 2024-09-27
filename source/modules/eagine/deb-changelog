@@ -1,3 +1,11 @@
+eagine-ecs-dev (0.131.0) unstable; urgency=medium
+
+  * Made the default entity manager use identifier_value as entities.
+  * Additions to the ecs::object class.
+  * Added new example.
+
+ -- Matúš Chochlík <matus.chochlik@proton.me>  Fri, 27 Sep 2024 18:00:00 +0200
+
 eagine-ecs-dev (0.125.0) unstable; urgency=medium
 
   * Initial version with CPack-based packaging.
