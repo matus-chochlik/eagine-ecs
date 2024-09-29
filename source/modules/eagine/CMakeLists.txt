@@ -9,8 +9,7 @@ eagine_add_module(
 	IMPORTS
 		std
 		eagine.core.identifier
-		eagine.core.reflection
-)
+		eagine.core.reflection)
 
 eagine_add_module(
 	eagine.ecs
@@ -20,8 +19,7 @@ eagine_add_module(
 		std entity_traits
 		eagine.core.types
 		eagine.core.identifier
-		eagine.core.container
-)
+		eagine.core.container)
 
 eagine_add_module(
 	eagine.ecs
@@ -29,8 +27,7 @@ eagine_add_module(
 	PARTITION manipulator
 	IMPORTS
 		std
-		eagine.core.types
-)
+		eagine.core.types)
 
 eagine_add_module(
 	eagine.ecs
@@ -41,8 +38,7 @@ eagine_add_module(
 		manipulator
 		eagine.core.types
 		eagine.core.utility
-		eagine.core.reflection
-)
+		eagine.core.reflection)
 
 eagine_add_module(
 	eagine.ecs
@@ -55,8 +51,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.utility
 		eagine.core.container
-		eagine.core.reflection
-)
+		eagine.core.reflection)
 
 eagine_add_module(
 	eagine.ecs
@@ -70,8 +65,7 @@ eagine_add_module(
 		eagine.core.types
 		eagine.core.string
 		eagine.core.utility
-		eagine.core.valid_if
-)
+		eagine.core.valid_if)
 
 eagine_add_module(
 	eagine.ecs
@@ -81,25 +75,29 @@ eagine_add_module(
 		std component manipulator manager
 		eagine.core.types
 		eagine.core.identifier
-		eagine.core.main_ctx
-)
+		eagine.core.main_ctx)
 
 eagine_add_module(
 	eagine.ecs
 	COMPONENT ecs-dev
-)
+	SOURCES
+		object
+	IMPORTS
+		std
+		eagine.core)
 
 eagine_add_module_tests(
 	eagine.ecs
 	UNITS
 		storage
+		object
 		manager_std_map
 		manager_flat_map
+		manager_flat_map_idv
 		manager_chunk_map
 	IMPORTS
 		std
-		eagine.core
-)
+		eagine.core)
 
 set_tests_properties(build-test.eagine.ecs.manager_std_map  PROPERTIES COST 10)
 set_tests_properties(build-test.eagine.ecs.manager_flat_map PROPERTIES COST 10)

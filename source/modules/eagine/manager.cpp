@@ -437,6 +437,13 @@ public:
             construct_from, std::forward<Function>(function)});
     }
 
+    template <component_data... Component, typename Function>
+    auto read(entity_param ent, Function&& function) -> auto& {
+        _call_for_single_c_p(
+          mp_list<std::add_const_t<Component>...>{}, function, ent);
+        return *this;
+    }
+
     template <component_data Component>
     auto for_single(
       entity_param ent,
@@ -452,6 +459,13 @@ public:
           ent,
           callable_ref<void(entity_param, manipulator<Component>&)>{
             construct_from, std::forward<Function>(function)});
+    }
+
+    template <component_data... Component, typename Function>
+    auto write(entity_param ent, Function&& function) -> auto& {
+        _call_for_single_c_p(
+          mp_list<std::remove_const_t<Component>...>{}, function, ent);
+        return *this;
     }
 
     template <component_data Component>
@@ -714,6 +728,20 @@ private:
       identifier_t,
       std::string (*)() noexcept) -> bool;
 
+    template <typename Func, typename... M>
+    void _call_for_single_c_p(
+      mp_list<>,
+      const Func& func,
+      entity_param_t<Entity> ent,
+      manipulator<M>&... m);
+
+    template <typename Func, typename C, typename... Cs, typename... M>
+    void _call_for_single_c_p(
+      mp_list<C, Cs...>,
+      const Func& func,
+      entity_param_t<Entity> ent,
+      manipulator<M>&... m);
+
     template <typename C, typename Func>
     auto _call_for_single_c(entity_param, const Func&) -> bool;
 
@@ -880,7 +908,8 @@ auto basic_manager<Entity>::_do_add_r(
   entity_param obj,
   Relation&& relation) -> optional_reference<Relation> {
     return _apply_on_stg<Relation, data_kind::relation>(
-      [&subj, &obj, &relation](auto& r_storage) {
+      [&subj, &obj, &relation](
+        auto& r_storage) -> optional_reference<Relation> {
           return r_storage->store(subj, obj, std::forward<Relation>(relation));
       });
 }
@@ -979,6 +1008,37 @@ auto basic_manager<Entity>::_do_get_c(
       callable_ref<void(entity_param, manipulator<const C>&)>{
         construct_from, getter});
     return res;
+}
+//------------------------------------------------------------------------------
+template <typename Entity>
+template <typename Func, typename... M>
+void basic_manager<Entity>::_call_for_single_c_p(
+  mp_list<>,
+  const Func& func,
+  entity_param_t<Entity> ent,
+  manipulator<M>&... m) {
+    func(ent, m...);
+}
+//------------------------------------------------------------------------------
+template <typename Entity>
+template <typename Func, typename C, typename... Cs, typename... M>
+void basic_manager<Entity>::_call_for_single_c_p(
+  mp_list<C, Cs...>,
+  const Func& func,
+  entity_param_t<Entity> ent,
+  manipulator<M>&... m) {
+    _apply_on_stg<std::remove_const_t<C>, data_kind::component>(
+      [&, this](auto& c_storage) -> tribool {
+          const auto hlpr{
+            [&, this](entity_param_t<Entity> e, manipulator<C>& n) {
+                _call_for_single_c_p(mp_list<Cs...>{}, func, e, m..., n);
+            }};
+          c_storage->for_single(
+            callable_ref<void(entity_param, manipulator<C>&)>{
+              construct_from, hlpr},
+            ent);
+          return true;
+      });
 }
 //------------------------------------------------------------------------------
 template <typename Entity>

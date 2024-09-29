@@ -43,6 +43,7 @@ eagine_example_common(001_hello_manager)
 eagine_example_common(001_hello_object)
 eagine_example_common(002_signals)
 eagine_example_common(003_space_opera)
+eagine_example_common(004_space_objects)
 
 add_subdirectory(elements)
 

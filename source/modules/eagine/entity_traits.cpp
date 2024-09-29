@@ -49,17 +49,35 @@ struct entity_traits<std::string> {
     }
 };
 //------------------------------------------------------------------------------
-export template <std::size_t M, std::size_t B, typename C, typename T>
-struct entity_traits<basic_identifier<M, B, C, T>> {
-    using parameter_type = const basic_identifier<M, B, C, T>;
+export template <std::size_t M, std::size_t B, typename C, typename T, bool V>
+struct entity_traits<basic_identifier<M, B, C, T, V>> {
+    using parameter_type = const basic_identifier<M, B, C, T, V>;
 
     [[nodiscard]] static constexpr auto first() noexcept
-      -> basic_identifier<M, B, C, T> {
+      -> basic_identifier<M, B, C, T, V> {
         return {};
     }
 
     [[nodiscard]] static constexpr auto next(parameter_type i) noexcept
-      -> basic_identifier<M, B, C, T> {
+      -> basic_identifier<M, B, C, T, V> {
+        return increment(i);
+    }
+};
+//------------------------------------------------------------------------------
+export template <std::size_t M, std::size_t B, typename C, typename T, bool V>
+struct entity_traits<basic_identifier_value<M, B, C, T, V>> {
+    using identifier_type = basic_identifier<M, B, C, T, V>;
+
+    using value_type = basic_identifier_value<M, B, C, T, V>;
+
+    using parameter_type = const value_type;
+
+    [[nodiscard]] static constexpr auto first() noexcept -> value_type {
+        return {identifier_type{}.value()};
+    }
+
+    [[nodiscard]] static constexpr auto next(parameter_type i) noexcept
+      -> value_type {
         return increment(i);
     }
 };
