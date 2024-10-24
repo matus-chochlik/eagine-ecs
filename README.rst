@@ -13,8 +13,8 @@ This repository is one of the sub-modules of the main project hosted
 at https://github.com/matus-chochlik/eagine-all and implements an entity-component
 system.
 
-Cloning the repo
-================
+Cloning the repository
+======================
 ::
 
  git clone https://github.com/matus-chochlik/eagine-ecs.git
